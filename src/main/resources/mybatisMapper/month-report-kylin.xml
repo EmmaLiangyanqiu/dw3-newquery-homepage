@@ -6,12 +6,14 @@
         select code, param_values value
         from cache_init_param
         where code like #{code}
-    
+    </select>
+
 	<!-- area码表  -->
 	<select id="areaCode" resultType="java.util.Map">
 		select sys_code,code_value from system_variables
 		where sys_code in('code_1001','code_1002')
 	</select>
+
  	<!--1、筛选条件接口  -->
     <select id="select" resultType="java.util.Map">
         select t.dimension_type_code tid,n.dimension_code id,t.dimension_type_name tname ,n.channel_type_name text from dw_dimension_type t,dw_dimension_name n
@@ -40,7 +42,7 @@
          order by l.ord
   </select>
   
-  <!--0228 查询基础数据  -->
+  <!--0228 查询基础数据 -->
   <select id="selectDataByKylin" resultType="java.util.HashMap">
 	select KPI_CODE,
            sum(coalesce(KPI_VALUE, 0)) dy, <!--当月指标值 -->

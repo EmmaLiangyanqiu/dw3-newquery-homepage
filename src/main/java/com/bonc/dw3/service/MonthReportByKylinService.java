@@ -30,7 +30,8 @@ public class MonthReportByKylinService {
 	
 	@Autowired
 	MonthReportKylinMapper monthReportMapper;
-	@Autowired
+
+	//@Autowired
 	DateUtils dateUtil;
 	
 	private static Logger log = LoggerFactory.getLogger(MonthReportByKylinService.class);

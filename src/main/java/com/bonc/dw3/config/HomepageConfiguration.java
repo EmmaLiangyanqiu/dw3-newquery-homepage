@@ -13,7 +13,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableSwagger2
-public class MonthReportConfiguration {
+public class HomepageConfiguration {
 	@Bean
 	public Docket buildDocket() {
 		return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInf()).select()
@@ -22,6 +22,6 @@ public class MonthReportConfiguration {
 	}
 
 	private ApiInfo buildApiInf() {
-		return new ApiInfoBuilder().title("DW3-139城市项目中使用Swagger2 UI构建API文档").contact("月报").version("1.0").build();
+		return new ApiInfoBuilder().title("DW3.0-新版查询项目中使用Swagger2 UI构建API文档").contact("首页查询").version("1.0").build();
 	}
 }
