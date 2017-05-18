@@ -1,16 +1,10 @@
 package com.bonc.dw3.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.bonc.dw3.service.MonthReportByKylinService;
-import com.sun.javafx.sg.prism.NGShape;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,23 +13,21 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Api(value = "首页查询页面", description ="测试")
+@Api(value = "首页查询-1", description ="测试")
 @CrossOrigin(origins ="*")
 @Controller
 @RequestMapping("/homepage")
 public class HomepageController {
 
-    @Autowired
-    RestTemplate restTemplate;
-
     /**
-     * 搜索接口
+     * 搜索接口-全部
      * @Parameter searchType 查询类型：-1.全部; 1.专题; 2.报告; 3.专题
      * @Parameter txt 查询输入的文本
+     * @Parameter startNum 分页起始
+     * @Parameter num 分页每一页的条数
      *
      * @Author gp
      * @Date 2017/5/16
@@ -52,19 +44,30 @@ public class HomepageController {
         System.out.println("查询es的参数--------->" + paramStr);
 
         //查询es
-        Object res = restTemplate.postForObject("http://CACHESERVER/CacheServer/result", paramStr, Object.class);
+        RestTemplate restTemplate = new RestTemplate();
+        Object res = restTemplate.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Object.class);
         List<Map<String, Object>>  esList = (List<Map<String, Object>>) res;
+        System.out.println("查询es的结果-------->" + esList);
 
-        //searchType:-1.全部; 1.专题; 2.报告; 3.专题
+        //searchType:-1.全部; 1.指标; 2.报告; 3.专题
         if (searchType.equals("-1")){
+            List<Map<String, Object>> topicList = new ArrayList<>();
+            List<Map<String, Object>> reportList = new ArrayList<>();
+            List<Map<String, Object>> kpiList = new ArrayList<>();
             //查询类型是全部，需要遍历所有的数据，查看它们的type是什么，送到相应的服务
             for (Map<String, Object> esMap : esList){
-                String esType = esMap.get("dataType").toString();
-                String ord = esMap.get("ord").toString();
-
-
+                String type = esMap.get("Type").toString();
+                if (type.equals("KPI_Name")){
+                    kpiList.add(esMap);
+                }else if (type.equals("Report_Name")){
+                    reportList.add(esMap);
+                }else if (type.equals("Topic_Name")){
+                    topicList.add(esMap);
+                }
             }
-
+            System.out.println("专题有-------->" + topicList);
+            System.out.println("报告有-------->" + reportList);
+            System.out.println("kpi有-------->" + kpiList);
             //是专题的查询相应的图片
 
 
@@ -79,18 +82,21 @@ public class HomepageController {
 
             //master汇总结果
 
-        }else if (searchType.equals("1")){
+
+        }else if (searchType.equals("KPI_Name")){
             //查询类型是指标，需要把它们拆分，分配到几台机器查询同比环比数据
             //同样判断数据条数是否超过20，超过就拆分，不超过就分配到第一台机器查询同比环比数据
+            for (Map<String, Object> esMap : esList){
 
+            }
             //master汇总结果
 
-        }else if (searchType.equals("2")){
+        }else if (searchType.equals("Report_Name")){
             //查询类型是报告，送到报告服务查询4个缩略图
 
             //master汇总结果
 
-        }else if (searchType.equals("3")){
+        }else if (searchType.equals("Topic_Name")){
             //查询类型是专题，送到专题服务查询相应的图片
 
             //master汇总结果

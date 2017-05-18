@@ -10,31 +10,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.bonc.dw3.common.datasource.DynamicDataSourceContextHolder;
 import com.bonc.dw3.common.util.DateUtils;
-import com.bonc.dw3.mapper.MonthReportKylinMapper;
+import com.bonc.dw3.mapper.HomepageMapper;
 
 @Service
 @CrossOrigin(origins="*")
-public class MonthReportByKylinService {
+public class HomepageService {
 	
 	@Autowired
-	MonthReportKylinMapper monthReportMapper;
+    HomepageMapper monthReportMapper;
 
 	//@Autowired
 	DateUtils dateUtil;
 	
-	private static Logger log = LoggerFactory.getLogger(MonthReportByKylinService.class);
+	private static Logger log = LoggerFactory.getLogger(HomepageService.class);
 
 	
 	/**

@@ -14,14 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Api(value = "首页查询页面", description ="示例数据")
+@Api(value = "首页查询-2", description ="示例数据")
 @CrossOrigin(origins ="*")
 @Controller
 @RequestMapping("/homepage/test")
 public class HomepageTestController {
 
-    @Autowired
-    RestTemplate restTemplate;
 
     /**
      * 搜索接口
@@ -38,7 +36,6 @@ public class HomepageTestController {
 
         //使用查询类型searchType和查询文本txt查询es得到结果
         List<Map<String, Object>> esList = new ArrayList<>();
-        Object res = restTemplate.postForObject("http://CACHESERVER/CacheServer/result", paramStr, Object.class);
 
 
 
