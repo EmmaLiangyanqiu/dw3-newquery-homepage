@@ -48,7 +48,7 @@
 	
 	<!--mapper映射 -->
 	<mappers>
-        <mapper resource="mybatisMapper/month-report-kylin.xml"/>
+        <mapper resource="mybatisMapper/homepage.xml"/>
         <mapper resource="mybatisMapper/system-variables.xml"/>
 	</mappers>
 </configuration>

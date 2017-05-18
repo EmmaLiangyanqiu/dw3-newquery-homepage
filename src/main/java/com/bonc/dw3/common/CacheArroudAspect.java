@@ -1,3 +1,4 @@
+/*
 package com.bonc.dw3.common;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,9 +34,11 @@ public class CacheArroudAspect implements EnvironmentAware {
     @Autowired
     MonthReportByKylinService service;
 
-    /**
+    */
+/**
      * 日志对象
-     */
+     *//*
+
     private Logger logger = LoggerFactory.getLogger(MonthReportByKylinService.class);
 
     @Autowired
@@ -48,12 +51,14 @@ public class CacheArroudAspect implements EnvironmentAware {
     // service层的统计耗时切面，类型必须为final String类型的,注解里要使用的变量只能是静态常量类型的
     public static final String POINT = "execution (* com.bonc.dw3.controller.*.*(..))";
 
-    /**
+    */
+/**
      * 统计方法执行耗时Around环绕通知
      *
      * @param joinPoint
      * @return
-     */
+     *//*
+
     @Around(POINT)
     public Object timeAround(ProceedingJoinPoint joinPoint) throws Throwable {
 
@@ -90,14 +95,16 @@ public class CacheArroudAspect implements EnvironmentAware {
         PrintWriter out = null;
 
         //得到缓存服务器地址
-        /*cacheServerList = service.getCacheServerList();
+        */
+/*cacheServerList = service.getCacheServerList();
         if (cacheServerList.size() != 0){
             cacheServer = cacheServerList.get(0).get("IP_ADDRESS") + ":" + cacheServerList.get(0).get("PORT");
             urlStr = "http://" + cacheServer + "/CacheServer/result";
             //logger.info("缓存服务url为=========" + urlStr);
         }else{
             logger.info("没有缓存服务可以使用！！！");
-        }*/
+        }*//*
+
 
         //拼接查默认参数的code
         for (int i = 1; i < paths.length; i++) {
@@ -203,3 +210,4 @@ public class CacheArroudAspect implements EnvironmentAware {
         this.env = environment;
     }
 }
+*/
