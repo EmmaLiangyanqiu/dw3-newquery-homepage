@@ -26,7 +26,24 @@ import org.springframework.web.client.RestTemplate;
 @CrossOrigin(origins="*")
 public class HomepageService {
 
-    /**
+	@Autowired
+    HomepageMapper monthReportMapper;
+
+	//@Autowired
+	DateUtils dateUtil;
+	
+	/**
+	 * 日志对象
+	 */
+	private static Logger log = LoggerFactory.getLogger(HomepageService.class);
+
+	/**
+	 * 向其它服务发送请求REST对象
+	 */
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	 /**
      * 1.搜索条件-全部接口
      *
      * @Author gp
@@ -34,49 +51,86 @@ public class HomepageService {
      */
     public List<Map<String, Object>> allSearch(String searchStr){
         List<Map<String, Object>> resList = new ArrayList<>();
-        List<Map<String, Object>> topicList = new ArrayList<>();
-        List<Map<String, Object>> reportList = new ArrayList<>();
+        List<Map<String, Object>> subjectList = new ArrayList<>();
+        List<Map<String, Object>> reportPPTList = new ArrayList<>();
         List<Map<String, Object>> kpiList = new ArrayList<>();
 
-        System.out.println("查询es的参数--------->" + searchStr);
-        //查询es
-        RestTemplate restTemplate = new RestTemplate();
-        Object res = restTemplate.postForObject("http://192.168.110.57:7070/es/explore", searchStr, Object.class);
-        List<Map<String, Object>>  esList = (List<Map<String, Object>>) res;
-        System.out.println("查询es的结果-------->" + esList);
-        //查询类型是全部，需要遍历所有的数据，查看它们的type是什么，送到相应的服务
-        for (Map<String, Object> esMap : esList){
+        log.info("查询es的参数--------->" + searchStr);
+        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
+        List<Map<String, Object>>  esList = restTemplate.postForObject("http://192.168.110.57:7070/es/explore", searchStr, List.class);
+        log.info("查询es的结果-------->" + esList);
+        //2.从数据库中查询当前系统所有搜索分类
+        //3.如果查询类型是全部，需要遍历所有的数据，根据分类id从相应的服务中查询数据
+        for(Map<String, Object> esMap : esList){
             String type = esMap.get("Type").toString();
-            if (type.equals("KPI_Name")){
+            if(type.equals("KPI_Name")){
                 kpiList.add(esMap);
             }else if (type.equals("Report_Name")){
-                reportList.add(esMap);
+                reportPPTList.add(esMap);
             }else if (type.equals("Topic_Name")){
-                topicList.add(esMap);
+                subjectList.add(esMap);
             }
         }
-        System.out.println("专题有-------->" + topicList);
-        System.out.println("报告有-------->" + reportList);
-        System.out.println("kpi有-------->" + kpiList);
-
-
-        return resList;
+        
+        log.info("kpi有-------->" + kpiList);
+        if(subjectList.size() > 0){
+        	resList.addAll(requestToKPI(kpiList));
+        }
+        
+        log.info("专题有-------->" + subjectList);
+        if(subjectList.size() > 0){
+        	resList.addAll(requestToSubject(subjectList));
+        }
+        
+        log.info("报告有-------->" + reportPPTList);
+        if(subjectList.size() > 0){
+        	resList.addAll(requestToReportPPT(reportPPTList));
+        }
+        //对返回结果依照ES的次序重新排序
+        return reOrder(esList, resList);
     }
+    
+    /**
+     * 对返回结果依照ES的次序重新排序 
+     * @param esList ES返回结果，自带次序
+     * @param resList 处理后的结果，无序
+     * @return 有序的结果
+     */
+    private List<Map<String, Object>> reOrder(List<Map<String, Object>> esList, List<Map<String, Object>> resList) {
+    	//遍历ES结果，再处理结果，如果id对应起来，则存入有序的结果
+    	return null;
+	}
 
-
-
-
-
-
-	@Autowired
-    HomepageMapper monthReportMapper;
-
-	//@Autowired
-	DateUtils dateUtil;
+	/**
+     * 向指标服务请求数据
+     * @param list
+     * @return
+     */
+    public List<Map<String, Object>> requestToKPI(List<Map<String, Object>> list){
+    	
+    	return null;
+    }
 	
-	private static Logger log = LoggerFactory.getLogger(HomepageService.class);
-
-	
+    /**
+     * 向专题服务请求数据
+     * @param list
+     * @return
+     */
+    public List<Map<String, Object>> requestToSubject(List<Map<String, Object>> list){
+    	
+    	return null;
+    }
+    
+    /**
+     * 向报告服务请求数据
+     * @param list
+     * @return
+     */
+    public List<Map<String, Object>> requestToReportPPT(List<Map<String, Object>> list){
+    	
+    	return null;
+    }
+    
 	/**
 	 * 1-1 查询条件
 	 * @param
