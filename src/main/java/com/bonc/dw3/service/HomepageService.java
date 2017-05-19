@@ -20,11 +20,54 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.bonc.dw3.common.datasource.DynamicDataSourceContextHolder;
 import com.bonc.dw3.common.util.DateUtils;
 import com.bonc.dw3.mapper.HomepageMapper;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @CrossOrigin(origins="*")
 public class HomepageService {
-	
+
+    /**
+     * 1.搜索条件-全部接口
+     *
+     * @Author gp
+     * @Date 2017/5/18
+     */
+    public List<Map<String, Object>> allSearch(String searchStr){
+        List<Map<String, Object>> resList = new ArrayList<>();
+        List<Map<String, Object>> topicList = new ArrayList<>();
+        List<Map<String, Object>> reportList = new ArrayList<>();
+        List<Map<String, Object>> kpiList = new ArrayList<>();
+
+        System.out.println("查询es的参数--------->" + searchStr);
+        //查询es
+        RestTemplate restTemplate = new RestTemplate();
+        Object res = restTemplate.postForObject("http://192.168.110.57:7070/es/explore", searchStr, Object.class);
+        List<Map<String, Object>>  esList = (List<Map<String, Object>>) res;
+        System.out.println("查询es的结果-------->" + esList);
+        //查询类型是全部，需要遍历所有的数据，查看它们的type是什么，送到相应的服务
+        for (Map<String, Object> esMap : esList){
+            String type = esMap.get("Type").toString();
+            if (type.equals("KPI_Name")){
+                kpiList.add(esMap);
+            }else if (type.equals("Report_Name")){
+                reportList.add(esMap);
+            }else if (type.equals("Topic_Name")){
+                topicList.add(esMap);
+            }
+        }
+        System.out.println("专题有-------->" + topicList);
+        System.out.println("报告有-------->" + reportList);
+        System.out.println("kpi有-------->" + kpiList);
+
+
+        return resList;
+    }
+
+
+
+
+
+
 	@Autowired
     HomepageMapper monthReportMapper;
 
