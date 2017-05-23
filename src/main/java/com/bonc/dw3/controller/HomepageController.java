@@ -27,7 +27,6 @@ public class HomepageController {
     @Autowired
     HomepageService homepageService;
 
-
     /**
      * 搜索接口-全部
      * @Parameter searchType 查询类型：-1.全部
@@ -42,11 +41,12 @@ public class HomepageController {
     @PostMapping("/search/all")
     public String search(@ApiParam("查询类型")@RequestParam("searchType")String searchType,
                          @ApiParam("查询关键词")@RequestParam("str")String str,
+                         @ApiParam("全部日月标识")@RequestParam("acctType")String acctType,
                          @ApiParam("分页起始")@RequestParam("startNum")String startNum,
                          @ApiParam("每一页记录条数")@RequestParam("num")String num,
                          Model model){
         //es查询参数处理
-        String paramStr = searchType + "," + str + "," + startNum + "," + num;
+        String paramStr = searchType + "," + str + "," + acctType +"," +startNum + "," + num;
         //查询es并拼接结果
         List<Map<String, Object>> allSearchList = homepageService.allSearch(paramStr);
 

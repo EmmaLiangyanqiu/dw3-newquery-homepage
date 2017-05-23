@@ -26,12 +26,6 @@ import org.springframework.web.client.RestTemplate;
 @CrossOrigin(origins="*")
 public class HomepageService {
 
-	@Autowired
-    HomepageMapper monthReportMapper;
-
-	//@Autowired
-	DateUtils dateUtil;
-	
 	/**
 	 * 日志对象
 	 */
@@ -42,7 +36,8 @@ public class HomepageService {
 	 */
 	@Autowired
 	private RestTemplate restTemplate;
-	
+
+
 	 /**
      * 1.搜索条件-全部接口
      *
@@ -57,10 +52,12 @@ public class HomepageService {
 
         log.info("查询es的参数--------->" + searchStr);
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        List<Map<String, Object>>  esList = restTemplate.postForObject("http://192.168.110.57:7070/es/explore", searchStr, List.class);
+        RestTemplate restTemplateTmp = new RestTemplate();
+        List<Map<String, Object>> esList= restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", searchStr, List.class);
         log.info("查询es的结果-------->" + esList);
         //2.从数据库中查询当前系统所有搜索分类
-        //3.如果查询类型是全部，需要遍历所有的数据，根据分类id从相应的服务中查询数据
+
+        //3.查询类型是全部，需要遍历所有的数据，根据分类id从相应的服务中查询数据
         for(Map<String, Object> esMap : esList){
             String type = esMap.get("Type").toString();
             if(type.equals("KPI_Name")){
@@ -73,31 +70,33 @@ public class HomepageService {
         }
         
         log.info("kpi有-------->" + kpiList);
-        if(subjectList.size() > 0){
+        log.info("专题有-------->" + subjectList);
+        log.info("报告有-------->" + reportPPTList);
+        if(kpiList.size() > 0){
         	resList.addAll(requestToKPI(kpiList));
         }
         
-        log.info("专题有-------->" + subjectList);
+        //log.info("专题有-------->" + subjectList);
         if(subjectList.size() > 0){
         	resList.addAll(requestToSubject(subjectList));
         }
         
-        log.info("报告有-------->" + reportPPTList);
-        if(subjectList.size() > 0){
+        //log.info("报告有-------->" + reportPPTList);
+        if(reportPPTList.size() > 0){
         	resList.addAll(requestToReportPPT(reportPPTList));
         }
+
         //对返回结果依照ES的次序重新排序
-        return reOrder(esList, resList);
+        return reOrder(resList);
     }
     
     /**
-     * 对返回结果依照ES的次序重新排序 
-     * @param esList ES返回结果，自带次序
-     * @param resList 处理后的结果，无序
+     * 对返回结果依照ES的次序重新排序
+     * @param resList 处理后的结果，带有ord字段，按ord字段排序
      * @return 有序的结果
      */
-    private List<Map<String, Object>> reOrder(List<Map<String, Object>> esList, List<Map<String, Object>> resList) {
-    	//遍历ES结果，再处理结果，如果id对应起来，则存入有序的结果
+    private List<Map<String, Object>> reOrder(List<Map<String, Object>> resList) {
+    	//按ord字段排序
     	return null;
 	}
 
@@ -107,7 +106,8 @@ public class HomepageService {
      * @return
      */
     public List<Map<String, Object>> requestToKPI(List<Map<String, Object>> list){
-    	
+
+
     	return null;
     }
 	
@@ -130,7 +130,31 @@ public class HomepageService {
     	
     	return null;
     }
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @Autowired
+    HomepageMapper monthReportMapper;
+
+    //@Autowired
+    DateUtils dateUtil;
+
+
 	/**
 	 * 1-1 查询条件
 	 * @param
