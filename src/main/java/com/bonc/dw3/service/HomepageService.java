@@ -108,6 +108,8 @@ public class HomepageService {
     public List<Map<String, Object>> requestToKPI(List<String> list){
 
 
+    	String result = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/select", list, String.class);
+    	log.info("result is "+ result);
     	return null;
     }
 	
