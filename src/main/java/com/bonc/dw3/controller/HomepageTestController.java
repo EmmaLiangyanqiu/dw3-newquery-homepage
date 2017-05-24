@@ -222,6 +222,7 @@ public class HomepageTestController {
                                                Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> map1 = new HashMap<>();
+
         map1.put("markType", "02");
         map1.put("ord", "1");
         map1.put("id", "2001");
