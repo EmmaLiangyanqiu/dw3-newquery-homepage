@@ -215,7 +215,7 @@ public class HomepageTestController {
     public List<Map<String, Object>> allSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
                                                @ApiParam("登陆令牌")@RequestParam("token")String token,
                                                @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                               @ApiParam("搜索内容")@RequestParam("str")String search,
+                                               @ApiParam("搜索内容")@RequestParam("search")String search,
                                                @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
                                                @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                                                @ApiParam("每一页记录条数")@RequestParam("num")String num,
@@ -308,12 +308,12 @@ public class HomepageTestController {
     public List<Map<String, Object>> indexSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
                                                  @ApiParam("登陆令牌")@RequestParam("token")String token,
                                                  @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                                 @ApiParam("搜索内容")@RequestParam("str")String search,
+                                                 @ApiParam("搜索内容")@RequestParam("search")String search,
                                                  @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                                                  @ApiParam("每一页记录条数")@RequestParam("num")String num,
                                                  @ApiParam("分类：全部日月标识")@RequestParam("dayOrmonth")String dayOrmonth,
-                                                 @ApiParam("地域")@RequestParam("dayOrmonth")String area,
-                                                 @ApiParam("日期")@RequestParam("dayOrmonth")String date,
+                                                 @ApiParam("地域")@RequestParam("area")String area,
+                                                 @ApiParam("日期")@RequestParam("date")String date,
                                                  Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> map1 = new HashMap<>();
@@ -470,7 +470,7 @@ public class HomepageTestController {
     public List<Map<String, Object>> specialSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
                                                    @ApiParam("登陆令牌")@RequestParam("token")String token,
                                                    @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                                   @ApiParam("搜索内容")@RequestParam("str")String search,
+                                                   @ApiParam("搜索内容")@RequestParam("search")String search,
                                                    @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
                                                    @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                                                    @ApiParam("每一页记录条数")@RequestParam("num")String num,
@@ -509,7 +509,7 @@ public class HomepageTestController {
     public List<Map<String, Object>> reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
                                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
                                                   @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                                  @ApiParam("搜索内容")@RequestParam("str")String search,
+                                                  @ApiParam("搜索内容")@RequestParam("search")String search,
                                                   @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                                                   @ApiParam("每一页记录条数")@RequestParam("num")String num,
                                                   Model model){
