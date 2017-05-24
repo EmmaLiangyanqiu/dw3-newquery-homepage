@@ -46,9 +46,9 @@ public class HomepageService {
      */
     public List<Map<String, Object>> allSearch(String searchStr){
         List<Map<String, Object>> resList = new ArrayList<>();
-        List<Map<String, Object>> subjectList = new ArrayList<>();
-        List<Map<String, Object>> reportPPTList = new ArrayList<>();
-        List<Map<String, Object>> kpiList = new ArrayList<>();
+        List<String> subjectList = new ArrayList<>();
+        List<String> reportPPTList = new ArrayList<>();
+        List<String> kpiList = new ArrayList<>();
 
         log.info("查询es的参数--------->" + searchStr);
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
@@ -59,13 +59,13 @@ public class HomepageService {
 
         //3.查询类型是全部，需要遍历所有的数据，根据分类id从相应的服务中查询数据
         for(Map<String, Object> esMap : esList){
-            String type = esMap.get("Type").toString();
-            if(type.equals("KPI_Name")){
-                kpiList.add(esMap);
-            }else if (type.equals("Report_Name")){
-                reportPPTList.add(esMap);
-            }else if (type.equals("Topic_Name")){
-                subjectList.add(esMap);
+            String type = esMap.get("type").toString();
+            if(type.equals("指标")){
+                kpiList.add(esMap.get("id").toString());
+            }else if (type.equals("报告")){
+                reportPPTList.add(esMap.get("id").toString());
+            }else if (type.equals("专题")){
+                subjectList.add(esMap.get("id").toString());
             }
         }
         
@@ -105,7 +105,7 @@ public class HomepageService {
      * @param list
      * @return
      */
-    public List<Map<String, Object>> requestToKPI(List<Map<String, Object>> list){
+    public List<Map<String, Object>> requestToKPI(List<String> list){
 
 
     	return null;
@@ -116,7 +116,7 @@ public class HomepageService {
      * @param list
      * @return
      */
-    public List<Map<String, Object>> requestToSubject(List<Map<String, Object>> list){
+    public List<Map<String, Object>> requestToSubject(List<String> list){
     	
     	return null;
     }
@@ -126,7 +126,7 @@ public class HomepageService {
      * @param list
      * @return
      */
-    public List<Map<String, Object>> requestToReportPPT(List<Map<String, Object>> list){
+    public List<Map<String, Object>> requestToReportPPT(List<String> list){
     	
     	return null;
     }

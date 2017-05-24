@@ -58,7 +58,7 @@ public class HomepageTestController {
                                    @ApiParam("登陆令牌")@RequestParam("token")String token,
                                    Model model){
         String[] title1 = {"01,移动业务计费收入,/indexDetails,0101", "02,4G业务计费收入,/indexDetails,0101"};
-        String[] a001 = {"01,移动业务用户类,/homePage,0101", "02,移动业务实用类,/homePage,0101"};
+        String[] a001 = {"01,移动业务用户类,/homePage,0101", "02,移动业务使用类,/homePage,0101"};
         String[] a002 = {"01,移动业务,/homePage,0101", "02,宽带业务,/homePage,0101"};
         String[] title2 = {"01,运营总览,/special,0101", "02,三大战役,/special,0101"};
         String[] b001 = {"01,运营概况,/special,0101", "02,移动业务,/special,0101"};
