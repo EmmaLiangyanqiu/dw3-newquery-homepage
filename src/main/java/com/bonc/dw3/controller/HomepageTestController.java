@@ -217,14 +217,14 @@ public class HomepageTestController {
                                                @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                                                @ApiParam("搜索内容")@RequestParam("str")String search,
                                                @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
-                                               @ApiParam("分页起始")@RequestParam("startNum")String numStart,
+                                               @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                                                @ApiParam("每一页记录条数")@RequestParam("num")String num,
                                                Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> map1 = new HashMap<>();
         map1.put("markType", "02");
         map1.put("ord", "1");
-        map1.put("id", "1001");
+        map1.put("id", "2001");
         map1.put("url", "http://ip:port/indexDetails/1001");
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("markName", "指标");
@@ -262,7 +262,7 @@ public class HomepageTestController {
         Map<String, Object> map2 = new HashMap<>();
         map2.put("markType", "03");
         map2.put("ord", "2");
-        map2.put("id", "2001");
+        map2.put("id", "3001");
         map2.put("url", "http://ip:port/indexDetails/2001");
         Map<String, Object> dataMap2 = new HashMap<>();
         dataMap2.put("src", "u97.png");
@@ -297,6 +297,248 @@ public class HomepageTestController {
     }
 
 
+    /**
+     * 6-2.搜索-指标搜索接口
+     *
+     * @Author gp
+     * @Date 2017/5/23
+     */
+    @ApiOperation("6-2.搜索-指标搜索接口")
+    @PostMapping("/indexSearch")
+    public List<Map<String, Object>> indexSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                                                 @ApiParam("登陆令牌")@RequestParam("token")String token,
+                                                 @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                                                 @ApiParam("搜索内容")@RequestParam("str")String search,
+                                                 @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                                                 @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                                                 @ApiParam("分类：全部日月标识")@RequestParam("dayOrmonth")String dayOrmonth,
+                                                 @ApiParam("地域")@RequestParam("dayOrmonth")String area,
+                                                 @ApiParam("日期")@RequestParam("dayOrmonth")String date,
+                                                 Model model){
+        List<Map<String, Object>> resList = new ArrayList<>();
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("indexName", "移动业务计费收入");
+        map1.put("id", "2005");
+        map1.put("url", "http://ip:port/indexDetails/2005");
+        map1.put("markType", "02");
+        map1.put("ord", "1");
+        List<Map<String, Object>> chartDataList = new ArrayList<>();
+
+        Map<String, Object> chartDataMap1 = new HashMap<>();
+        chartDataMap1.put("chartType", "line");
+        List<Integer> dataList = new ArrayList<>();
+        for (int i = 1; i < 8; i ++){
+            dataList.add(i);
+        }
+        chartDataMap1.put("data", dataList);
+        String[] a = {"4月30日","5月1日","5月2日","5月3日","5月4日","5月5日","5月6日"};
+        List<String> chartXList = new ArrayList<>();
+        for (String b : a){
+            chartXList.add(b);
+        }
+        chartDataMap1.put("chartX", chartXList);
+        chartDataList.add(chartDataMap1);
+
+        Map<String, Object> chartDataMap2 = new HashMap<>();
+        chartDataMap2.put("chartType", "monthBar");
+        chartDataMap2.put("unit", "万");
+        List<Integer> sequentialDataList = new ArrayList<>();
+        for (int i = 1; i < 13; i ++){
+            sequentialDataList.add(i);
+        }
+        chartDataMap2.put("sequentialData", sequentialDataList);
+        chartDataMap2.put("totalData", sequentialDataList);
+        List<String> chartXList1 = new ArrayList<>();
+        String[] a2 = {"6月","7月","8月","9月","10月","11月","12月","1月","2月","3月","4月","5月","6月"};
+        for (String b : a2){
+            chartXList1.add(b);
+        }
+        chartDataMap2.put("chartX", chartXList1);
+        chartDataList.add(chartDataMap2);
+
+        Map<String, Object> chartDataMap3 = new HashMap<>();
+        chartDataMap3.put("chartType", "cityBar");
+        chartDataMap3.put("unit", "万");
+        chartDataMap3.put("sequentialData", sequentialDataList);
+        chartDataMap3.put("totalData", sequentialDataList);
+        chartDataMap3.put("chartx", chartXList1);
+        chartDataList.add(chartDataMap3);
+
+        Map<String, Object> chartDataMap4 = new HashMap<>();
+        chartDataMap4.put("chartType", "pie");
+        chartDataMap4.put("unit", "万");
+        List<Map<String, Object>> dataList1 = new ArrayList<>();
+        String[] a3 = {"流量王A套餐发展用户,182", "日租卡套餐发展用户,34",
+                "其他套餐发展用户,260", "2I2C业务发展用户,102"};
+        for (String b : a3){
+            String[] s = b.split(",");
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", s[0]);
+            map.put("value", s[1]);
+            dataList1.add(map);
+        }
+        chartDataMap4.put("data", dataList1);
+        chartDataList.add(chartDataMap4);
+
+        Map<String, Object> chartDataMap5 = new HashMap<>();
+        chartDataMap5.put("chartType", "cityRank");
+        chartDataMap5.put("unit", "万");
+        List<String> tableTitleList = new ArrayList<>();
+        String[] a4 = {"排名","城市","月累","环比"};
+        for (String b : a4){
+            tableTitleList.add(b);
+        }
+        chartDataMap5.put("tableTitle", tableTitleList);
+        List<Map<String, Object>> tableValueList = new ArrayList<>();
+        List<String> value1 = new ArrayList<>();
+        value1.add("123456789");
+        value1.add("12%");
+        String[] a5 = {"1,北京", "2,上海"};
+        for (String b : a5){
+            String s[] = b.split(",");
+            Map<String, Object> map = new HashMap<>();
+            map.put("rank", s[0]);
+            map.put("cityName", s[1]);
+            map.put("value", value1);
+            tableValueList.add(map);
+        }
+
+        chartDataMap5.put("tableValue", tableValueList);
+        chartDataList.add(chartDataMap5);
+        map1.put("chartData", chartDataList);
+
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("indexName", "移动业务计费收入");
+        map2.put("id", "2006");
+        map2.put("url", "http://ip:port/indexDetails/2006");
+        map2.put("markType", "02");
+        map2.put("ord", "2");
+        map2.put("markName", "指标");
+        map2.put("dayOrMonth", "日");
+        map2.put("area", "全国");
+        map2.put("date", "2017年5月10日");
+        String[] a6 = {"当日值","本月累计","同比","环比"};
+        List<String> dataNameList = new ArrayList<>();
+        for (String b : a6){
+            dataNameList.add(b);
+        }
+        map2.put("dataName", dataNameList);
+        String[] a7 = {"1234","1234","56%","12%"};
+        List<String> dataValueList = new ArrayList<>();
+        for(String b : a7){
+            dataValueList.add(b);
+        }
+        map2.put("dataValue", dataValueList);
+        map2.put("chartType", "line");
+        map2.put("unit", "万");
+        map2.put("data", dataList);
+        map2.put("chartX", chartXList);
+
+        Map<String, Object> map3 = new HashMap<>();
+        map3.put("indexName", "4g业务计费收入");
+        map3.put("id", "2007");
+        map3.put("url", "http://ip:port/indexDetails/2007");
+        map3.put("markType", "02");
+        map3.put("ord", "3");
+        map3.put("markName", "指标");
+        map3.put("dayOrMonth", "月");
+        map3.put("area", "全国");
+        map3.put("date", "2017年5月");
+        map3.put("dataName", dataNameList);
+        map3.put("dataValue", dataValueList);
+        map3.put("chartType", "line");
+        map3.put("unit", "千万");
+        map3.put("data", dataList);
+        map3.put("chartX", chartXList);
+
+        resList.add(map1);
+        resList.add(map2);
+        resList.add(map3);
+
+        return resList;
+    }
+
+
+    /**
+     * 6-3.搜索-专题搜索接口
+     *
+     * @Author gp
+     * @Date 2017/5/23
+     */
+    @ApiOperation("6-3.搜索-专题搜索接口")
+    @PostMapping("/specialSearch")
+    public List<Map<String, Object>> specialSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
+                                                   @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                                                   @ApiParam("搜索内容")@RequestParam("str")String search,
+                                                   @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
+                                                   @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                                                   @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                                                   Model model){
+        List<Map<String, Object>> resList = new ArrayList<>();
+        String[] a = {"u977.png|重点产品攻坚行动日报表|1|3001|http://ip:port/specialReport/3001|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要日指标展示。|专题|全部",
+                      "u97.png|4G用户专题|2|3002|http://ip:port/specialReport/3002|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要月指标展示|专题|全部",
+                      "u999.png|重点产品攻坚行动月考核|3|3003|http://ip:port/specialReport/3003|重点产品有效发展行动计划通报内容，包括各省考核指标的评分结果及完成情况。|专题|全部",
+                      "u1010.png|重点产品攻坚行动月报表|4|3004|http://ip:port/specialReport/3004|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要月指标展示。|专题|全部",
+                      "u9778.png|重点产品攻坚行动日报表|5|3005|http://ip:port/specialReport/3005|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要日指标展示。|专题|全部"};
+        for (int i = 0; i < a.length; i ++){
+            String[] s = a[i].split("\\|");
+            Map<String, Object> map = new HashMap<>();
+            map.put("src", s[0]);
+            map.put("title", s[1]);
+            map.put("ord", s[2]);
+            map.put("id", s[3]);
+            map.put("url", s[4]);
+            map.put("content", s[5]);
+            map.put("type", s[6]);
+            map.put("tabName", s[7]);
+            resList.add(map);
+        }
+        return resList;
+    }
+
+
+    /**
+     * 6-4.搜索-报告搜索接口
+     *
+     * @Author gp
+     * @Date 2017/5/23
+     */
+    @ApiOperation("6-4.搜索-报告搜索接口")
+    @PostMapping("/reportSearch")
+    public List<Map<String, Object>> reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                                                  @ApiParam("登陆令牌")@RequestParam("token")String token,
+                                                  @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                                                  @ApiParam("搜索内容")@RequestParam("str")String search,
+                                                  @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                                                  @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                                                  Model model){
+        List<Map<String, Object>> resList = new ArrayList<>();
+        String[] a = {"2G终端入网质态分析|1|4001|http://ip:port/Report/4001|报告|月|张三|2017年5月10日",
+                      "渠道成本效益分析|2|4002|http://ip:port/Report/4002|报告|月|李四|2017年5月10日",
+                      "移动用户离网分析|3|4003|http://ip:port/Report/4003|报告|月|王五|2017年5月10日",
+                      "融合业务发展因素分析|4|4004|http://ip:port/Report/4004|报告|月|赵六|2017年5月10日"};
+        String[] a1 = {"img1","img2","img3","img4"};
+        List<String> imgList = new ArrayList<>();
+        for (String b : a1){
+            imgList.add(b);
+        }
+        for (String b : a){
+            String[] s = b.split("\\|");
+            Map<String, Object> map = new HashMap<>();
+            map.put("title", s[0]);
+            map.put("ord", s[1]);
+            map.put("id", s[2]);
+            map.put("url", s[3]);
+            map.put("img", imgList);
+            map.put("type", s[4]);
+            map.put("tabName", s[5]);
+            map.put("issue", s[6]);
+            map.put("issueTime", s[7]);
+            resList.add(map);
+        }
+        return resList;
+    }
 
 
 
