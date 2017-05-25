@@ -1,6 +1,5 @@
 package com.bonc.dw3.controller;
 
-import freemarker.ext.beans.HashAdapter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -12,7 +11,7 @@ import java.util.*;
 
 @Api(value = "首页查询-2", description ="示例数据")
 @CrossOrigin(origins ="*")
-@RestController
+@Controller
 @RequestMapping("/test/HomePage")
 public class HomepageTestController {
 
@@ -24,9 +23,9 @@ public class HomepageTestController {
      */
     @ApiOperation("1.头部栏组件接口")
     @PostMapping("/headerSelect")
-    public Map<String, Object> headerSelect(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                            @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                            Model model){
+    public String headerSelect(@ApiParam("用户id")@RequestParam("userId")String userId,
+                               @ApiParam("登陆令牌")@RequestParam("token")String token,
+                               Model model){
         String[] a = {"01,综合", "02,指标", "03,专题", "04,报告"};
         List<Map<String, Object>> selectList = new ArrayList<>();
         Map<String, Object> resMap = new HashMap<>();
@@ -39,10 +38,10 @@ public class HomepageTestController {
         }
         resMap.put("default", selectList.get(0));
         resMap.put("selectList", selectList);
-        return resMap;
+        //return resMap;
         //System.out.println(resMap);
-        //model.addAttribute("resMap", resMap);
-        //return "headerSelect";
+        model.addAttribute("resMap", resMap);
+        return "headerSelect";
     }
 
 
@@ -54,9 +53,9 @@ public class HomepageTestController {
      */
     @ApiOperation("2.菜单树组件接口")
     @PostMapping("/nav")
-    public Map<String, Object> nav(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                   Model model){
+    public String nav(@ApiParam("用户id")@RequestParam("userId")String userId,
+                      @ApiParam("登陆令牌")@RequestParam("token")String token,
+                      Model model){
         String[] title1 = {"01,移动业务计费收入,/indexDetails,0101", "02,4G业务计费收入,/indexDetails,0101"};
         String[] a001 = {"01,移动业务用户类,/homePage,0101", "02,移动业务使用类,/homePage,0101"};
         String[] a002 = {"01,移动业务,/homePage,0101", "02,宽带业务,/homePage,0101"};
@@ -76,7 +75,11 @@ public class HomepageTestController {
         map1.put("name", "指标");
         map1.put("url", "/index");
         map1.put("imgName", "comp");
-        map1.put("titleList", titleList1);
+        Map<String, Object> titleMap1 = new HashMap<>();
+        titleMap1.put("titleClassId", "001");
+        titleMap1.put("titleClassName", "基础指标");
+        titleMap1.put("list", titleList1);
+        map1.put("titleList", titleMap1);
         Map<String, Object> nodeMap1 = new HashMap<>();
         nodeMap1.put("classId", "001");
         nodeMap1.put("className", "基础指标");
@@ -95,7 +98,11 @@ public class HomepageTestController {
         map2.put("name", "专题");
         map2.put("url", "/special");
         map2.put("imgName", "special");
-        map2.put("titleList", titleList2);
+        Map<String, Object> titleMap2 = new HashMap<>();
+        titleMap2.put("titleClassId", "001");
+        titleMap2.put("titleClassName", "基础业务");
+        titleMap2.put("list", titleList2);
+        map2.put("titleList", titleMap2);
         Map<String, Object> nodeMap21 = new HashMap<>();
         nodeMap21.put("classId", "001");
         nodeMap21.put("className", "基础业务");
@@ -113,7 +120,9 @@ public class HomepageTestController {
         svgList.add(map2);
         resMap.put("svgList", svgList);
         //System.out.println(resMap);
-        return resMap;
+        //return resMap;
+        model.addAttribute("resMap", resMap);
+        return "nav";
     }
 
 
@@ -125,10 +134,10 @@ public class HomepageTestController {
      */
     @ApiOperation("3.模块选项卡接口")
     @PostMapping("/moduleTab")
-    public List<Map<String, Object>> moduleTab(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                               @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                               @ApiParam("类型id")@RequestParam("markType")String markType,
-                                               Model model){
+    public String moduleTab(@ApiParam("用户id")@RequestParam("userId")String userId,
+                            @ApiParam("登陆令牌")@RequestParam("token")String token,
+                            @ApiParam("类型id")@RequestParam("markType")String markType,
+                            Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         String[] aaa = {"0101,全部", "0102,日","0103,月"};
         for (int i = 0; i < aaa.length; i ++){
@@ -138,7 +147,9 @@ public class HomepageTestController {
             map.put("tabName", a[1]);
             resList.add(map);
         }
-        return resList;
+        //return resList;
+        model.addAttribute("resList", resList);
+        return "moduleTab";
     }
 
 
@@ -151,9 +162,9 @@ public class HomepageTestController {
      */
     @ApiOperation("4-1.近期访问-筛选分类接口")
     @PostMapping("/recentVisit")
-    public Map<String, Object> recentVisit(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                           @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                           Model model){
+    public String recentVisit(@ApiParam("用户id")@RequestParam("userId")String userId,
+                              @ApiParam("登陆令牌")@RequestParam("token")String token,
+                              Model model){
         Map<String, Object> resMap = new HashMap<>();
         String[] a = {"01,综合,/homePage", "02,指标,/index", "03,专题,/special", "04,报告,/report"};
         List<Map<String, Object>> selectList = new ArrayList<>();
@@ -168,7 +179,9 @@ public class HomepageTestController {
         resMap.put("default", selectList.get(0));
         resMap.put("selectList", selectList);
 
-        return resMap;
+        //return resMap;
+        model.addAttribute("resMap", resMap);
+        return "recentVisit";
     }
 
 
@@ -180,10 +193,10 @@ public class HomepageTestController {
      */
     @ApiOperation("4-2.近期访问-访问内容接口")
     @PostMapping("/recentVisitList")
-    public Map<String, Object> recentVisitList(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                               @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                               @ApiParam("类型id")@RequestParam("markType")String markType,
-                                               Model model){
+    public String recentVisitList(@ApiParam("用户id")@RequestParam("userId")String userId,
+                                  @ApiParam("登陆令牌")@RequestParam("token")String token,
+                                  @ApiParam("类型id")@RequestParam("markType")String markType,
+                                  Model model){
         Map<String, Object> resMap = new HashMap<>();
         String[] a = {"专题,301,线下实体渠道发展用户,/special,0101",
                       "指标,201,20M及以上速率发展用户数,/index,0101",
@@ -200,7 +213,9 @@ public class HomepageTestController {
             recentVisitList.add(map);
         }
         resMap.put("recentVisitList", recentVisitList);
-        return resMap;
+        //return resMap;
+        model.addAttribute("resMap", resMap);
+        return "recentVisitList";
     }
 
 
@@ -212,7 +227,7 @@ public class HomepageTestController {
      */
     @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
-    public List<Map<String, Object>> allSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String allSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
                                                @ApiParam("登陆令牌")@RequestParam("token")String token,
                                                @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                                                @ApiParam("搜索内容")@RequestParam("search")String search,
@@ -220,6 +235,7 @@ public class HomepageTestController {
                                                @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                                                @ApiParam("每一页记录条数")@RequestParam("num")String num,
                                                Model model){
+        Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> map1 = new HashMap<>();
 
@@ -293,8 +309,11 @@ public class HomepageTestController {
         dataMap3.put("img", imgList);
         map3.put("data", dataMap3);
         resList.add(map3);
-
-        return resList;
+        resMap.put("data", resList);
+        resMap.put("nextFlag", "0");
+        //return resList;
+        model.addAttribute("resMap", resMap);
+        return "allSearch";
     }
 
 

@@ -89,6 +89,21 @@ public class HomepageService {
         //对返回结果依照ES的次序重新排序
         return reOrder(resList);
     }
+
+    /**
+     * 2.近期访问接口
+     *
+     * @Author gp
+     * @Date 2017/5/25
+     */
+    public Map<String, Object> recentVisit(String paramStr){
+        log.info("查询日志的参数-------->" + paramStr);
+        RestTemplate restTemplateTmp = new RestTemplate();
+        Map<String, Object> recentVisitMap = restTemplateTmp.postForObject("http://192.168.110.86:9981/es/fetch", paramStr, Map.class);
+        log.info("查询日志的结果-------->" + recentVisitMap);
+        return recentVisitMap;
+    }
+
     
     /**
      * 对返回结果依照ES的次序重新排序

@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Api(value = "首页查询-1", description ="测试")
 @CrossOrigin(origins ="*")
@@ -55,6 +52,22 @@ public class HomepageController {
     }
 
 
+    /**
+     * 2.近期访问接口
+     *
+     * @Author gp
+     * @Date 2017/5/25
+     */
+    @ApiOperation("近期访问接口")
+    @PostMapping("/recentVisit")
+    public String recentVisitList(@ApiParam("用户ID")@RequestParam("userId")String userId,
+                                  @ApiParam("查询类型指标专题报告")@RequestParam("selectId")String selectId,
+                                  Model model){
+        String paramStr = userId + "," + selectId;
+        Map<String, Object> recentVisitMap = homepageService.recentVisit(paramStr);
+        model.addAttribute("resMap", recentVisitMap);
+        return "recentVisitList";
+    }
 
 
 
