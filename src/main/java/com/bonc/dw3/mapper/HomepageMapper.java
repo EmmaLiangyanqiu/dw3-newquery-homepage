@@ -2,6 +2,7 @@ package com.bonc.dw3.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -10,6 +11,82 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @Mapper
 @CrossOrigin( origins="*")
 public interface HomepageMapper {
+
+    /**
+     * 1.头部栏组件
+     *
+     * @Author gp
+     * @Date 2017/5/27
+     */
+    List<Map<String, String>> headerSelect();
+
+
+    /**
+     * 2-1.菜单树组件接口：根据用户查找他的roleid
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    String selectRoleByUserId(String userId);
+
+    /**
+     * 2-2.菜单树组件接口：根据roleList查找用户的大部分的menuId
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    List<String> selectMostMenu(@Param("roleList") String[] roleList);
+
+    /**
+     * 2-3.菜单树组件接口：根据menuList查找用户的全部的menu
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    List<Map<String,String>> selectAllMenu(@Param("menuList") Set<String> menuList);
+
+    /**
+     * 2-4.菜单树接口：根据userId查询用户的rolein和roleout
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    Map<String,String> selectRoleInOut(String userId);
+
+
+    /**
+     * 3.模块选项卡接口
+     * @Parameter markType 模块类型
+     *
+     * @Author gp
+     * @Date 2017/5/27
+     */
+    List<Map<String, String>> moduleTab(String markType);
+
+
+    /**
+     * 4-1.近期访问接口：筛选列表接口
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    List<Map<String, String>> recentVisit();
+
+
+    /**
+     * 根据typeId查询跳转的url
+     *
+     * @Author gp
+     * @Date 2017/5/31
+     */
+    String getUrlViaTypeId(String typeId);
+
+
+
+
+
+
+
 	/**
 	 * 查询条件
 	 * @return
@@ -79,7 +156,7 @@ public interface HomepageMapper {
 	
 	/**
 	 * 省份下钻地势树
-	 * @param prov
+	 * @param
 	 * @param city
 	 * @param kid
 	 * @return

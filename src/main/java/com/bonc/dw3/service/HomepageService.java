@@ -1,15 +1,14 @@
 package com.bonc.dw3.service;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.bonc.dw3.common.thread.MyRunable;
+import freemarker.ext.beans.HashAdapter;
+import io.swagger.models.auth.In;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,877 +22,369 @@ import com.bonc.dw3.mapper.HomepageMapper;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 public class HomepageService {
 
-	/**
-	 * 日志对象
-	 */
-	private static Logger log = LoggerFactory.getLogger(HomepageService.class);
+    /**
+     * 日志对象
+     */
+    private static Logger log = LoggerFactory.getLogger(HomepageService.class);
 
-	/**
-	 * 向其它服务发送请求REST对象
-	 */
-	@Autowired
-	private RestTemplate restTemplate;
+    /**
+     * 向其它服务发送请求REST对象
+     */
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    HomepageMapper homepageMapper;
 
 
-	 /**
-     * 1.搜索条件-全部接口
+    /**
+     * 1.头部栏组件接口
+     *
+     * @Author gp
+     * @Date 2017/5/27
+     */
+    public Map<String, Object> headerSelect() {
+        Map<String, Object> resMap = new HashMap<>();
+        List<Map<String, String>> resList = homepageMapper.headerSelect();
+        resMap.put("default", resList.get(0));
+        resMap.put("selectList", resList);
+        System.out.println(resMap);
+        return resMap;
+    }
+
+
+    /**
+     * 2.菜单树组件接口
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    public List<Map<String, String>> getAllMenu(String userId) {
+        String roleId = homepageMapper.selectRoleByUserId(userId);
+        String[] roleList = roleId.split(",");
+        List<String> mostMenu = homepageMapper.selectMostMenu(roleList);
+        Map<String, String> inAndOut = homepageMapper.selectRoleInOut(userId);
+        String[] inMenu = inAndOut.get("rolein").split(",");
+        String[] outMenu = inAndOut.get("roleout").split(",");
+        Set<String> menuSet = new HashSet<>(mostMenu);
+        for (String s : inMenu) {
+            menuSet.add(s);
+        }
+        for (String s : outMenu) {
+            menuSet.remove(s);
+        }
+        List<Map<String, String>> result = homepageMapper.selectAllMenu(menuSet);
+        System.out.println("result------>" + result);
+        return result;
+    }
+
+
+    /**
+     * 3.模块选项卡接口
+     *
+     * @Parameter markType 模块类型
+     * @Author gp
+     * @Date 2017/5/27
+     */
+    public List<Map<String, String>> moduleTab(String markType) {
+        List<Map<String, String>> resList = homepageMapper.moduleTab(markType);
+        return resList;
+    }
+
+
+    /**
+     * 4-1.近期访问接口：筛选列表接口
+     *
+     * @Author gp
+     * @Date 2017/5/27
+     */
+    public Map<String, Object> recentVisit() {
+        Map<String, Object> resMap = new HashMap<>();
+        List<Map<String, String>> resList = homepageMapper.recentVisit();
+        resMap.put("default", resList.get(0));
+        resMap.put("selectList", resList);
+        System.out.println(resMap);
+        return resMap;
+    }
+
+    /**
+     * 4-2.近期访问接口：近期访问列表
+     *
+     * @Author gp
+     * @Date 2017/5/25
+     */
+    public Map<String, Object> recentVisitList(String paramStr) {
+        RestTemplate restTemplateTmp = new RestTemplate();
+        Map<String, Object> recentVisitMap = restTemplateTmp.postForObject("http://192.168.110.57:9981/es/fetch", paramStr, Map.class);
+        return recentVisitMap;
+    }
+
+
+    /**
+     * 6-1.搜索：全部接口
      *
      * @Author gp
      * @Date 2017/5/18
      */
-    public List<Map<String, Object>> allSearch(String searchStr){
+    public List<Map<String, Object>> allSearch(String searchStr, String numStart, String num) {
+        Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> resList = new ArrayList<>();
-        List<String> subjectList = new ArrayList<>();
-        List<String> reportPPTList = new ArrayList<>();
-        List<String> kpiList = new ArrayList<>();
+        String subjectStr = "";
+        String reportPPTStr = "";
+        String kpiStr = "";
+        String nextFlag = "";
 
-        log.info("查询es的参数--------->" + searchStr);
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        List<Map<String, Object>> esList= restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", searchStr, List.class);
-        log.info("查询es的结果-------->" + esList);
-        //2.从数据库中查询当前系统所有搜索分类
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", searchStr, Map.class);
+        System.out.println("查询es的参数--------->" + searchStr);
+        System.out.println("查询es的结果-------->" + esMap);
+
+        //2.判断是否还有下一页数据
+        //es查询到的记录的总条数
+        int esCount = Integer.parseInt(esMap.get("count").toString());
+        //前端显示的总条数
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
+        if (count < esCount) {
+            nextFlag = "1";
+        } else {
+            nextFlag = "0";
+        }
 
         //3.查询类型是全部，需要遍历所有的数据，根据分类id从相应的服务中查询数据
-        for(Map<String, Object> esMap : esList){
-            String type = esMap.get("type").toString();
-            if(type.equals("指标")){
-                kpiList.add(esMap.get("id").toString());
-            }else if (type.equals("报告")){
-                reportPPTList.add(esMap.get("id").toString());
-            }else if (type.equals("专题")){
-                subjectList.add(esMap.get("id").toString());
+        List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        for (Map<String, Object> map : esList) {
+            String type = map.get("typeId").toString();
+            //type=1指标；3报告；2专题
+            if (type.equals("1")) {
+                //kpiStr为空时，拼接字符串不要逗号
+                if (kpiStr.equals("")) {
+                    kpiStr = map.get("id").toString();
+                } else {
+                    kpiStr = kpiStr + "," + map.get("id");
+                }
+            } else if (type.equals("3")) {
+                if (reportPPTStr.equals("")) {
+                    reportPPTStr = map.get("id").toString();
+                } else {
+                    reportPPTStr = reportPPTStr + "," + map.get("id");
+                }
+            } else if (type.equals("2")) {
+                if (subjectStr.equals("")) {
+                    subjectStr = map.get("id").toString();
+                } else {
+                    subjectStr = subjectStr + "," + map.get("id");
+                }
             }
         }
-        
-        log.info("kpi有-------->" + kpiList);
-        log.info("专题有-------->" + subjectList);
-        log.info("报告有-------->" + reportPPTList);
-        if(kpiList.size() > 0){
-        	resList.addAll(requestToKPI(kpiList));
+        System.out.println("kpiStr-------->" + kpiStr);
+        System.out.println("专题有-------->" + subjectStr);
+        System.out.println("报告有-------->" + reportPPTStr);
+
+        //4.多线程分别请求别的服务拿到详细的数据
+        //参数处理，如果参数为""时，为了zuul不报错，需要传参为no让具体的服务直接返回空list
+        if (kpiStr.equals("")) {
+            kpiStr = "no";
+            System.out.println("es的查询结果中没有指标！！");
+        } else {
+            kpiStr = "-1,-1," + kpiStr;
         }
-        
+        if (subjectStr.equals("")){
+            subjectStr = "no";
+        }
+        if (reportPPTStr.equals("")){
+            reportPPTStr = "no";
+        }
+        MyRunable kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/receiveKpi", kpiStr);
+        Thread kpiThread = new Thread(kpiRunable);
+        kpiThread.start();
+        //请求报告服务
+        reportPPTStr = "";
+        MyRunable reportRunable = new MyRunable(restTemplateTmp, "http://192.168.110.57:7071/pptReportForHomepage/info", reportPPTStr);
+        Thread reportThread = new Thread(reportRunable);
+        reportThread.start();
+        //请求专题服务
+        subjectStr = "";
+        MyRunable subjectRunable = new MyRunable(restTemplateTmp, "http://192.168.110.57:7071/specialForHomepage/icon", subjectStr);
+        Thread subjectThread = new Thread(subjectRunable);
+        subjectThread.start();
+        try {
+            kpiThread.join();
+            reportThread.join();
+            subjectThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //多线程拿到的所有数据
+        List<Map<String, Object>> kpiResult = (List<Map<String, Object>>) kpiRunable.result;
+        System.out.println("指标子节点返回:" + kpiResult);
+        List<Map<String, Object>> reportResult = (List<Map<String, Object>>) reportRunable.result;
+        System.out.println("报告服务返回:" + reportResult);
+        List<Map<String, Object>> subjectResult = (List<Map<String, Object>>) subjectRunable.result;
+        System.out.println("专题服务返回:" + subjectResult);
+
+        /*if(!kpiStr.equals("")){
+            resList.addAll(requestToKPI(kpiStr));
+        }*/
+
         //log.info("专题有-------->" + subjectList);
-        if(subjectList.size() > 0){
+        /*if(subjectList.size() > 0){
         	resList.addAll(requestToSubject(subjectList));
-        }
-        
+        }*/
+
         //log.info("报告有-------->" + reportPPTList);
-        if(reportPPTList.size() > 0){
+        /*if(reportPPTList.size() > 0){
         	resList.addAll(requestToReportPPT(reportPPTList));
-        }
+        }*/
 
         //对返回结果依照ES的次序重新排序
         return reOrder(resList);
     }
 
+
     /**
-     * 2.近期访问接口
+     * 6-2.搜索：指标接口
      *
      * @Author gp
-     * @Date 2017/5/25
+     * @Date 2017/5/31
      */
-    public Map<String, Object> recentVisit(String paramStr){
-        log.info("查询日志的参数-------->" + paramStr);
-        RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> recentVisitMap = restTemplateTmp.postForObject("http://192.168.110.86:9981/es/fetch", paramStr, Map.class);
-        log.info("查询日志的结果-------->" + recentVisitMap);
-        return recentVisitMap;
-    }
 
-    
+
+
+
+
+
+
+
+
     /**
      * 对返回结果依照ES的次序重新排序
+     *
      * @param resList 处理后的结果，带有ord字段，按ord字段排序
      * @return 有序的结果
      */
     private List<Map<String, Object>> reOrder(List<Map<String, Object>> resList) {
-    	//按ord字段排序
-    	return null;
-	}
+        //按ord字段排序
+        return null;
+    }
 
-	/**
+    /**
      * 向指标服务请求数据
-     * @param list
+     *
      * @return
      */
-    public List<Map<String, Object>> requestToKPI(List<String> list){
-    	String result = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/select", list, String.class);
-    	log.info("result is "+ result);
-    	return null;
+    public List<Map<String, Object>> requestToKPI(String kpiStr) {
+        String result = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/select", kpiStr, String.class);
+        log.info("result is " + result);
+        return null;
     }
-	
+
     /**
      * 向专题服务请求数据
+     *
      * @param list
      * @return
      */
-    public List<Map<String, Object>> requestToSubject(List<String> list){
-    	
-    	return null;
+    public List<Map<String, Object>> requestToSubject(List<String> list) {
+
+        return null;
     }
-    
+
     /**
      * 向报告服务请求数据
+     *
      * @param list
      * @return
      */
-    public List<Map<String, Object>> requestToReportPPT(List<String> list){
-    	
-    	return null;
+    public List<Map<String, Object>> requestToReportPPT(List<String> list) {
+
+        return null;
     }
 
 
+    /**
+     * 6-3.搜索：专题接口
+     *
+     * @Author gp
+     * @Date 2017/5/31
+     */
+    public Map<String,Object> specialSearch(String paramStr, String numStart, String num) {
+        Map<String, Object> resMap = new HashMap<>();
+        List<Map<String, Object>> data = new ArrayList<>();
+        String nextFlag = "";
+        String specialStr = "";
+        String url = "";
 
+        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
+        RestTemplate restTemplateTmp = new RestTemplate();
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
+        System.out.println("查询es的参数--------->" + paramStr);
+        System.out.println("查询es的结果-------->" + esMap);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @Autowired
-    HomepageMapper monthReportMapper;
-
-    //@Autowired
-    DateUtils dateUtil;
-
-
-	/**
-	 * 1-1 查询条件
-	 * @param
-	 */
-	public List<Map<String,Object>> select(){
-		List<Map<String,String>> selectList = monthReportMapper.select();
-		//循环遍历查询结果selectList，找到唯一的tid（父id），写进keyList里
-		List<String> keyList = new ArrayList<String>();
-		for(Map<String,String> map : selectList){
-			boolean flag = false;//每循环出一个map，都将flag值设为false，表示ksyList里面没有该值
-			if(null!=keyList&&keyList.size()>0){
-				for(String key:keyList){
-					if(key.equals(map.get("TID"))){
-						flag=true;
-						break;
-					}
-				}
-				//没有该值，存进去
-				if(flag==false){
-					keyList.add(map.get("TID"));	
-					}
-			}
-			else{
-				keyList.add(map.get("TID"));
-			}
-		}
-		List<Map<String,Object>> resList = new ArrayList<Map<String,Object>>();
-		//处理：循环遍历keyList，将相同父id的查询条件放进一个map里
-		for(String tid:keyList){
-			Map<String,Object> selectMap = new HashMap<String,Object>();
-			selectMap.put("tid", tid);
-		    List<Map<String,String>> dataList = new ArrayList<Map<String,String>>();
-			for(Map<String,String> paramMap: selectList){
-				if(paramMap.get("TID").equals(tid)){
-					Map<String,String> dataMap = new HashMap<String,String>();
-					dataMap.put("id",paramMap.get("ID"));
-					dataMap.put("text", paramMap.get("TEXT"));
-					dataList.add(dataMap);
-					selectMap.put("tname", paramMap.get("TNAME"));
-				}
-			}
-			selectMap.put("data", dataList);
-			resList.add(selectMap);
-		}
-		return resList;
-	}
-	
-	/**
-	 * 1-2 指标数据接口
-	 * @param area
-	 * @param prov
-	 * @param city
-	 * @param client
-	 * @param channel
-	 * @param contract
-	 * @param date
-	 * @return map，包括指标数据和对应列名称
-	 * @throws ParseException
-	 */
-	public Map<String,Object> kpiData(String area,String prov,String city,List<String> client,
-			List<String> channel,List<String> contract,String date) throws ParseException{
-		Map<String, Object> paramMap = processParam(area, prov, city, client, channel, contract, date,null,null,null);
-        Map<String,Object> kpiMap = new HashMap<String,Object>();
-        
-        //表头	
-      	List<String> titleList = new LinkedList<String>();
-      	titleList.addAll(monthReportMapper.title()); 
-      	kpiMap.put("title", titleList);
-      	
-        List<Map<String,Object>> dataList = new ArrayList<>();
-        //1、获取指标树
-        List<Map<String,Object>> kpiTreeList = monthReportMapper.selectKpiTree();
-        //2、获取基础数据
-        DynamicDataSourceContextHolder.setDataSourceType("kylin");
-        List<Map<String,Object>> mDataList = monthReportMapper.selectDataByKylin(paramMap);
-        DynamicDataSourceContextHolder.clearDataSourceType();
-        //3、组合树结构和数据
-        for(Map<String,Object> kpiTree : kpiTreeList){
-        	String kpiCode = (String) kpiTree.get("KPICODE");
-        	if(StringUtils.isBlank(kpiCode)){
-        		//输出空结构:将数据表的4个值写进map里
-        		dataList.add(blankExt(kpiTree));
-        	}else{
-        		//flag为0表示没有在数据表找到对应的kpicode
-        		int flag =0;
-        		for(Map<String,Object> mData :mDataList){
-        			if(kpiCode.equals(mData.get("KPI_CODE"))){
-        				//处理输出数据
-        				dataList.add(dealData(kpiTree,mData,date));
-        				mDataList.remove(mData);
-        				flag = 1;
-        				break;
-        			}
-        		}
-        		if(flag==0){
-        			dataList.add(blankExt(kpiTree));
-        		}
-        	}
+        //2.判断是否还有下一页数据
+        //es查询到的记录的总条数
+        int esCount = Integer.parseInt(esMap.get("count").toString());
+        //前端显示的总条数
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
+        if (count < esCount) {
+            nextFlag = "1";
+        } else {
+            nextFlag = "0";
         }
-		kpiMap.put("datalist", dataList);
-		return kpiMap;
-	}
-	
-	/**
-	 * 1-3 右键下钻总接口
-	 * @param area
-	 * @param prov
-	 * @param city
-	 * @param client
-	 * @param channel
-	 * @param contract
-	 * @param date
-	 * @param kid
-	 * @param rightclick
-	 * @return
-	 * @throws ParseException
-	 */
-	public List<Map<String,Object>> rightKpi(String area,String prov, String city,List<String> client,
-			List<String> channel,List<String> contract,String date,String kid,String rightclick) throws ParseException{
-		Map<String,Object> paramMap = processParam(area, prov, city, client, channel, contract, date, rightclick,null,kid);
-		if(client.size()==1&&"-1".equals(client.get(0))){
-			client = null;
-		}
-		if(channel.size()==1&&"-1".equals(channel.get(0))){
-			channel = null;
-		}
-		if(contract.size()==1&&"-1".equals(contract.get(0))){
-			contract = null;
-		}
-		//1、从oracle中查询指标树结构
-		List<Map<String,Object>> treeList = new ArrayList<>();
-		if(rightclick.equals("1")){
-			treeList = monthReportMapper.selectProvTree(prov, kid);
-		}else if(rightclick.equals("2")){
-			treeList = monthReportMapper.selectClientTree(client, kid);
-		}else if(rightclick.equals("3")){
-			treeList = monthReportMapper.selectChannelTree(channel, kid);
-		}else{
-			treeList = monthReportMapper.selectContractTree(contract, kid);
-		}
-		
-		//2、查数据
-		DynamicDataSourceContextHolder.setDataSourceType("kylin");
-		List<Map<String,Object>> rightList = new ArrayList<>();
-		if(rightclick.equals("3")){
-			rightList = monthReportMapper.queryChannelByKylin(paramMap);
-		}else {
-			rightList = monthReportMapper.rightClickByKylin(paramMap);
-		}
-		DynamicDataSourceContextHolder.clearDataSourceType();
-		//3、组合
-		List<Map<String,Object>> resList = dealCombination(treeList,rightList,date,rightclick);
-		return resList;
-	}
-	
-	/**
-	 * 1-4 省份下钻地势接口
-	 * @param area
-	 * @param prov
-	 * @param city
-	 * @param client
-	 * @param channel
-	 * @param contract
-	 * @param date
-	 * @param kid
-	 * @param proid
-	 * @return
-	 * @throws ParseException 
-	 */
-    public List<Map<String,Object>> cityData(String area, String prov, String city, List<String> client, List<String> channel, 
-    		List<String> contract, String date, String kid,String proid) throws ParseException{
-		Map<String,Object> paramMap = processParam(area, prov, city, client, channel, contract, date, null,proid,kid); 
-         
-        List<Map<String,Object>> resList = new ArrayList<>();
-        //1、从oracle获取指标树
-        List<Map<String,Object>> cityTreeList = monthReportMapper.selectCityTree(area,proid,city,kid);
-        //2、从kylin获取基础数据
-        DynamicDataSourceContextHolder.setDataSourceType("kylin");
-        List<Map<String,Object>> cityList = monthReportMapper.cityDataByKylin(paramMap);
-        DynamicDataSourceContextHolder.clearDataSourceType();
-        for(Map<String,Object> cityTree : cityTreeList){
-        	String id = (String) cityTree.get("ID");
-        	int flag =0;
-        	for(Map<String,Object> data :cityList){
-        		if(id.equals(data.get("ID"))){
-        			//处理输出数据
-        			resList.add(dealData(cityTree,data,date));
-        			cityList.remove(data);
-        			flag = 1;
-        			break;
-        		}
-        	}
-        	if(flag==0){
-        		resList.add(blankExt(cityTree));
-        	}
-        	}
-    	return resList;
+        resMap.put("nextFlag", nextFlag);
+
+        //3.循环将收到的数据的id拼接成字符串发送给专题服务，获取数据
+        List<Map<String, Object>> esList = new ArrayList<>();
+        esList = (List<Map<String, Object>>) esMap.get("data");
+        String typeId = esList.get(0).get("typeId").toString();
+        System.out.println(typeId);
+        url = homepageMapper.getUrlViaTypeId(typeId);
+        System.out.println(url);
+        for (Map<String, Object> map : esList){
+            String id = map.get("id").toString();
+            if (specialStr.equals("")){
+                specialStr = specialStr + id;
+            }else {
+                specialStr = specialStr + "," + id;
+            }
+        }
+        if (specialStr.equals("")){
+            System.out.println("没有需要查询的专题id！！！");
+        }else {
+            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", specialStr, List.class);
+            System.out.println("专题服务查询出的数据是：" + data);
+        }
+
+        //4.将服务查询出的数据放到es的结果中
+        for (Map<String, Object> map1 : esList){
+            String id1 = map1.get("id").toString();
+            for (Map<String, Object> map2 : data){
+                String id2 = map2.get("id").toString();
+                if (id1.equals(id2)){
+                    map1.put("src", map2.get("src").toString());
+                    map1.put("url", url);
+                }
+            }
+        }
+        resMap.put("data", esList);
+        return resMap;
     }
-    
+
+
     /**
-     * 1-5 趋势图
-     * @param area
-     * @param prov
-     * @param city
-     * @param client
-     * @param channel
-     * @param contract
-     * @param kid
-     * @param date
-     * @return
-     * @throws ParseException
+     * 根据typeId查询跳转的url
+     *
+     * @Author gp
+     * @Date 2017/5/31
      */
-    public Map<String,Object> trend(String area,String prov, String city,List<String> client,
-			List<String> channel,List<String> contract,String kid,String date) throws ParseException{
-		
-		Map<String,Object> paramMap = processParam(area, prov, city, client, channel, contract, date, null, null,kid);
-		//计算往前推11个月的月份
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM");  
-        Date d1 = sdf.parse(date);
-        Date d2 = dateUtil.getElevthDate(d1);
-        String eleDate = sdf.format(d2).replace("-", "");
-        paramMap.put("eleDate", eleDate);
-        date = date.replace("-", "");
-        //1、获取月份
-        List<Map<String,Object>> trendTreeList = monthReportMapper.trendTree(kid, date, eleDate);
-        Map<String,String> unit = monthReportMapper.getUnit(kid);
-        //2、获取数据
-        DynamicDataSourceContextHolder.setDataSourceType("kylin");
-        List<Map<String,Object>> trendDataList = monthReportMapper.trend(paramMap);
-        DynamicDataSourceContextHolder.clearDataSourceType();
-        //3、组合
-        List<Map<String,Object>> trendList = combination(trendTreeList,trendDataList);
-        List<String> trendPeriod = new LinkedList<String>();
- 	    List<String> trendData = new LinkedList<String>();
- 	   
- 	   //处理数据
- 	   for(Map<String, Object> map:trendList){
- 		   trendPeriod.add((String) map.get("ID"));
- 		   String data = ((List<String>) map.get("data")).get(0);
- 		   trendData.add(data);
- 		}
- 	   	Map<String,Object> trendMap = new HashMap<String,Object>();
-        
- 		trendMap.put("period", trendPeriod);
- 		trendMap.put("data", trendData);
- 		trendMap.put("unit", unit.get("UNIT"));
-		return trendMap;
+    public String getUrlViaTypeId(String typeId){
+        String url = homepageMapper.getUrlViaTypeId(typeId);
+        return url;
     }
-   
-    /**
-     * 1-6 合约类型占比
-     * @param area
-     * @param prov
-     * @param city
-     * @param client
-     * @param channel
-     * @param contract
-     * @param kid
-     * @param date
-     * @return
-     */
-	public List<Map<String,Object>> contract(String area,String prov, String city,List<String> client,
-			List<String> channel,List<String> contract,String kid,String date){
-		
-        Map<String, Object> paramMap = processParam(area, prov, city, client, channel, contract, date, null, null,kid);
-		if(contract.size()==1&&"-1".equals(contract.get(0))){
-			contract = null;
-		}
-        //合约类型
-        List<Map<String, Object>> conTreeList = monthReportMapper.contractTree(kid,contract);
-        //合约数据
-        DynamicDataSourceContextHolder.setDataSourceType("kylin");
-        List<Map<String, Object>> conDataList = monthReportMapper.contract(paramMap);
-        DynamicDataSourceContextHolder.clearDataSourceType();
-        
-        List<Map<String, Object>> contractList = combination(conTreeList,conDataList);
-        List<Map<String, Object>> resList = new  ArrayList<>();
-		for(Map<String, Object> map:contractList){
-        	Map<String, Object> dataMap = new HashMap<String, Object>();
-        	String data = ((List<String>)map.get("data")).get(0);
-        	dataMap.put("data", data);
-        	dataMap.put("title", (String) map.get("TITLE"));
-        	resList.add(dataMap);
-        }
-		return resList;
-	}
-
-	/**
-	 * 1-7 公众集客占比
-	 * @param area
-	 * @param prov
-	 * @param city
-	 * @param client
-	 * @param channel
-	 * @param contract
-	 * @param kid
-	 * @param date
-	 * @return
-	 */
-	public List<Map<String,Object>> client(String area,String prov, String city,List<String> client,
-			List<String> channel,List<String> contract,String kid,String date){
-		
-		Map<String,Object> paramMap = processParam(area, prov, city, client, channel, contract, date, null, null,kid);
-		if(client.size()==1&&"-1".equals(client.get(0))){
-			client = null;
-		}
-		List<Map<String, Object>> clientTreeList = monthReportMapper.clientTree(kid,client);
-		DynamicDataSourceContextHolder.setDataSourceType("kylin");
-		List<Map<String, Object>> clientDataList = monthReportMapper.client(paramMap);
-		DynamicDataSourceContextHolder.clearDataSourceType();
-		
-		List<Map<String, Object>> clientList = combination(clientTreeList, clientDataList);
-		List<Map<String, Object>> resList = new  ArrayList<>();
-		
-		for(Map<String, Object> map:clientList){
-        	Map<String, Object> dataMap = new HashMap<String, Object>();
-        	String data = ((List<String>) map.get("data")).get(0);
-        	dataMap.put("data", data);
-        	dataMap.put("title", map.get("TITLE"));
-        	resList.add(dataMap);
-        }
-		return resList;
-	}
-	
-	/**
-	 * 1-8 渠道类型占比
-	 * @param area
-	 * @param prov
-	 * @param city
-	 * @param client
-	 * @param channel
-	 * @param contract
-	 * @param kid
-	 * @param date
-	 * @return
-	 */
-	public List<Map<String,Object>> channel(String area, String prov,String city,List<String> client,
-			List<String> channel,List<String> contract,String kid,String date){
-		
-        Map<String,Object> paramMap = processParam(area, prov, city, client, channel, contract, date, null, null,kid);
-		if(channel.size()==1&&"-1".equals(channel.get(0))){
-			channel = null;
-		}
-		List<Map<String, Object>> chaTreeList = monthReportMapper.channelTree(kid,channel);
-		DynamicDataSourceContextHolder.setDataSourceType("kylin");
-		List<Map<String, Object>> chaDataList = monthReportMapper.channel(paramMap);
-		DynamicDataSourceContextHolder.clearDataSourceType();
-		
-		List<Map<String,Object>> channelList = combination(chaTreeList, chaDataList);
-		List<Map<String,Object>> resList = new ArrayList<>();
-		
-		for(Map<String, Object> map:channelList){
-        	Map<String, Object> dataMap = new HashMap<String, Object>();
-        	String data = ((List<String>) map.get("data")).get(0);
-        	dataMap.put("data", data);
-        	dataMap.put("title", map.get("TITLE"));
-        	resList.add(dataMap);
-        }
-		return resList;
-	
-	}
-	
-	/**
-	 * 1-9 返回默认指标id
-	 * @return
-	 */
-	public Map<String,String> kid(){
-		Map<String,String> kidMap = monthReportMapper.kid();
-		return kidMap;
-	}
-	
-	/**
-	 * 通过code模糊查询默认参数和code
-	 * @param code
-	 * @return
-	 */
-    public List<Map<String, String>> getInfosViaCode(String code){
-        List<Map<String, String>> resultList = new ArrayList<>();
-        resultList = monthReportMapper.getInfosViaCode(code);
-        return resultList;
-    }	
-	/**
-	 * 趋势图、合约占比、客户占比组合
-	 * @param treeList 
-	 * @param dataList
-	 * @return
-	 */
-	private List<Map<String,Object>> combination(List<Map<String, Object>> treeList,
-			List<Map<String, Object>> dataList) {
-		List<Map<String,Object>> resList = new ArrayList<>();
-		for(Map<String,Object> tree : treeList){
-			String id = (String) tree.get("ID");
-			int flag = 0;
-			for(Map<String,Object> data :dataList){
-				if(!StringUtils.isBlank(id)&&id.equals(data.get("ID"))){
-					//处理输出数据
-					tree.put("data", format(tree,data));
-					dataList.remove(data);
-					flag = 1;
-					break;
-				}
-			}
-			//没有找到对应的数据
-			if(flag==0){
-				List<String> data = new ArrayList<>();
-				data.add("0");
-				tree.put("data", data);
-			}
-			resList.add(tree);
-		}
-		return resList;
-	}
-
-	/**
-	 * 组合右键下钻的指标树和数据
-	 * @param treeList
-	 * @param rightList
-	 * @return
-	 * @throws ParseException 
-	 */
-	private List<Map<String, Object>> dealCombination(List<Map<String, Object>> treeList,
-			List<Map<String, Object>> rightList,String date,String rightclick) throws ParseException {
-		List<Map<String,Object>> resList = new ArrayList<>();
-		for(Map<String,Object> tree : treeList){
-			String id = (String) tree.get("ID");
-			int flag = 0;
-			for(Map<String,Object> right :rightList){
-				if(!StringUtils.isBlank(id)&&id.equals(right.get("ID"))){
-					//处理输出数据
-					Map<String,Object> resMap = dealData(tree,right,date);
-					if("1".equals(rightclick)){
-						resMap.put("province", "1");
-					}else{
-						resMap.put("province", "0");
-					}
-					resList.add(resMap);
-					rightList.remove(right);
-					flag = 1;
-					break;
-				}
-			}
-			//没有找到对应的数据
-			if(flag==0){
-				Map<String,Object> resMap = blankExt(tree);
-				if("1".equals(rightclick)){
-					resMap.put("province", "1");
-				}else{
-					resMap.put("province", "0");
-				}
-				resList.add(resMap);
-			}
-		}
-		return resList;
-	}
-	
-	
-
-	/**
-	 * 处理传入的参数
-	 * @param area 是否是139城市 1:139城市 2：全国
-	 * @param prov 省份id
-	 * @param city 地市id
-	 * @param client 客户类型
-	 * @param channel 渠道类型
-	 * @param contract 合约类型
-	 * @param date 账期
-	 * @return 参数列表
-	 */
-	private Map<String, Object> processParam(String area, String prov, String city, List<String> client, List<String> channel,
-			List<String> contract, String date,String rightClick, String proid,String kid) {
-		Map<String,Object> paramMap = new HashMap<String,Object>();
-//		判断渠道编码是否为-1，-1：传null
-		if(channel.size()==1&&"-1".equals(channel.get(0))){
-			paramMap.put("channel", null);
-		}else{
-			paramMap.put("channel", channel);
-		}
-		//判断合约类型
-		if(contract.size()==1&&"-1".equals(contract.get(0))){
-			paramMap.put("contract", null);
-		}else{
-			paramMap.put("contract", contract);
-		}
-		//判断合约类型
-		if(client.size()==1&&"-1".equals(client.get(0))){
-			paramMap.put("client", null);
-		}else{
-			paramMap.put("client", client);
-		}
-        paramMap.put("area", area);
-        
-        String areaParam = "";
-        String cityParam = "";
-        if("1".equals(rightClick)){
-        	//地域允许下钻
-        	if("-1".equals(city)){
-        		if("111".equals(prov)||"112".equals(prov)||"113".equals(prov)){
-        			cityParam = "-1";
-            	}else{
-            		areaParam = prov;
-            		cityParam = "-1";
-            	}
-        	}
-        }else{
-	        //判断是否是139城市
-	        if("1".equals(area)){
-	        	//判断省份是否选择的全国
-	        	if("111".equals(prov) || "114".equals(prov)){
-	        		if("-1".equals(city)){
-	        			areaParam = "114";
-	        			cityParam = "-1";
-	        		}else{
-	        			cityParam = city;
-	        		}
-	        	}else if("112".equals(prov) || "113".equals(prov)){
-	        		if("-1".equals(city)){
-	        			areaParam = prov;
-	        			cityParam = "-1";
-	        		}else{
-	        			cityParam = city;
-	        		}
-	        	}else{
-	    			areaParam = prov;
-	    			cityParam = city;
-	        	}
-	        }else {
-	        	//判断省份是否选择的全国
-	        	if("111".equals(prov) || "112".equals(prov) || "113".equals(prov)){
-	        		if("-1".equals(city)){
-	        			areaParam = prov;
-	        			cityParam = "-1";
-	        		}else{
-	        			cityParam = city;
-	        		}
-	        	}else{
-	    			areaParam = prov;
-	    			cityParam = city;
-	        	}
-	        }
-        }
-       
-        if("1".equals(area)){
-        	paramMap.put("table", "V_DM_KPI_M_0010_139");
-        }else{
-        	paramMap.put("table", "V_DM_KPI_M_0010");
-        }
-        paramMap.put("kid", kid);
-        paramMap.put("prov", areaParam);
-        paramMap.put("city", cityParam);
-        paramMap.put("date", date.replaceAll("-", ""));
-        paramMap.put("rightClick", rightClick);
-        paramMap.put("proid", proid);
-		return paramMap;
-	}
-
-    /**
-     * 处理输出空结构
-     * @param kpiTree 指标树结构map 
-     * @return 指标树结构和数据的组合的map
-     */
-	private Map<String, Object> blankExt(Map<String, Object> kpiTree) {
-		//组合values并将kpicode赋值为-
-		String[] values = {"-","-","-","-"} ;
-		String kpiCode = (String) kpiTree.get("KPICODE");
-		if(StringUtils.isBlank(kpiCode)){
-			kpiTree.put("kpiCode", "-");
-			kpiTree.put("channel_drill", "-");
-			kpiTree.put("contract_drill", "-");
-			kpiTree.put("region_drill", "-");
-			kpiTree.put("user_drill", "-");
-		}
-		kpiTree.put("values", values);
-		kpiTree.remove("UNIT");
-		kpiTree.remove("FORMAT");
-		kpiTree.remove("UATIO");
-		return kpiTree;
-	}
-	
-	/**
-	 * 输出数据处理
-	 * @param kpiTree 指标树结构map
-	 * @param mData   数据map
-	 * @param date	     月账期
-	 * @return
-	 * @throws ParseException
-	 */
-    private Map<String,Object> dealData(Map<String,Object> kpiTree, Map<String,Object> mData,String date) throws ParseException{
-    	//1、计算平均值、环比、同比
-    	Map<String,Object> values = formula(mData,date);
-    	//2、格式化输出
-    	kpiTree.put("values", format(kpiTree,values));
-    	kpiTree.remove("UNIT");
-    	kpiTree.remove("FORMAT");
-    	kpiTree.remove("UATIO");
-    	return kpiTree;
-    }
-    
-    /**
-     * 计算公式
-     * @param mData 数据map
-     * @param date 月账期
-     * @return 处理后的数据map
-     * @throws ParseException
-     */
-	private Map<String,Object> formula(Map<String, Object> mData,String date) throws ParseException {
-		Map<String,Object> valueMap =new HashMap<>();
-		DecimalFormat    df   = new DecimalFormat("######0.00");
-//     1、计算本月平均值和上月平均值
-		Double dy = (Double)mData.get("DY");
-		Double sy = (Double) mData.get("SY");
-		Double bnlj = (Double) mData.get("BNLJ");
-		Double qnlj = (Double) mData.get("QNLJ");
-    	double dypj = dy/DyDays(date);
-    	double sypj = sy/LmDays(date);
-//		2、计算累计同比
-    	if(qnlj==0){
-    		valueMap.put("LJTB", "-");
-    	}else{
-    		String ljtb = df.format(((bnlj-qnlj)/Math.abs(qnlj)*100))+"%";
-    		valueMap.put("LJTB", ljtb);
-    	}
-//		3、计算日均环比
-    	if(sypj==0){
-    		valueMap.put("RJHB", "-");
-    	}else{
-    		String rjhb = df.format(((dypj-sypj)/Math.abs(sypj)*100))+"%";
-    		valueMap.put("RJHB", rjhb);
-    	}
-    	valueMap.put("DY", dy);
-    	valueMap.put("BNLJ", bnlj);
-    	return valueMap;
-	}
-
-	/**
-	 * 处理单位：精确度和百分号  
-	 * @param kpiTree  指标树结构map
-	 * @param values 经过公示计算过的数据map
-	 * @return 四个数据值的集合
-	 */
-	private List<String> format(Map<String, Object> kpiTree,
-				Map<String, Object> values) {
-		//1、先除 2、判断保留
-			Double uatio = ((BigDecimal) kpiTree.get("UATIO")).doubleValue();
-			String format = (String) kpiTree.get("FORMAT"); 
-			Double dy =  (Double)values.get("DY");
-			DecimalFormat  df = new DecimalFormat("######0.00");
-			DecimalFormat  dm = new DecimalFormat("######0");
-			dy = dy/uatio;
-			String dyz ="";
-			String bnljz ="";
-			String unit="";
-			if(null != kpiTree.get("UNIT")){
-				unit = (String) kpiTree.get("UNIT");
-			}
-			//处理本年累计值
-			if(null != values.get("BNLJ")){
-				Double bnlj = (Double) values.get("BNLJ");
-				if(bnlj!=0){
-					bnlj = bnlj/uatio;
-					if(!StringUtils.isBlank(format)&&"FM9999999999990.00".equals(format)){
-						bnljz = df.format(bnlj);
-					}else{
-						bnljz = dm.format(bnlj);
-					}
-					//当月值是否加%
-					if(!StringUtils.isBlank(unit)&&unit.equals("%")){
-						bnljz = bnljz+"%";
-					}
-					values.put("BNLJ", bnljz);
-				}else{
-					values.put("BNLJ", "-");
-				}
-			}
-			//当月值精确度
-			if(!StringUtils.isBlank(format)&&"FM9999999999990.00".equals(format)){
-				dyz = df.format(dy);
-			}else{
-				dyz = dm.format(dy);
-			}
-			//当月值是否加%
-			if(!StringUtils.isBlank(unit)&&unit.equals("%")){
-				 dyz = dyz+"%";
-			}
-			values.put("DY", dyz);
-			List<String> value = new ArrayList<>();
-			value.add((String) values.get("DY"));
-			if(null != values.get("BNLJ")){
-				value.add((String) values.get("BNLJ"));
-			}
-			if(null != values.get("RJHB")){
-				value.add((String) values.get("RJHB"));
-			}			
-			if(null != values.get("LJTB")){
-				value.add((String) values.get("LJTB"));
-			}
-			return value;
-		}
-	
-	/**
-	 * 以date为参数，计算当月天数
-	 * @param date 月账期
-	 * @return 当月天数
-	 * @throws ParseException
-	 */
-	private int DyDays(String date) throws ParseException {
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM");  
-        Date d1 = sdf.parse(date);  
-        Date d2 = dateUtil.getNextDate(d1); 
-        int result = dateUtil.daysBetween(d1,d2);
-        return result;
-	}
-	
-	/**
-	 * 以date为参数，计算上月天数
-	 * @param date 月账期
-	 * @return 上月天数
-	 * @throws ParseException
-	 */
-	private int LmDays(String date) throws ParseException {
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM");  
-        Date d1 = sdf.parse(date);  
-        Date d2 = dateUtil.getLastDate(d1); 
-        int result = dateUtil.daysBetween(d2,d1);
-        return result;
-	}
 }
 

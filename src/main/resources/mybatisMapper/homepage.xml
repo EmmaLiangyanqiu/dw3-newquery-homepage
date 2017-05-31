@@ -1,7 +1,79 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.bonc.dw3.mapper.HomepageMapper">
-	<!--12.根据code模糊查询默认参数和code-->
+
+    <!--1.头部栏组件接口-->
+    <select id="headerSelect" resultType="java.util.HashMap">
+        select t.module_code "id", t.module_name "name"
+        from dw_newquery_module_type t
+        order by to_number(t.ord)
+    </select>
+
+
+    <!--2-1.根据用户查找他的roleid-->
+    <select id="selectRoleByUserId" parameterType="String" resultType="String">
+        select roleid from tfw_user where id=#{userId}
+    </select>
+
+    <!--2-2.根据roleList查找用户的大部分的menuId-->
+    <select id="selectMostMenu" resultType="String">
+        select menuid
+        from TFW_RELATION
+        where roleid in
+        <foreach collection="roleList" open="(" close=")" item="role" separator=",">
+            #{role}
+        </foreach>
+    </select>
+
+    <!--2-3.根据menuList查找用户的全部的menu-->
+    <select id="selectAllMenu" resultType="hashMap">
+        select id  "id",
+        code   "code",
+        pcode  "pcode",
+        name   "name",
+        icon   "icon",
+        url    "url",
+        levels "levels"
+        from tfw_menu
+        where id in
+        <foreach collection="menuList" open="(" close=")" item="menuId" separator=",">
+            #{menuId}
+        </foreach>
+    </select>
+
+    <!--2-4.根据userId查询用户的rolein和roleout-->
+    <select id="selectRoleInOut" resultType="hashMap">
+        select ROLEIN "rolein",ROLEOUT "roleout" from TFW_ROLE_EXT where id=#{userId}
+    </select>
+
+
+    <!--3.模块选项卡接口-->
+    <select id="moduleTab" resultType="java.util.HashMap" parameterType="java.lang.String">
+        select t.label_code "tabId", t.label_name "tabName"
+        from dw_newquery_switch_label t
+        where module_type = #{markType}
+    </select>
+
+
+    <!--4-1.近期访问筛选分类接口-->
+    <select id="recentVisit" resultType="java.util.HashMap">
+        select t.module_code "id", t.module_name "name"
+        from dw_newquery_module_type t
+        order by to_number(t.ord)
+    </select>
+
+
+    <!--7.根据typeId查询跳转的url-->
+    <select id="getUrlViaTypeId" resultType="String" parameterType="java.lang.String">
+        select t.url "url" from dw_newquery_module_type t
+        where t.module_code = #{typeId}
+    </select>
+
+
+
+
+
+    <!--12.根据code模糊查询默认参数和code-->
     <select id="getInfosViaCode" resultType="java.util.HashMap" parameterType="java.lang.String">
         select code, param_values value
         from cache_init_param
@@ -20,13 +92,13 @@
         where t.dimension_type_code=n.dimension_type_code
         order by to_number(n.ord)
     </select>
-    
+
     <!--3、 表头title -->
     <select id="title" resultType="String">
         select t.title_name from DW_MONTH_REPORT_TITLE t
         order by rownum
     </select>
-    
+
   <!--0228 查询指标树  -->
   <select id="selectKpiTree" resultType="java.util.HashMap">
   	select l.level_code id,l.parent_code pid,l.space,
@@ -41,25 +113,25 @@
          where l.type = '1'
          order by l.ord
   </select>
-  
+
   <!--0228 查询基础数据 -->
   <select id="selectDataByKylin" resultType="java.util.HashMap">
 	select KPI_CODE,
            sum(coalesce(KPI_VALUE, 0)) dy, <!--当月指标值 -->
            sum(coalesce(M_LM_VALUE, 0)) sy,<!-- 上月指标值 -->
-           sum(coalesce(Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->   
-           sum(coalesce(Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->  
-           from 
+           sum(coalesce(Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->
+           sum(coalesce(Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->
+           from
            <if test="table !=null and table!=''">${table}</if>m
            <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
             where 1 = 1
@@ -77,28 +149,28 @@
                  <!--客户类型 -->
                 <if test="client != null">
                   AND m.IS_GROUP in
-                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{clientId} 
-                   </foreach> 
+                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+                   #{clientId}
+                   </foreach>
                 </if>
                  <!--合约类型 -->
                 <if test="contract != null">
                   AND m.ACTIVITY_TYPE in
-                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{contractId} 
-                   </foreach> 
+                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," >
+                   #{contractId}
+                   </foreach>
                 </if>
                  group by m.KPI_CODE
   </select>
-  
+
   <!-- 省份下钻指标树 -->
-  <select id="selectProvTree" resultType="java.util.Map"> 
-  	select pro.id,pro.title,c.* from 
+  <select id="selectProvTree" resultType="java.util.Map">
+  	select pro.id,pro.title,c.* from
     (
     <!-- 省份：111表示全国 ，112表示北10,113表示南21-->
     <choose>
 	    <when test = 'prov!= null and prov != "" and prov == "111" || prov =="114"' >
-	        select p.prov_id id,p.pro_name title,p.ord2 from v_dmcode_province_31 p 
+	        select p.prov_id id,p.pro_name title,p.ord2 from v_dmcode_province_31 p
 	    </when>
 	    <otherwise>
 	    	select p.prov_id id,p.pro_name title,p.ord2 from dmcode_pub.dmcode_province p
@@ -109,8 +181,8 @@
 		       </when>
 		       <when test='prov=="113"'>
 		       	and p.s_n_mark='21'
-		       </when>       
-		        <otherwise>and p.prov_id = #{prov}</otherwise>	  
+		       </when>
+		        <otherwise>and p.prov_id = #{prov}</otherwise>
 	    	</choose>
 	    </otherwise>
     </choose> )pro,
@@ -122,20 +194,20 @@
            to_char(to_number(l.space)+2) space,
            decode(k.kpi_code,null,'',k.kpi_code) kpiCode
            from dw_kpi_level l
-           left join 
-           dw_kpi k 
+           left join
+           dw_kpi k
             on l.level_code=k.level_code
              where l.type='1') code
          where 1 = 1
           <if test = "kid != null and kid  != ''" >
-               AND code.kpiCode = #{kid} 
+               AND code.kpiCode = #{kid}
           </if>)c
-  order by to_number(ord2)       
+  order by to_number(ord2)
   </select>
-  
+
   <!--右键下钻（地域、客户类型、合约类型）-->
   <select id="rightClickByKylin" resultType="java.util.Map">
-  		select 
+  		select
   	<choose>
   		 <when test='rightClick !=null and rightClick!="" and rightClick=="1"'>m.prov_id</when>
   		 <when test='rightClick !=null and rightClick!="" and rightClick=="2"'>m.is_group</when>
@@ -143,18 +215,18 @@
   	</choose>id,
            sum(coalesce(m.KPI_VALUE, 0)) dy, <!--当月指标值 -->
            sum(coalesce(m.M_LM_VALUE, 0)) sy,<!-- 上月指标值 -->
-           sum(coalesce(m.Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->   
-           sum(coalesce(m.Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->  
+           sum(coalesce(m.Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->
+           sum(coalesce(m.Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->
            from <if test="table !=null and table!=''">${table}</if>m
            <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
             	where 1 = 1
@@ -175,35 +247,35 @@
                  <!--客户类型 -->
                 <if test="client != null">
                   AND m.IS_GROUP in
-                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{clientId} 
-                   </foreach> 
+                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+                   #{clientId}
+                   </foreach>
                 </if>
                  <!--合约类型 -->
                 <if test="contract != null">
                   AND m.ACTIVITY_TYPE in
-                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{contractId} 
-                   </foreach> 
+                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," >
+                   #{contractId}
+                   </foreach>
                 </if>
-                 group by 
+                 group by
     <choose>
   		 <when test='rightClick !=null and rightClick!="" and rightClick=="1"'>m.prov_id</when>
   		 <when test='rightClick !=null and rightClick!="" and rightClick=="2"'>m.is_group</when>
   		 <when test='rightClick !=null and rightClick!="" and rightClick=="4"'>m.activity_type</when>
-  	</choose> 	
+  	</choose>
   </select>
-  
+
   <!-- 客户类型 下钻指标树-->
   <select id="selectClientTree" resultType="java.util.Map">
-   	select dm.title,dm.id,c.* from 
+   	select dm.title,dm.id,c.* from
     ( select t.channel_type_name title,t.dimension_code id,t.ord from dw_dimension_name t
   where 1=1 and t.dimension_type_code='2' and t.dimension_code!='-1'
   <if test="client != null">
      AND t.dimension_code in
-        <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-           #{clientId} 
-        </foreach> 
+        <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+           #{clientId}
+        </foreach>
   </if> )dm,
     ( select *
           from (
@@ -212,66 +284,66 @@
            to_char(to_number(l.space)+2) space,
            decode(k.kpi_code,null,'',k.kpi_code) kpiCode
            from dw_kpi_level l
-           left join 
-           dw_kpi k 
+           left join
+           dw_kpi k
             on l.level_code=k.level_code
              where l.type='1') code
          where 1 = 1
           <if test = "kid != null and kid  != ''" >
-               AND code.kpiCode = #{kid} 
+               AND code.kpiCode = #{kid}
           </if>)c
        order by to_number(ord)
   </select>
-  
+
     <!-- 渠道类型 下钻指标树-->
   <select id="selectChannelTree" resultType="java.util.Map">
-  	select dm.title,dm.id,c.* from 
+  	select dm.title,dm.id,c.* from
    (select  l.parent_code pid,
       nvl2(k.uatio,k.uatio,1)uatio,k.format,k.unit,
-      to_char(to_number(l.space)+2) space,	
+      to_char(to_number(l.space)+2) space,
       decode(k.kpi_code,null,'',k.kpi_code) kpiCode
       from dw_kpi_level l
-      left join 
-      dw_kpi k 
+      left join
+      dw_kpi k
       on l.level_code=k.level_code
       where 1=1 and l.type='1'
       <if test = "kid != null and kid  != ''" >
-           AND k.kpi_code = #{kid} 
+           AND k.kpi_code = #{kid}
       </if> )c,
-(select dimension_code id,channel_type_name  title,ord from dw_dimension_name 
+(select dimension_code id,channel_type_name  title,ord from dw_dimension_name
  where dimension_type_code='3'  and dimension_code !='-1'
- <!--渠道类型 -->             
+ <!--渠道类型 -->
   <if test = "channel != null" >
    and  dimension_code in
-      <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-       #{channelId} 
-         </foreach> 
+      <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+       #{channelId}
+         </foreach>
   </if>)dm
   order by to_number(ord)
   </select>
-  
+
   <!--右键下钻-渠道类型 -->
   <select id="queryChannelByKylin" resultType="java.util.Map">
   select data.id,sum(coalesce(data.dy,0))dy,
   		 sum(coalesce(data.sy,0))sy,
-  		 sum(coalesce(data.bnlj,0))bnlj,sum(coalesce(data.qnlj,0))qnlj             
-  from 
-	(select * from 
+  		 sum(coalesce(data.bnlj,0))bnlj,sum(coalesce(data.qnlj,0))qnlj
+  from
+	(select * from
   	(select m.CHANNEL_TYPE,
            sum(coalesce(m.KPI_VALUE, 0)) dy, <!--当月指标值 -->
            sum(coalesce(m.M_LM_VALUE, 0)) sy,<!-- 上月指标值 -->
-           sum(coalesce(m.Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->   
-           sum(coalesce(m.Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->  
+           sum(coalesce(m.Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->
+           sum(coalesce(m.Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->
            from <if test="table!=null and table!=''">${table}</if> m
            <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
             	where 1 = 1
@@ -284,7 +356,7 @@
                    <!--指标 -->
                   <if test = "kid != null and kid != ''" >
                     AND m.KPI_CODE = #{kid}
-                 </if>                 
+                 </if>
                  <!--月份  -->
                   <if test = "date != null and date != ''" >
                     AND m.MONTH_ID = #{date}
@@ -292,42 +364,42 @@
                  <!--客户类型 -->
                 <if test="client != null">
                   AND m.IS_GROUP in
-                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{clientId} 
-                   </foreach> 
+                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+                   #{clientId}
+                   </foreach>
                 </if>
                  <!--合约类型 -->
                 <if test="contract != null">
                   AND m.ACTIVITY_TYPE in
-                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{contractId} 
-                   </foreach> 
+                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," >
+                   #{contractId}
+                   </foreach>
                 </if>
                  group by m.CHANNEL_TYPE)d
  				left join
 		(select mapping_id id,channel_type from dmcode_base_channel_type
-		 where mark='C' 
-		 <!--渠道类型 -->             
+		 where mark='C'
+		 <!--渠道类型 -->
       	<if test = "channel != null" >
   		 and  mapping_id in
-     	 <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-      		 #{channelId} 
-         </foreach> 
-  		</if>)cp 				
-         on cp.channel_type=d.CHANNEL_TYPE)data 
+     	 <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+      		 #{channelId}
+         </foreach>
+  		</if>)cp
+         on cp.channel_type=d.CHANNEL_TYPE)data
          group by data.id
   </select>
-  
+
     <!-- 合约类型 下钻指标树-->
   <select id="selectContractTree" resultType="java.util.Map">
-  	select dm.title,dm.id,c.* from 
+  	select dm.title,dm.id,c.* from
     ( select t.channel_type_name title,t.dimension_code id,t.ord from dw_dimension_name t
   where t.dimension_type_code='4' and t.dimension_code!='-1'
   <if test = "contract != null">
    and t.dimension_code in
-    <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," > 
-             #{contractId} 
-    </foreach> 
+    <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," >
+             #{contractId}
+    </foreach>
   </if>
   )dm,
     ( select *
@@ -337,23 +409,23 @@
            to_char(to_number(l.space)+2)space,
            decode(k.kpi_code,null,'',k.kpi_code) kpiCode
            from dw_kpi_level l
-           left join 
-           dw_kpi k 
+           left join
+           dw_kpi k
             on l.level_code=k.level_code
              where l.type='1' ) code
          where 1 = 1
          <if test = "kid != null and kid  != ''" >
-                AND code.kpiCode = #{kid} 
+                AND code.kpiCode = #{kid}
           </if>)c
    order by to_number(ord)
   </select>
-  
+
   <!-- 省份下钻地势树 -->
   <select id="selectCityTree" resultType="java.util.Map">
   	select * from (
      <choose>
      	<when test='area!=null and area!="" and area=="1"'>
-     		select area_id id,area_desc title,prov_id pid from dmcode_pub.dmcode_area_139 
+     		select area_id id,area_desc title,prov_id pid from dmcode_pub.dmcode_area_139
      		where 1=1 and ord_id &lt;=139
      		<if test='proid!=null and proid!=""'>and prov_id=#{proid}</if>
      	</when>
@@ -362,39 +434,39 @@
      		<if test='proid!=null and proid!=""'>and prov_id=#{proid}</if>
      	</otherwise>
      </choose>
-    ),          
-      (select 
+    ),
+      (select
       to_char(to_number(l.space)+4) space,
       nvl2(k.uatio,k.uatio,1)uatio,k.format, k.unit,
       decode(k.kpi_code,null,'',k.kpi_code) kpiCode
       from dw_kpi_level l
-      left join 
-      dw_kpi k 
+      left join
+      dw_kpi k
       on l.level_code=k.level_code
-      where l.type='1' 
+      where l.type='1'
       <if test = "kid != null and kid  != ''" >
-                AND k.kpi_code = #{kid} 
+                AND k.kpi_code = #{kid}
        </if>)
      order by id asc
   </select>
-  
+
   <!-- 省份下钻地势数据 -->
   <select id="cityDataByKylin" resultType="java.util.Map">
   	select m.AREA_NO id,
            sum(coalesce(m.KPI_VALUE, 0)) dy, <!--当月指标值 -->
            sum(coalesce(m.M_LM_VALUE, 0)) sy,<!-- 上月指标值 -->
-           sum(coalesce(m.Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->   
-           sum(coalesce(m.Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->  
+           sum(coalesce(m.Y_TY_VALUE, 0)) bnlj, <!-- 本年累计指标值    -->
+           sum(coalesce(m.Y_LY_VALUE, 0)) qnlj <!-- 去年同期累计指标值 -->
            from <if test="table!=null and table!=''">${table}</if> m
            <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
            		 where 1 = 1
@@ -412,20 +484,20 @@
                  <!--客户类型 -->
                 <if test="client != null">
                   AND m.IS_GROUP in
-                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{clientId} 
-                   </foreach> 
+                  <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+                   #{clientId}
+                   </foreach>
                 </if>
                  <!--合约类型 -->
                 <if test="contract != null">
                   AND m.ACTIVITY_TYPE in
-                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," > 
-                   #{contractId} 
-                   </foreach> 
+                  <foreach collection = "contract" item = "contractId" index = "index" open = "(" close = ")" separator = "," >
+                   #{contractId}
+                   </foreach>
                 </if>
                  group by m.AREA_NO
   </select>
-  
+
    <!-- 趋势图月份 -->
    <select id="trendTree" resultType="java.util.Map">
    	 select *
@@ -433,26 +505,26 @@
      	<if test = "kid != null and kid != ''" >
             and kpi_code= #{kid}
         </if>)k,
-        (select month_id id from dw_acct_month where 1 = 1 
+        (select month_id id from dw_acct_month where 1 = 1
         AND MONTH_ID between
         <if test = "eleDate != null and eleDate != ''" >#{eleDate}</if>
         and <if test = "date != null and date != ''" >#{date}</if>)d
         order by d.id
    </select>
-   
+
     <!--  趋势图数据   -->
     <select id="trend" resultType="java.util.HashMap" parameterType="java.util.HashMap">
     select sum(coalesce(m.KPI_VALUE,0)) dy,m.MONTH_ID id
         from <if test = "table != null and table != ''" >${table}</if>m
         <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
         where 1 = 1
@@ -473,9 +545,9 @@
         <!--客户类型 -->
         <if test="client != null">
            AND m.IS_GROUP in
-           <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-             #{clientId} 
-           </foreach> 
+           <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+             #{clientId}
+           </foreach>
         </if>
         <!--合约类型 -->
         <if test="contract != null">
@@ -486,11 +558,11 @@
         </if>
         group by m.MONTH_ID
     </select>
-    
+
     <!-- 合约占比类型 -->
     <select id="contractTree" resultType="java.util.Map">
-    	select * from 
-  			(select format,uatio from dw_kpi where type='1' 
+    	select * from
+  			(select format,uatio from dw_kpi where type='1'
   			<if test = "kid != null and kid != ''" >
             	AND KPI_CODE = #{kid}
         	</if>),
@@ -503,20 +575,20 @@
                </foreach>
             </if>)
     </select>
-    
+
     <!-- 合约占比数据 -->
     <select id="contract" resultType="java.util.HashMap" parameterType="java.util.HashMap">
     select sum(coalesce(m.KPI_VALUE,0)) dy,m.ACTIVITY_TYPE id
         from <if test = "table != null and table != ''" >${table}</if>m
         <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
         where 1 = 1
@@ -537,9 +609,9 @@
         <!--客户类型 -->
         <if test="client != null">
            AND m.IS_GROUP in
-            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-               #{clientId} 
-            </foreach> 
+            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+               #{clientId}
+            </foreach>
         </if>
         <!--合约类型 -->
         <if test="contract != null">
@@ -550,10 +622,10 @@
         </if>
         group by m.ACTIVITY_TYPE
     </select>
-    
+
      <!-- 客户占比类型 -->
      <select id="clientTree" resultType="java.util.Map">
-    	select * from 
+    	select * from
   			(select format,uatio from dw_kpi where type='1'
   			<if test = "kid != null and kid != ''" >
             	AND KPI_CODE = #{kid}
@@ -562,25 +634,25 @@
                where dimension_type_code = '2' and dimension_code != '-1'
               <if test="client != null">
 		           AND dimension_code in
-		            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-		               #{clientId} 
-		            </foreach> 
+		            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+		               #{clientId}
+		            </foreach>
 		      </if>)
     </select>
-    
+
      <!-- 客户占比数据 -->
      <select id="client" resultType="java.util.HashMap" parameterType="java.util.HashMap">
     select sum(coalesce(m.KPI_VALUE,0)) dy,m.IS_GROUP id
         from <if test = "table != null and table != ''" >${table}</if>m
         <!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
         where 1 = 1
@@ -601,9 +673,9 @@
         <!--客户类型 -->
  		<if test="client != null">
            AND m.IS_GROUP in
-            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-               #{clientId} 
-            </foreach> 
+            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+               #{clientId}
+            </foreach>
         </if>
         <!--合约类型 -->
         <if test="contract != null">
@@ -614,22 +686,22 @@
         </if>
         group by m.IS_GROUP
     </select>
-    
+
     <!-- 渠道占比数据 -->
     <select id="channel" resultType="java.util.Map">
-    	select sum(coalesce(r.dy, 0)) dy, r.id from 
+    	select sum(coalesce(r.dy, 0)) dy, r.id from
 			(select * from
 			 (select sum(coalesce(m.KPI_VALUE, 0)) dy, m.CHANNEL_TYPE
 			  from <if test = "table != null and table != ''" >${table}</if>m
         		<!--渠道类型 -->
                  <if test="channel != null">
-                   inner join 
+                   inner join
                   (select  ct.channel_type from (select channel_type,mapping_id from dmcode_base_channel_type where mark='C') ct
                    where 1=1 and ct.mapping_id in
-                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," > 
-                    #{channelId} 
-                   </foreach> 
-                   ) ch 
+                     <foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
+                    #{channelId}
+                   </foreach>
+                   ) ch
                    on m.channel_type=ch.channel_type
                   </if>
         where 1 = 1
@@ -650,9 +722,9 @@
         <!--客户类型 -->
  		<if test="client != null">
            AND m.IS_GROUP in
-            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," > 
-               #{clientId} 
-            </foreach> 
+            <foreach collection = "client" item = "clientId" index = "index" open = "(" close = ")" separator = "," >
+               #{clientId}
+            </foreach>
         </if>
         <!--合约类型 -->
         <if test="contract != null">
@@ -662,12 +734,12 @@
             </foreach>
         </if>
         group by m.channel_type)data
-        left join 
+        left join
         (select channel_type,mapping_id id from dmcode_base_channel_type where mark = 'C')c
 		on c.CHANNEL_TYPE=data.CHANNEL_TYPE)r
 		group by r.id
     </select>
-    
+
     <!-- 渠道占比类型 -->
     <select id="channelTree" resultType="java.util.Map">
     	select * from
@@ -679,15 +751,15 @@
 				<foreach collection = "channel" item = "channelId" index = "index" open = "(" close = ")" separator = "," >
 					#{channelId}
 				</foreach>
-          </if>),                    
-        (select format,uatio from dw_kpi where type='1' 
+          </if>),
+        (select format,uatio from dw_kpi where type='1'
         	<!--指标id -->
 	        <if test = "kid != null and kid != ''" >
 	            AND KPI_CODE = #{kid}
 	        </if>
         )
     </select>
-    
+
     <!-- 默认图标Kid接口 -->
     <select id="kid" resultType="java.util.Map">
         select
@@ -702,14 +774,14 @@
         where 1=1 and le.type='1'
         and rownum=1
     </select>
-    
+
  	<!-- 趋势图单位 -->
-   <select id="getUnit" resultType="java.util.Map"> 
+   <select id="getUnit" resultType="java.util.Map">
    	select unit from dw_kpi
    	where type = '1'
         	<!--指标id -->
 	        <if test = "kid != null and kid != ''" >
 	            AND KPI_CODE = #{kid}
 	        </if>
-   </select>    
+   </select>
 </mapper>

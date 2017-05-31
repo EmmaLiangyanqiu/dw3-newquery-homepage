@@ -12,6 +12,7 @@
     </#list>
     ]
 </#if>
+    <#if key_has_next>,</#if>
 </#list>
 <#else>
 

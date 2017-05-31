@@ -228,13 +228,13 @@ public class HomepageTestController {
     @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
     public String allSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                               @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                               @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                               @ApiParam("搜索内容")@RequestParam("search")String search,
-                                               @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
-                                               @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
-                                               Model model){
+                            @ApiParam("登陆令牌")@RequestParam("token")String token,
+                            @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                            @ApiParam("搜索内容")@RequestParam("search")String search,
+                            @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
+                            @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                            @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                            Model model){
         Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> map1 = new HashMap<>();
@@ -312,6 +312,7 @@ public class HomepageTestController {
         resMap.put("data", resList);
         resMap.put("nextFlag", "0");
         //return resList;
+        System.out.println(resMap);
         model.addAttribute("resMap", resMap);
         return "allSearch";
     }
@@ -325,17 +326,18 @@ public class HomepageTestController {
      */
     @ApiOperation("6-2.搜索-指标搜索接口")
     @PostMapping("/indexSearch")
-    public List<Map<String, Object>> indexSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                                 @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                                 @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                                 @ApiParam("搜索内容")@RequestParam("search")String search,
-                                                 @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                                                 @ApiParam("每一页记录条数")@RequestParam("num")String num,
-                                                 @ApiParam("分类：全部日月标识")@RequestParam("dayOrmonth")String dayOrmonth,
-                                                 @ApiParam("地域")@RequestParam("area")String area,
-                                                 @ApiParam("日期")@RequestParam("date")String date,
-                                                 Model model){
+    public String indexSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                              @ApiParam("登陆令牌")@RequestParam("token")String token,
+                              @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                              @ApiParam("搜索内容")@RequestParam("search")String search,
+                              @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                              @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                              @ApiParam("分类：全部日月标识")@RequestParam("dayOrmonth")String dayOrmonth,
+                              @ApiParam("地域")@RequestParam("area")String area,
+                              @ApiParam("日期")@RequestParam("date")String date,
+                              Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
+        Map<String, Object> resMap = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();
         map1.put("indexName", "移动业务计费收入");
         map1.put("id", "2005");
@@ -381,7 +383,7 @@ public class HomepageTestController {
         chartDataMap3.put("unit", "万");
         chartDataMap3.put("sequentialData", sequentialDataList);
         chartDataMap3.put("totalData", sequentialDataList);
-        chartDataMap3.put("chartx", chartXList1);
+        chartDataMap3.put("chartX", chartXList1);
         chartDataList.add(chartDataMap3);
 
         Map<String, Object> chartDataMap4 = new HashMap<>();
@@ -475,7 +477,13 @@ public class HomepageTestController {
         resList.add(map2);
         resList.add(map3);
 
-        return resList;
+        resMap.put("nextFlag", "0");
+        resMap.put("data", resList);
+
+        //return resList;
+        System.out.println(resMap);
+        model.addAttribute("resMap", resMap);
+        return "indexSearch";
     }
 
 
@@ -487,15 +495,16 @@ public class HomepageTestController {
      */
     @ApiOperation("6-3.搜索-专题搜索接口")
     @PostMapping("/specialSearch")
-    public List<Map<String, Object>> specialSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                                   @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                                   @ApiParam("搜索内容")@RequestParam("search")String search,
-                                                   @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
-                                                   @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                                                   @ApiParam("每一页记录条数")@RequestParam("num")String num,
-                                                   Model model){
+    public String specialSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                                @ApiParam("登陆令牌")@RequestParam("token")String token,
+                                @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                                @ApiParam("搜索内容")@RequestParam("search")String search,
+                                @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
+                                @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                                @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                                Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
+        Map<String, Object> resMap = new HashMap<>();
         String[] a = {"u977.png|重点产品攻坚行动日报表|1|3001|http://ip:port/specialReport/3001|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要日指标展示。|专题|全部",
                       "u97.png|4G用户专题|2|3002|http://ip:port/specialReport/3002|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要月指标展示|专题|全部",
                       "u999.png|重点产品攻坚行动月考核|3|3003|http://ip:port/specialReport/3003|重点产品有效发展行动计划通报内容，包括各省考核指标的评分结果及完成情况。|专题|全部",
@@ -514,7 +523,12 @@ public class HomepageTestController {
             map.put("tabName", s[7]);
             resList.add(map);
         }
-        return resList;
+        resMap.put("nextFlag", "0");
+        resMap.put("data", resList);
+        //return resList;
+        System.out.println(resMap);
+        model.addAttribute("resMap", resMap);
+        return "specialSearch";
     }
 
 
@@ -526,14 +540,15 @@ public class HomepageTestController {
      */
     @ApiOperation("6-4.搜索-报告搜索接口")
     @PostMapping("/reportSearch")
-    public List<Map<String, Object>> reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
-                                                  @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                                  @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
-                                                  @ApiParam("搜索内容")@RequestParam("search")String search,
-                                                  @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                                                  @ApiParam("每一页记录条数")@RequestParam("num")String num,
-                                                  Model model){
+    public String reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                               @ApiParam("登陆令牌")@RequestParam("token")String token,
+                               @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                               @ApiParam("搜索内容")@RequestParam("search")String search,
+                               @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                               Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
+        Map<String, Object> resMap = new HashMap<>();
         String[] a = {"2G终端入网质态分析|1|4001|http://ip:port/Report/4001|报告|月|张三|2017年5月10日",
                       "渠道成本效益分析|2|4002|http://ip:port/Report/4002|报告|月|李四|2017年5月10日",
                       "移动用户离网分析|3|4003|http://ip:port/Report/4003|报告|月|王五|2017年5月10日",
@@ -557,7 +572,12 @@ public class HomepageTestController {
             map.put("issueTime", s[7]);
             resList.add(map);
         }
-        return resList;
+        resMap.put("nextFlag", "0");
+        resMap.put("data", resList);
+        System.out.println(resMap);
+        //return resList;
+        model.addAttribute("resMap", resMap);
+        return "reportSearch";
     }
 
 

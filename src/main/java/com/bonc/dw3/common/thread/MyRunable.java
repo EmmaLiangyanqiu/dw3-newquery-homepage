@@ -17,31 +17,25 @@ import java.util.*;
  */
 public class MyRunable implements Runnable {
 
-    @Autowired
-    RestTemplate restTemplate;
-
     private static Logger log = LoggerFactory.getLogger(MyRunable.class);
 
     //请求的url地址
     String url;
     //请求的参数
-    MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+    String paramStr;
+    //RestTemplate对象
+    RestTemplate restTemplate;
     //请求的结果
-    List<Map<String, Object>> resList = new ArrayList<>();
+    public Object result = new ArrayList<>();
 
-    public MyRunable(String url, MultiValueMap<String, Object> paramMap){
+    public MyRunable(RestTemplate restTemplate, String url, String paramStr){
+        this.restTemplate = restTemplate;
         this.url = url;
-        this.paramMap = paramMap;
+        this.paramStr = paramStr;
     }
 
     @Override
     public void run() {
-        long current =System.currentTimeMillis();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Accept", "*/*");
-        HttpEntity<MultiValueMap<String, Object>> formEntity = new HttpEntity<>(paramMap, httpHeaders);
-        this.resList = restTemplate.postForObject(url, formEntity, List.class);
-        log.info("当前线程拿到结果所用时间:" + (System.currentTimeMillis()-current) + "ms"
-                + "线程号[" + Thread.currentThread().getId() + "]");
+        this.result = restTemplate.postForObject(url, paramStr, Object.class);
     }
 }
