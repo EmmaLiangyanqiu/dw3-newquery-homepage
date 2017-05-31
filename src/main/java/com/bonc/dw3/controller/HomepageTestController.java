@@ -23,8 +23,9 @@ public class HomepageTestController {
      */
     @ApiOperation("1.头部栏组件接口")
     @PostMapping("/headerSelect")
-    public String headerSelect(@ApiParam("用户id")@RequestParam("userId")String userId,
-                               @ApiParam("登陆令牌")@RequestParam("token")String token,
+    public String headerSelect(/*@ApiParam("用户id")@RequestParam("userId")String userId,
+                               @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+                               @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                                Model model){
         String[] a = {"01,综合", "02,指标", "03,专题", "04,报告"};
         List<Map<String, Object>> selectList = new ArrayList<>();
@@ -53,8 +54,9 @@ public class HomepageTestController {
      */
     @ApiOperation("2.菜单树组件接口")
     @PostMapping("/nav")
-    public String nav(@ApiParam("用户id")@RequestParam("userId")String userId,
-                      @ApiParam("登陆令牌")@RequestParam("token")String token,
+    public String nav(/*@ApiParam("用户id")@RequestParam("userId")String userId,
+                      @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+                      @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                       Model model){
         String[] title1 = {"01,移动业务计费收入,/indexDetails,0101", "02,4G业务计费收入,/indexDetails,0101"};
         String[] a001 = {"01,移动业务用户类,/homePage,0101", "02,移动业务使用类,/homePage,0101"};
@@ -134,9 +136,10 @@ public class HomepageTestController {
      */
     @ApiOperation("3.模块选项卡接口")
     @PostMapping("/moduleTab")
-    public String moduleTab(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String moduleTab(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                             @ApiParam("登陆令牌")@RequestParam("token")String token,
-                            @ApiParam("类型id")@RequestParam("markType")String markType,
+                            @ApiParam("类型id")@RequestParam("markType")String markType,*/
+                            @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                             Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         String[] aaa = {"0101,全部", "0102,日","0103,月"};
@@ -162,8 +165,9 @@ public class HomepageTestController {
      */
     @ApiOperation("4-1.近期访问-筛选分类接口")
     @PostMapping("/recentVisit")
-    public String recentVisit(@ApiParam("用户id")@RequestParam("userId")String userId,
-                              @ApiParam("登陆令牌")@RequestParam("token")String token,
+    public String recentVisit(/*@ApiParam("用户id")@RequestParam("userId")String userId,
+                              @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+                              @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                               Model model){
         Map<String, Object> resMap = new HashMap<>();
         String[] a = {"01,综合,/homePage", "02,指标,/index", "03,专题,/special", "04,报告,/report"};
@@ -193,9 +197,10 @@ public class HomepageTestController {
      */
     @ApiOperation("4-2.近期访问-访问内容接口")
     @PostMapping("/recentVisitList")
-    public String recentVisitList(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String recentVisitList(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                  @ApiParam("类型id")@RequestParam("markType")String markType,
+                                  @ApiParam("类型id")@RequestParam("markType")String markType,*/
+                                  @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                                   Model model){
         Map<String, Object> resMap = new HashMap<>();
         String[] a = {"专题,301,线下实体渠道发展用户,/special,0101",
@@ -227,13 +232,14 @@ public class HomepageTestController {
      */
     @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
-    public String allSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String allSearch(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                             @ApiParam("登陆令牌")@RequestParam("token")String token,
                             @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                             @ApiParam("搜索内容")@RequestParam("search")String search,
                             @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
                             @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                            @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                            @ApiParam("每一页记录条数")@RequestParam("num")String num,*/
+                            @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                             Model model){
         Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> resList = new ArrayList<>();
@@ -326,7 +332,7 @@ public class HomepageTestController {
      */
     @ApiOperation("6-2.搜索-指标搜索接口")
     @PostMapping("/indexSearch")
-    public String indexSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String indexSearch(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                               @ApiParam("登陆令牌")@RequestParam("token")String token,
                               @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                               @ApiParam("搜索内容")@RequestParam("search")String search,
@@ -334,7 +340,8 @@ public class HomepageTestController {
                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
                               @ApiParam("分类：全部日月标识")@RequestParam("dayOrmonth")String dayOrmonth,
                               @ApiParam("地域")@RequestParam("area")String area,
-                              @ApiParam("日期")@RequestParam("date")String date,
+                              @ApiParam("日期")@RequestParam("date")String date,*/
+                              @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                               Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> resMap = new HashMap<>();
@@ -495,13 +502,14 @@ public class HomepageTestController {
      */
     @ApiOperation("6-3.搜索-专题搜索接口")
     @PostMapping("/specialSearch")
-    public String specialSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String specialSearch(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                                 @ApiParam("登陆令牌")@RequestParam("token")String token,
                                 @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                                 @ApiParam("搜索内容")@RequestParam("search")String search,
                                 @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
                                 @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                                @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                                @ApiParam("每一页记录条数")@RequestParam("num")String num,*/
+                                @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                                 Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> resMap = new HashMap<>();
@@ -540,12 +548,13 @@ public class HomepageTestController {
      */
     @ApiOperation("6-4.搜索-报告搜索接口")
     @PostMapping("/reportSearch")
-    public String reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String reportSearch(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                                @ApiParam("登陆令牌")@RequestParam("token")String token,
                                @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                                @ApiParam("搜索内容")@RequestParam("search")String search,
                                @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                               @ApiParam("每一页记录条数")@RequestParam("num")String num,*/
+                               @ApiParam("json")@RequestBody Map<String, Object> paramMap,
                                Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> resMap = new HashMap<>();

@@ -186,30 +186,22 @@ public class HomepageService {
         System.out.println("报告有-------->" + reportPPTStr);
 
         //4.多线程分别请求别的服务拿到详细的数据
-        //参数处理，如果参数为""时，为了zuul不报错，需要传参为no让具体的服务直接返回空list
-        if (kpiStr.equals("")) {
-            kpiStr = "no";
-            System.out.println("es的查询结果中没有指标！！");
-        } else {
+        //参数处理，如果参数为""时，不开线程
+        if (!kpiStr.equals("")){
             kpiStr = "-1,-1," + kpiStr;
-        }
-        if (subjectStr.equals("")){
-            subjectStr = "no";
-        }
-        if (reportPPTStr.equals("")){
-            reportPPTStr = "no";
+
+        }else {
+            System.out.println("es查询结果中没有指标数据！！！");
         }
         MyRunable kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/receiveKpi", kpiStr);
         Thread kpiThread = new Thread(kpiRunable);
         kpiThread.start();
         //请求报告服务
-        reportPPTStr = "";
         MyRunable reportRunable = new MyRunable(restTemplateTmp, "http://192.168.110.57:7071/pptReportForHomepage/info", reportPPTStr);
         Thread reportThread = new Thread(reportRunable);
         reportThread.start();
         //请求专题服务
-        subjectStr = "";
-        MyRunable subjectRunable = new MyRunable(restTemplateTmp, "http://192.168.110.57:7071/specialForHomepage/icon", subjectStr);
+        MyRunable subjectRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", subjectStr);
         Thread subjectThread = new Thread(subjectRunable);
         subjectThread.start();
         try {
@@ -255,10 +247,143 @@ public class HomepageService {
 
 
 
+    /**
+     * 6-3.搜索：专题接口
+     *
+     * @Author gp
+     * @Date 2017/5/31
+     */
+    public Map<String,Object> specialSearch(String paramStr, String numStart, String num) {
+        Map<String, Object> resMap = new HashMap<>();
+        List<Map<String, Object>> data = new ArrayList<>();
+        String nextFlag = "";
+        String specialStr = "";
+        String url = "";
+
+        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
+        RestTemplate restTemplateTmp = new RestTemplate();
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
+        System.out.println("查询es的参数--------->" + paramStr);
+        System.out.println("查询es的结果-------->" + esMap);
+
+        //2.判断是否还有下一页数据
+        //es查询到的记录的总条数
+        int esCount = Integer.parseInt(esMap.get("count").toString());
+        //前端显示的总条数
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
+        if (count < esCount) {
+            nextFlag = "1";
+        } else {
+            nextFlag = "0";
+        }
+        resMap.put("nextFlag", nextFlag);
+
+        //3.循环将收到的数据的id拼接成字符串发送给专题服务，获取数据
+        List<Map<String, Object>> esList = new ArrayList<>();
+        esList = (List<Map<String, Object>>) esMap.get("data");
+        String typeId = esList.get(0).get("typeId").toString();
+        url = homepageMapper.getUrlViaTypeId(typeId);
+        for (Map<String, Object> map : esList){
+            String id = map.get("id").toString();
+            if (specialStr.equals("")){
+                specialStr = specialStr + id;
+            }else {
+                specialStr = specialStr + "," + id;
+            }
+        }
+        if (specialStr.equals("")){
+            System.out.println("没有需要查询的专题id！！！");
+        }else {
+            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", specialStr, List.class);
+            System.out.println("专题服务查询出的数据是：" + data);
+        }
+
+        //4.将服务查询出的数据放到es的结果中，拼接结果
+        for (Map<String, Object> map1 : esList){
+            String id1 = map1.get("id").toString();
+            for (Map<String, Object> map2 : data){
+                String id2 = map2.get("id").toString();
+                if (id1.equals(id2)){
+                    map1.put("src", map2.get("src").toString());
+                    map1.put("url", url);
+                }
+            }
+            map1.remove("typeId");
+        }
+        resMap.put("data", esList);
+        return resMap;
+    }
 
 
+    /**
+     * 6-4.搜索：报告接口
+     *
+     * @Author gp
+     * @Date 2017/5/31
+     */
+    public Map<String,Object> reportPPTSearch(String paramStr, String numStart, String num) {
+        Map<String, Object> resMap = new HashMap<>();
+        List<Map<String, Object>> data = new ArrayList<>();
+        String nextFlag = "";
+        String reportPPTStr = "";
+        String url = "";
 
+        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
+        RestTemplate restTemplateTmp = new RestTemplate();
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
+        System.out.println("查询es的参数--------->" + paramStr);
+        System.out.println("查询es的结果-------->" + esMap);
 
+        //2.判断是否还有下一页数据
+        //es查询到的记录的总条数
+        int esCount = Integer.parseInt(esMap.get("count").toString());
+        //前端显示的总条数
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
+        if (count < esCount) {
+            nextFlag = "1";
+        } else {
+            nextFlag = "0";
+        }
+        resMap.put("nextFlag", nextFlag);
+
+        //3.循环将收到的数据的id拼接成字符串发送给专题服务，获取数据
+        List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        String typeId = esList.get(0).get("typeId").toString();
+        url = homepageMapper.getUrlViaTypeId(typeId);
+        for (Map<String, Object> map : esList){
+            String id = (String) map.get("id");
+            if (reportPPTStr.equals("")){
+                reportPPTStr = reportPPTStr + id;
+            }else {
+                reportPPTStr = reportPPTStr + "," + id;
+            }
+        }
+        if (reportPPTStr.equals("")){
+            System.out.println("没有需要查询的专题id！！！");
+        }else {
+            data = restTemplateTmp.postForObject("http://192.168.110.57:7071/pptReportForHomepage/info", reportPPTStr, List.class);
+            System.out.println("专题服务查询出的数据是：" + data);
+        }
+
+        //4.将服务查询出的数据放到es的结果中，拼接结果
+        for (Map<String, Object> map1 : esList){
+            String id1 = map1.get("id").toString();
+            for (Map<String, Object> map2 : data){
+                String id2 = map2.get("id").toString();
+                if (id1.equals(id2)){
+                    map1.put("img", map2.get("img"));
+                    map1.put("issue", map2.get("issue").toString());
+                    map1.put("issueTime", map2.get("issueTime").toString());
+                    map1.put("url", url);
+                }
+            }
+            map1.remove("typeId");
+        }
+        resMap.put("data", esList);
+        return resMap;
+    }
 
 
     /**
@@ -306,85 +431,5 @@ public class HomepageService {
     }
 
 
-    /**
-     * 6-3.搜索：专题接口
-     *
-     * @Author gp
-     * @Date 2017/5/31
-     */
-    public Map<String,Object> specialSearch(String paramStr, String numStart, String num) {
-        Map<String, Object> resMap = new HashMap<>();
-        List<Map<String, Object>> data = new ArrayList<>();
-        String nextFlag = "";
-        String specialStr = "";
-        String url = "";
-
-        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-        System.out.println("查询es的参数--------->" + paramStr);
-        System.out.println("查询es的结果-------->" + esMap);
-
-        //2.判断是否还有下一页数据
-        //es查询到的记录的总条数
-        int esCount = Integer.parseInt(esMap.get("count").toString());
-        //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
-        if (count < esCount) {
-            nextFlag = "1";
-        } else {
-            nextFlag = "0";
-        }
-        resMap.put("nextFlag", nextFlag);
-
-        //3.循环将收到的数据的id拼接成字符串发送给专题服务，获取数据
-        List<Map<String, Object>> esList = new ArrayList<>();
-        esList = (List<Map<String, Object>>) esMap.get("data");
-        String typeId = esList.get(0).get("typeId").toString();
-        System.out.println(typeId);
-        url = homepageMapper.getUrlViaTypeId(typeId);
-        System.out.println(url);
-        for (Map<String, Object> map : esList){
-            String id = map.get("id").toString();
-            if (specialStr.equals("")){
-                specialStr = specialStr + id;
-            }else {
-                specialStr = specialStr + "," + id;
-            }
-        }
-        if (specialStr.equals("")){
-            System.out.println("没有需要查询的专题id！！！");
-        }else {
-            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", specialStr, List.class);
-            System.out.println("专题服务查询出的数据是：" + data);
-        }
-
-        //4.将服务查询出的数据放到es的结果中
-        for (Map<String, Object> map1 : esList){
-            String id1 = map1.get("id").toString();
-            for (Map<String, Object> map2 : data){
-                String id2 = map2.get("id").toString();
-                if (id1.equals(id2)){
-                    map1.put("src", map2.get("src").toString());
-                    map1.put("url", url);
-                }
-            }
-        }
-        resMap.put("data", esList);
-        return resMap;
-    }
-
-
-    /**
-     * 根据typeId查询跳转的url
-     *
-     * @Author gp
-     * @Date 2017/5/31
-     */
-    public String getUrlViaTypeId(String typeId){
-        String url = homepageMapper.getUrlViaTypeId(typeId);
-        return url;
-    }
 }
 

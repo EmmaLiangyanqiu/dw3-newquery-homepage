@@ -126,7 +126,7 @@ public class HomepageController {
      * @Author gp
      * @Date 2017/5/16
      */
-    @ApiOperation("搜索接口")
+    @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
     public String search(@ApiParam("用户Id")@RequestParam("userId")String userId,
                          @ApiParam("登陆令牌")@RequestParam("token")String token,
@@ -172,7 +172,6 @@ public class HomepageController {
                                 @ApiParam("每一页记录条数")@RequestParam("num")String num,
                                 Model model){
         Map<String, Object> resMap = new HashMap<>();
-
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + tabId +"," +numStart + "," + num;
         //查询es获得数据
@@ -182,6 +181,25 @@ public class HomepageController {
     }
 
 
+    @ApiOperation("6-4.搜索-报告搜索接口")
+    @PostMapping("/reportSearch")
+    public String reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+                               @ApiParam("登陆令牌")@RequestParam("token")String token,
+                               @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
+                               @ApiParam("搜索内容")@RequestParam("search")String search,
+                               @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                               Model model){
+        Map<String, Object> resMap = new HashMap<>();
+        //es查询参数处理
+        //String paramStr = userId + "," + searchType + "," + search + "," + tabId +"," +numStart + "," + num;
+        //tabId用-1占位
+        String paramStr = userId + "," + searchType + "," + search + "," + "-1," +numStart + "," + num;
+        //查询es获得数据
+        resMap = homepageService.reportPPTSearch(paramStr, numStart, num);
+        model.addAttribute("resMap", resMap);
+        return "reportSearch";
+    }
 
 
 }
