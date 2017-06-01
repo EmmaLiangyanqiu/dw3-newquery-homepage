@@ -128,20 +128,20 @@ public class HomepageController {
      */
     @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
-    public String search(@ApiParam("用户Id")@RequestParam("userId")String userId,
-                         @ApiParam("登陆令牌")@RequestParam("token")String token,
-                         @ApiParam("查询类型")@RequestParam("searchType")String searchType,
-                         @ApiParam("查询关键词")@RequestParam("search")String search,
-                         @ApiParam("全部日月标识")@RequestParam("tabId")String tabId,
-                         @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                         @ApiParam("每一页记录条数")@RequestParam("num")String num,
-                         Model model){
+    public String allSearch(@ApiParam("用户Id")@RequestParam("userId")String userId,
+                            @ApiParam("登陆令牌")@RequestParam("token")String token,
+                            @ApiParam("查询类型")@RequestParam("searchType")String searchType,
+                            @ApiParam("查询关键词")@RequestParam("search")String search,
+                            @ApiParam("全部日月标识")@RequestParam("tabId")String tabId,
+                            @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                            @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                            Model model){
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + tabId +"," +numStart + "," + num;
         //查询es并拼接结果
-        List<Map<String, Object>> allSearchList = homepageService.allSearch(paramStr, numStart, num);
+        Map<String, Object> resMap = homepageService.allSearch(paramStr, numStart, num);
 
-        model.addAttribute("allSearchList", allSearchList);
+        model.addAttribute("resMap", resMap);
         return "allSearch";
     }
 
@@ -152,7 +152,26 @@ public class HomepageController {
      * @Author gp
      * @Date 2017/5/31
      */
+    @ApiOperation("6-2.搜索-指标搜索接口")
+    @PostMapping("/indexSearch")
+    public String indexSearch(@ApiParam("用户Id")@RequestParam("userId")String userId,
+                              @ApiParam("登陆令牌")@RequestParam("token")String token,
+                              @ApiParam("查询类型")@RequestParam("searchType")String searchType,
+                              @ApiParam("查询关键词")@RequestParam("search")String search,
+                              @ApiParam("全部日月标识")@RequestParam("dayOrmonth")String dayOrmonth,
+                              @ApiParam("分页起始")@RequestParam("numStart")String numStart,
+                              @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                              @ApiParam("地域")@RequestParam("area")String area,
+                              @ApiParam("日期")@RequestParam("date")String date,
+                              Model model){
+        //es查询参数处理
+        String paramStr = userId + "," + searchType + "," + search + "," + dayOrmonth +"," +numStart + "," + num;
+        //查询es并拼接结果
+        Map<String, Object> resMap = homepageService.indexSearch(paramStr, numStart, num, area, date);
 
+        model.addAttribute("resMap", resMap);
+        return "indexSearch";
+    }
 
 
     /**
