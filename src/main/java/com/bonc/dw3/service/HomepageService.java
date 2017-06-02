@@ -132,6 +132,7 @@ public class HomepageService {
     public Map<String, Object> allSearch(String searchStr, String numStart, String num) {
         Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> resList = new ArrayList<>();
+        //List<Map<String, Object>> dataList = new ArrayList<>();
         String subjectStr = "";
         String reportPPTStr = "";
         String kpiStr = "";
@@ -189,7 +190,6 @@ public class HomepageService {
         //参数处理，如果参数为""时，不开线程
         if (!kpiStr.equals("")) {
             kpiStr = "-1,-1," + kpiStr;
-
         } else {
             System.out.println("es查询结果中没有指标数据！！！");
         }
@@ -198,7 +198,7 @@ public class HomepageService {
         kpiThread.start();
         //请求报告服务
         //MyRunable reportRunable = new MyRunable(restTemplateTmp, "http://192.168.110.57:7071/pptReportForHomepage/info", reportPPTStr);
-        MyRunable reportRunable = new MyRunable(restTemplateTmp, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr);
+        MyRunable reportRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr);
         Thread reportThread = new Thread(reportRunable);
         reportThread.start();
         //请求专题服务
@@ -219,7 +219,57 @@ public class HomepageService {
         System.out.println("报告服务返回:" + reportResult);
         List<Map<String, Object>> subjectResult = (List<Map<String, Object>>) subjectRunable.result;
         System.out.println("专题服务返回:" + subjectResult);
+        /*dataList.addAll(kpiResult);
+        dataList.addAll(reportResult);
+        dataList.addAll(subjectResult);*/
 
+        //组合数据
+        resMap.put("nextFlag", nextFlag);
+        for (Map<String, Object> map1 : esList){
+            String typeId = map1.get("typeId").toString();
+            String url = homepageMapper.getUrlViaTypeId(typeId);
+            System.out.println("url------>" + url);
+            String id1 = map1.get("id").toString();
+            if (typeId.equals("1")){
+                //指标
+                for (Map<String, Object> map2 : kpiResult){
+                    String id2 = map2.get("id").toString();
+                    if (id1.equals(id2)){
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("markType", map1.get("typeId"));
+                        map.put("ord", map1.get("ord"));
+                        map.put("id", id1);
+                        map.put("url", url);
+                        Map<String, Object> dataMap = new HashMap<>();
+                        dataMap.put("markName", map1.get("type"));
+                        dataMap.put("title", map1.get("title"));
+                        dataMap.put("dayOrMonth", map1.get("dayOrMonth"));
+                        dataMap.put("dayOrMonth", "全国");
+                        dataMap.put("date", map2.get("date"));
+                        dataMap.put("dataName", map2.get("dataName"));
+                        dataMap.put("dataValue", map2.get("dataValue"));
+                        dataMap.put("chartType", map2.get("chartType"));
+                        dataMap.put("chartData", map2.get("data"));
+                        dataMap.put("chartX", map2.get("chartX"));
+                        map.put("data", dataMap);
+                        resList.add(map);
+                    }
+                }
+            }else if (typeId.equals("2")){
+                //专题
+                for (Map<String, Object> Map2 : subjectResult){
+                    String id2 = Map2.get("id").toString();
+
+                }
+            }else if (typeId.equals("3")){
+                //报告
+                for (Map<String, Object> Map2 : reportResult){
+                    String id2 = Map2.get("id").toString();
+
+                }
+            }
+        }
+        resMap.put("data", resList);
         /*if(!kpiStr.equals("")){
             resList.addAll(requestToKPI(kpiStr));
         }*/
@@ -301,35 +351,52 @@ public class HomepageService {
             data = restTemplateTmp.postForObject("http://192.168.110.57:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
             String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
             System.out.println(chartDataParam);
-            chartData = restTemplateTmp.postForObject("http://192.168.110.57:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
+            chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
             System.out.println("指标服务查询出的数据是：" + data);
             System.out.println("指标服务查询出的图表数据是：" + chartData);
         }
 
         //4.将服务查询出的数据放到es的结果中，拼接结果
         for (int i = 0; i < esList.size(); i++) {
-            String id = esList.get(0).get("id").toString();
             Map<String, Object> map1 = esList.get(i);
-            if (i == 0 && !firstKpi.equals("")) {
-                esList.get(i).put("chartData", chartData.get("chartData"));
-            } else if (i != 0 && !kpiStr.equals("")) {
-                for (int j = 0; j < data.size(); j++) {
-                    String id2 = data.get(j).get("id").toString();
+            String id1 = map1.get("id").toString();
+            if (i == 0){
+                map1.put("indexName", map1.get("title"));
+                map1.put("markType", map1.get("typeId"));
+                map1.put("markName", map1.get("type"));
+                map1.put("chartData", chartData.get("chartData"));
+                map1.put("dataName", data.get(0).get("dataName"));
+                map1.put("dataValue", data.get(0).get("dataValue"));
+                map1.put("url", url);
+                map1.remove("typeId");
+                map1.remove("type");
+                map1.remove("title");
+            }else {
+                for (int j = 1; j < data.size(); j ++){
                     Map<String, Object> map2 = data.get(j);
-                    if (id2.equals(id)) {
-                        map1.put("date", map2.get("date"));
-                        map1.put("dataName", map2.get("dataName"));
-                        map1.put("dataValue", map2.get("dataValue"));
-                        map1.put("chartType", map2.get("line"));
+                    String id2 = map2.get("id").toString();
+                    if (id1.equals(id2)){
+                        map1.put("indexName", map1.get("title"));
+                        map1.put("markType", map1.get("typeId"));
+                        map1.put("markName", map1.get("type"));
                         map1.put("unit", map2.get("unit"));
+                        map1.put("chartType", map2.get("chartType"));
                         map1.put("data", map2.get("data"));
                         map1.put("chartX", map2.get("chartX"));
+                        map1.put("dataName", map2.get("dataName"));
+                        map1.put("dataValue", map2.get("dataValue"));
+                        map1.put("url", url);
+                        map1.put("area", area);
+                        map1.put("date", date);
+                        map1.remove("typeId");
+                        map1.remove("type");
+                        map1.remove("title");
                     }
                 }
             }
-            map1.remove("typeId");
         }
         resMap.put("data", esList);
+        System.out.println("resMap---------->" + resMap);
         return resMap;
     }
 

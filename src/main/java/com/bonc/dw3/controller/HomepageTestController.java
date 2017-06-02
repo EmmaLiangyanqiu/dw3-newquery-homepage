@@ -450,7 +450,8 @@ public class HomepageTestController {
             tableValueList.add(map);
         }
         chartMap5.put("tableValue", tableValueList);
-        chartDataMap5.put("chart", chartMap5);
+        chartList5.add(chartMap5);
+        chartDataMap5.put("chart", chartList5);
         chartDataList.add(chartDataMap5);
         map1.put("chartData", chartDataList);
 
