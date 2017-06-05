@@ -15,7 +15,7 @@
             <#if key != "data">
             "${key}":"${dataMap[key]}"
             </#if>
-            <#if key = "data" && markType = "02">
+            <#if key = "data" && markType = "1">
             "${key}":{
                 <#assign allDataMap = dataMap[key]>
                 <#list allDataMap?keys as key>
@@ -44,7 +44,7 @@
                 </#list>
             }
             </#if>
-            <#if key = "data" && markType = "03">
+            <#if key = "data" && markType = "2">
             "${key}":{
                 <#assign allDataMap2 = dataMap[key]>
                 <#list allDataMap2?keys as key>
@@ -53,7 +53,7 @@
                 </#list>
             }
             </#if>
-            <#if key = "data" && markType = "04">
+            <#if key = "data" && markType = "3">
             "${key}":{
                 <#assign allDataMap3 = dataMap[key]>
                 <#list allDataMap3?keys as key>

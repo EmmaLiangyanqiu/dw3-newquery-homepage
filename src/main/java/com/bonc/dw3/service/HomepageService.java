@@ -236,7 +236,7 @@ public class HomepageService {
                     String id2 = map2.get("id").toString();
                     if (id1.equals(id2)){
                         Map<String, Object> map = new HashMap<>();
-                        map.put("markType", map1.get("typeId"));
+                        map.put("markType", typeId);
                         map.put("ord", map1.get("ord"));
                         map.put("id", id1);
                         map.put("url", url);
@@ -257,19 +257,49 @@ public class HomepageService {
                 }
             }else if (typeId.equals("2")){
                 //专题
-                for (Map<String, Object> Map2 : subjectResult){
-                    String id2 = Map2.get("id").toString();
-
+                for (Map<String, Object> map2 : subjectResult){
+                    String id2 = map2.get("id").toString();
+                    if (id1.equals(id2)){
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("markType", typeId);
+                        map.put("ord", map1.get("ord"));
+                        map.put("id", id1);
+                        map.put("url", url);
+                        Map<String, Object> dataMap = new HashMap<>();
+                        dataMap.put("src", map2.get("src"));
+                        dataMap.put("title", map1.get("title"));
+                        dataMap.put("content", map1.get("content"));
+                        dataMap.put("type", map1.get("type"));
+                        dataMap.put("tabName", map1.get("tabName"));
+                        map.put("data", dataMap);
+                        resList.add(map);
+                    }
                 }
             }else if (typeId.equals("3")){
                 //报告
-                for (Map<String, Object> Map2 : reportResult){
-                    String id2 = Map2.get("id").toString();
-
+                for (Map<String, Object> map2 : reportResult){
+                    String id2 = map2.get("id").toString();
+                    if (id1.equals(id2)){
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("markType", typeId);
+                        map.put("ord", map1.get("ord"));
+                        map.put("id", id1);
+                        map.put("url", url);
+                        Map<String, Object> dataMap = new HashMap<>();
+                        dataMap.put("title", map1.get("title"));
+                        dataMap.put("img", map2.get("img"));
+                        dataMap.put("type", map1.get("type"));
+                        dataMap.put("tabName", map1.get("tabName"));
+                        dataMap.put("issue", map2.get("issue"));
+                        dataMap.put("issueTime", map2.get("issueTime"));
+                        map.put("data", dataMap);
+                        resList.add(map);
+                    }
                 }
             }
         }
         resMap.put("data", resList);
+        System.out.println("resMap----------->" + resMap);
         /*if(!kpiStr.equals("")){
             resList.addAll(requestToKPI(kpiStr));
         }*/
@@ -348,7 +378,7 @@ public class HomepageService {
         } else {
             String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
             System.out.println(dataParam);
-            data = restTemplateTmp.postForObject("http://192.168.110.57:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
+            data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
             String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
             System.out.println(chartDataParam);
             chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);

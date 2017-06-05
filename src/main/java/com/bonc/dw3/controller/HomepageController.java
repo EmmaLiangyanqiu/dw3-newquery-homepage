@@ -7,10 +7,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -34,9 +31,12 @@ public class HomepageController {
      */
     @ApiOperation("1.头部栏组件接口")
     @PostMapping("/headerSelect")
-    public String headerSelect(@ApiParam("用户id")@RequestParam("userId")String userId,
-                               @ApiParam("登陆令牌")@RequestParam("token")String token,
+    public String headerSelect(/*@ApiParam("用户id")@RequestParam("userId")String userId,
+                               @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+                               @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                                Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
         Map<String, Object> resMap = homepageService.headerSelect();
         model.addAttribute("resMap", resMap);
         return "headerSelect";
@@ -51,9 +51,12 @@ public class HomepageController {
      */
     @ApiOperation("2.菜单树接口")
     @PostMapping("/nav")
-    public String nav(@ApiParam("用户id")@RequestParam("userId")String userId,
-                      @ApiParam("登陆令牌")@RequestParam("token")String token,
+    public String nav(/*@ApiParam("用户id")@RequestParam("userId")String userId,
+                      @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+                      @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                       Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
         List<Map<String,String>> list = homepageService.getAllMenu(userId);
 
         return "nav";
@@ -69,10 +72,14 @@ public class HomepageController {
      */
     @ApiOperation("3.模块选项卡接口")
     @PostMapping("/moduleTab")
-    public String moduleTab(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String moduleTab(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                             @ApiParam("登陆令牌")@RequestParam("token")String token,
-                            @ApiParam("类型id")@RequestParam("markType")String markType,
+                            @ApiParam("类型id")@RequestParam("markType")String markType,*/
+                            @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                             Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String markType = paramMap.get("markType").toString();
         List<Map<String, String>> resList = homepageService.moduleTab(markType);
         model.addAttribute("resList", resList);
         return "moduleTab";
@@ -87,9 +94,12 @@ public class HomepageController {
      */
     @ApiOperation("4-1.近期访问组件接口：筛选列表接口")
     @PostMapping("/recentVisit")
-    public String recentVisit(@ApiParam("用户id")@RequestParam("userId")String userId,
-                              @ApiParam("登陆令牌")@RequestParam("token")String token,
+    public String recentVisit(/*@ApiParam("用户id")@RequestParam("userId")String userId,
+                              @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+                              @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                               Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
         Map<String, Object> resMap = homepageService.recentVisit();
         model.addAttribute("resMap", resMap);
         return "recentVisit";
@@ -103,10 +113,14 @@ public class HomepageController {
      */
     @ApiOperation("4-2.近期访问组件接口：近期访问列表接口")
     @PostMapping("/recentVisitList")
-    public String recentVisitList(@ApiParam("用户ID")@RequestParam("userId")String userId,
+    public String recentVisitList(/*@ApiParam("用户ID")@RequestParam("userId")String userId,
                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                  @ApiParam("查询类型指标专题报告")@RequestParam("selectId")String selectId,
+                                  @ApiParam("查询类型指标专题报告")@RequestParam("selectId")String selectId,*/
+                                  @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                                   Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String selectId = paramMap.get("selectId").toString();
         String paramStr = userId + "," + selectId;
         Map<String, Object> recentVisitMap = homepageService.recentVisitList(paramStr);
         model.addAttribute("resMap", recentVisitMap);
@@ -128,14 +142,22 @@ public class HomepageController {
      */
     @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
-    public String allSearch(@ApiParam("用户Id")@RequestParam("userId")String userId,
+    public String allSearch(/*@ApiParam("用户Id")@RequestParam("userId")String userId,
                             @ApiParam("登陆令牌")@RequestParam("token")String token,
                             @ApiParam("查询类型")@RequestParam("searchType")String searchType,
                             @ApiParam("查询关键词")@RequestParam("search")String search,
                             @ApiParam("全部日月标识")@RequestParam("tabId")String tabId,
                             @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                            @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                            @ApiParam("每一页记录条数")@RequestParam("num")String num,*/
+                            @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                             Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String searchType = paramMap.get("searchType").toString();
+        String search = paramMap.get("search").toString();
+        String tabId = paramMap.get("tabId").toString();
+        String numStart = paramMap.get("numStart").toString();
+        String num = paramMap.get("num").toString();
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + tabId +"," +numStart + "," + num;
         //查询es并拼接结果
@@ -154,7 +176,7 @@ public class HomepageController {
      */
     @ApiOperation("6-2.搜索-指标搜索接口")
     @PostMapping("/indexSearch")
-    public String indexSearch(@ApiParam("用户Id")@RequestParam("userId")String userId,
+    public String indexSearch(/*@ApiParam("用户Id")@RequestParam("userId")String userId,
                               @ApiParam("登陆令牌")@RequestParam("token")String token,
                               @ApiParam("查询类型")@RequestParam("searchType")String searchType,
                               @ApiParam("查询关键词")@RequestParam("search")String search,
@@ -162,8 +184,18 @@ public class HomepageController {
                               @ApiParam("分页起始")@RequestParam("numStart")String numStart,
                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
                               @ApiParam("地域")@RequestParam("area")String area,
-                              @ApiParam("日期")@RequestParam("date")String date,
+                              @ApiParam("日期")@RequestParam("date")String date,*/
+                              @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                               Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String searchType = paramMap.get("searchType").toString();
+        String search = paramMap.get("search").toString();
+        String dayOrmonth = paramMap.get("dayOrmonth").toString();
+        String numStart = paramMap.get("numStart").toString();
+        String num = paramMap.get("num").toString();
+        String area = paramMap.get("area").toString();
+        String date = paramMap.get("data").toString();
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + dayOrmonth +"," +numStart + "," + num;
         //查询es并拼接结果

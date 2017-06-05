@@ -231,7 +231,7 @@ public class HomepageTestController {
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> map1 = new HashMap<>();
 
-        map1.put("markType", "02");
+        map1.put("markType", "1");
         map1.put("ord", "1");
         map1.put("id", "2001");
         map1.put("url", "http://ip:port/indexDetails/1001");
@@ -269,7 +269,7 @@ public class HomepageTestController {
         resList.add(map1);
 
         Map<String, Object> map2 = new HashMap<>();
-        map2.put("markType", "03");
+        map2.put("markType", "2");
         map2.put("ord", "2");
         map2.put("id", "3001");
         map2.put("url", "http://ip:port/indexDetails/2001");
@@ -283,7 +283,7 @@ public class HomepageTestController {
         resList.add(map2);
 
         Map<String, Object> map3 = new HashMap<>();
-        map3.put("markType", "04");
+        map3.put("markType", "3");
         map3.put("ord", "3");
         map3.put("id", "4001");
         map3.put("url", "http://ip:port/indexDetails/4001");
