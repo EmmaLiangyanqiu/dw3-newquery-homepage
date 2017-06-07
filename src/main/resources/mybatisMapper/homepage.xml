@@ -39,7 +39,7 @@
         <foreach collection="menuList" open="(" close=")" item="menuId" separator=",">
             #{menuId}
         </foreach>
-        and levels &gt;=20
+        and alias='no' order by levels,num asc
     </select>
 
     <!--2-4.根据userId查询用户的rolein和roleout-->

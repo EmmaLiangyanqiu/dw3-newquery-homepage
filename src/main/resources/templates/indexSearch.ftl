@@ -112,10 +112,12 @@
                 <#if ord != "1">
                 {
                     <#list dataMap?keys as key>
-                        <#if key != "chartX" && key != "data" && key != "dataValue" && key != "dataName">
+                        <#assign chartStr21 = "chartType">
+                        <#assign chartType21 = dataMap[chartStr21]>
+                        <#if key != "chart" && key != "dataValue" && key != "dataName">
                         "${key}":"${dataMap[key]}"
                         </#if>
-                        <#if key = "dataName" || key = "chartX" || key = "dataValue">
+                        <#if key = "dataName" || key = "dataValue">
                         "${key}":[
                             <#assign list1 = dataMap[key]>
                             <#list list1 as data1>
@@ -123,12 +125,71 @@
                             </#list>
                         ]
                         </#if>
-                        <#if key = "data">
+                        <#if key = "chart">
                         "${key}":[
-                            <#assign list2 = dataMap[key]>
-                            <#list list2 as data2>
-                            ${data2}<#if data2_has_next>,</#if>
-                            </#list>
+
+
+                            <#if chartType21 = "line" || chartType21 = "monthBar" || chartType21 = "cityBar" || chartType21 = "cityRank">
+                                <#assign chartList = dataMap[key]>
+                                <#list chartList as chartMap>
+                                {
+                                    <#list chartMap?keys as key>
+                                        <#if key = "data" || key = "sequentialData" || key = "totalData">
+                                        "${key}":[
+                                            <#assign dataList1 = chartMap[key]>
+                                            <#list dataList1 as data1>
+                                            ${data1}<#if data1_has_next>,</#if>
+                                            </#list>
+                                        ]
+                                        </#if>
+                                        <#if key = "chartX" || key = "tableTitle">
+                                        "${key}":[
+                                            <#assign dataList2 = chartMap[key]>
+                                            <#list dataList2 as data2>
+                                            "${data2}"<#if data2_has_next>,</#if>
+                                            </#list>
+                                        ]
+                                        </#if>
+                                        <#if key = "tableValue">
+                                        "${key}":[
+                                            <#assign dataList3 = chartMap[key]>
+                                            <#list dataList3 as dataMap3>
+                                            {
+                                                <#list dataMap3?keys as key>
+                                                    <#if key = "rank" || key = "cityName">
+                                                    "${key}":"${dataMap3[key]}"
+                                                    </#if>
+                                                    <#if key = "value">
+                                                    "${key}":[
+                                                        <#assign valueLsit = dataMap3[key]>
+                                                        <#list valueLsit as values>
+                                                        "${values}"<#if values_has_next>,</#if>
+                                                        </#list>
+                                                    ]
+                                                    </#if>
+                                                    <#if key_has_next>,</#if>
+                                                </#list>
+                                            }<#if dataMap3_has_next>,</#if>
+                                            </#list>
+                                        ]
+                                        </#if>
+                                        <#if key_has_next>,</#if>
+                                    </#list>
+                                }
+                                </#list>
+                            </#if>
+                            <#if chartType21 = "pie">
+                                <#assign chartListPie = dataMap[key]>
+                                <#list chartListPie as chartMapPie>
+                                {
+                                    <#list chartMapPie?keys as key>
+                                    "${key}":"${chartMapPie[key]}"
+                                        <#if key_has_next>,</#if>
+                                    </#list>
+                                }<#if chartMapPie_has_next>,</#if>
+                                </#list>
+                            </#if>
+
                         ]
                         </#if>
                         <#if key_has_next>,</#if>

@@ -26,7 +26,7 @@ public class MyRunable implements Runnable {
     //RestTemplate对象
     RestTemplate restTemplate;
     //请求的结果
-    public Object result = new ArrayList<>();
+    public Object result = null;
 
     public MyRunable(RestTemplate restTemplate, String url, String paramStr){
         this.restTemplate = restTemplate;
@@ -37,5 +37,6 @@ public class MyRunable implements Runnable {
     @Override
     public void run() {
         this.result = restTemplate.postForObject(url, paramStr, Object.class);
+        log.info(this.result.toString());
     }
 }

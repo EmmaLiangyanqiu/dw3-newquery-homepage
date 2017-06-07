@@ -195,7 +195,7 @@ public class HomepageController {
         String numStart = paramMap.get("numStart").toString();
         String num = paramMap.get("num").toString();
         String area = paramMap.get("area").toString();
-        String date = paramMap.get("data").toString();
+        String date = paramMap.get("date").toString();
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + dayOrmonth +"," +numStart + "," + num;
         //查询es并拼接结果
@@ -214,15 +214,24 @@ public class HomepageController {
      */
     @ApiOperation("6-3.搜索-专题搜索接口")
     @PostMapping("/specialSearch")
-    public String specialSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String specialSearch(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                                 @ApiParam("登陆令牌")@RequestParam("token")String token,
                                 @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                                 @ApiParam("搜索内容")@RequestParam("search")String search,
                                 @ApiParam("分类：全部日月标识")@RequestParam("tabId")String tabId,
                                 @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                                @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                                @ApiParam("每一页记录条数")@RequestParam("num")String num,*/
+                                @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                                 Model model){
         Map<String, Object> resMap = new HashMap<>();
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String searchType = paramMap.get("searchType").toString();
+        String search = paramMap.get("search").toString();
+        String tabId = paramMap.get("tabId").toString();
+        String numStart = paramMap.get("numStart").toString();
+        String num = paramMap.get("num").toString();
+
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + tabId +"," +numStart + "," + num;
         //查询es获得数据
@@ -234,14 +243,22 @@ public class HomepageController {
 
     @ApiOperation("6-4.搜索-报告搜索接口")
     @PostMapping("/reportSearch")
-    public String reportSearch(@ApiParam("用户id")@RequestParam("userId")String userId,
+    public String reportSearch(/*@ApiParam("用户id")@RequestParam("userId")String userId,
                                @ApiParam("登陆令牌")@RequestParam("token")String token,
                                @ApiParam("搜索类型")@RequestParam("searchType")String searchType,
                                @ApiParam("搜索内容")@RequestParam("search")String search,
                                @ApiParam("分页起始")@RequestParam("numStart")String numStart,
-                               @ApiParam("每一页记录条数")@RequestParam("num")String num,
+                               @ApiParam("每一页记录条数")@RequestParam("num")String num,*/
+                               @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                                Model model){
+        String userId = paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String searchType = paramMap.get("searchType").toString();
+        String search = paramMap.get("search").toString();
+        String numStart = paramMap.get("numStart").toString();
+        String num = paramMap.get("num").toString();
         Map<String, Object> resMap = new HashMap<>();
+
         //es查询参数处理
         //String paramStr = userId + "," + searchType + "," + search + "," + tabId +"," +numStart + "," + num;
         //tabId用-1占位

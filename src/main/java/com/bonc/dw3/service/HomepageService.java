@@ -63,21 +63,32 @@ public class HomepageService {
      * @Date 2017/5/29
      */
     public List<Map<String, String>> getAllMenu(String userId) {
+        String[] inMenu = null;
+        String[] outMenu = null;
         String roleId = homepageMapper.selectRoleByUserId(userId);
         String[] roleList = roleId.split(",");
         List<String> mostMenu = homepageMapper.selectMostMenu(roleList);
         Map<String, String> inAndOut = homepageMapper.selectRoleInOut(userId);
-        String[] inMenu = inAndOut.get("rolein").split(",");
-        String[] outMenu = inAndOut.get("roleout").split(",");
-        Set<String> menuSet = new HashSet<>(mostMenu);
-        for (String s : inMenu) {
-            menuSet.add(s);
+        if (inAndOut!= null){
+            inMenu = inAndOut.get("rolein").split(",");
         }
-        for (String s : outMenu) {
-            menuSet.remove(s);
+        if (inAndOut!= null){
+            outMenu = inAndOut.get("roleout").split(",");
+        }
+        Set<String> menuSet = new HashSet<>(mostMenu);
+        if (inMenu != null){
+            for (String s : inMenu) {
+                menuSet.add(s);
+            }
+        }
+        if (outMenu != null){
+            for (String s : outMenu) {
+                menuSet.remove(s);
+            }
         }
         List<Map<String, String>> result = homepageMapper.selectAllMenu(menuSet);
-        System.out.println("result------>" + result);
+        log.info("result------>" + result);
+        
         return result;
     }
 
@@ -132,21 +143,35 @@ public class HomepageService {
     public Map<String, Object> allSearch(String searchStr, String numStart, String num) {
         Map<String, Object> resMap = new HashMap<>();
         List<Map<String, Object>> resList = new ArrayList<>();
-        //List<Map<String, Object>> dataList = new ArrayList<>();
         String subjectStr = "";
         String reportPPTStr = "";
         String kpiStr = "";
         String nextFlag = "";
+        int esCount;
+        MyRunable kpiRunable = null;
+        Thread kpiThread = null;
+        MyRunable reportRunable = null;
+        Thread reportThread = null;
+        MyRunable subjectRunable = null;
+        Thread subjectThread = null;
+        List<Map<String, Object>> kpiResult = new ArrayList<>();
+        List<Map<String, Object>> subjectResult = new ArrayList<>();
+        List<Map<String, Object>> reportResult = new ArrayList<>();
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
         Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", searchStr, Map.class);
-        System.out.println("查询es的参数--------->" + searchStr);
-        System.out.println("查询es的结果-------->" + esMap);
+        log.info("查询es的参数--------->" + searchStr);
+        log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
-        int esCount = Integer.parseInt(esMap.get("count").toString());
+        if (esMap.containsKey("count") && !StringUtils.isBlank(esMap.get("count").toString())){
+            esCount = Integer.parseInt(esMap.get("count").toString());
+        }else{
+            esCount = 0;
+            log.info("es没有返回count或者es返回的count为空");
+        }
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
@@ -155,6 +180,7 @@ public class HomepageService {
         } else {
             nextFlag = "0";
         }
+        resMap.put("nextFlag", nextFlag);
 
         //3.查询类型是全部，需要遍历所有的数据，根据分类id从相应的服务中查询数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
@@ -182,53 +208,76 @@ public class HomepageService {
                 }
             }
         }
-        System.out.println("kpiStr-------->" + kpiStr);
-        System.out.println("专题有-------->" + subjectStr);
-        System.out.println("报告有-------->" + reportPPTStr);
+        log.info("指标有-------->" + kpiStr);
+        log.info("专题有-------->" + subjectStr);
+        log.info("报告有-------->" + reportPPTStr);
 
         //4.多线程分别请求别的服务拿到详细的数据
         //参数处理，如果参数为""时，不开线程
-        if (!kpiStr.equals("")) {
+        if (!StringUtils.isBlank(kpiStr)) {
             kpiStr = "-1,-1," + kpiStr;
+            //kpiStr = "010,2016-10-01" + kpiStr;
+            kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/dataOfAllKpi", kpiStr);
+            kpiThread = new Thread(kpiRunable);
+            kpiThread.start();
         } else {
-            System.out.println("es查询结果中没有指标数据！！！");
+            log.info("es查询结果中没有指标数据！！！");
         }
-        MyRunable kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/dataOfAllKpi", kpiStr);
-        Thread kpiThread = new Thread(kpiRunable);
-        kpiThread.start();
-        //请求报告服务
-        //MyRunable reportRunable = new MyRunable(restTemplateTmp, "http://192.168.110.57:7071/pptReportForHomepage/info", reportPPTStr);
-        MyRunable reportRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr);
-        Thread reportThread = new Thread(reportRunable);
-        reportThread.start();
         //请求专题服务
-        MyRunable subjectRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", subjectStr);
-        Thread subjectThread = new Thread(subjectRunable);
-        subjectThread.start();
+        if (!StringUtils.isBlank(subjectStr)){
+            subjectRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", subjectStr);
+            subjectThread = new Thread(subjectRunable);
+            subjectThread.start();
+        }else {
+            log.info("es查询结果中没有专题数据！！！");
+        }
+        //请求报告服务
+        if (!StringUtils.isBlank(reportPPTStr)){
+            reportRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr);
+            reportThread = new Thread(reportRunable);
+            reportThread.start();
+        }else{
+            log.info("es查询结果中没有报告数据！！！");
+        }
+        //保证子线程执行完毕
         try {
-            kpiThread.join();
-            reportThread.join();
-            subjectThread.join();
+            if (kpiThread != null){
+                kpiThread.join();
+            }
+            if (subjectThread != null){
+                subjectThread.join();
+            }
+            if (reportThread != null){
+                reportThread.join();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         //多线程拿到的所有数据
-        List<Map<String, Object>> kpiResult = (List<Map<String, Object>>) kpiRunable.result;
-        System.out.println("指标子节点返回:" + kpiResult);
-        List<Map<String, Object>> reportResult = (List<Map<String, Object>>) reportRunable.result;
-        System.out.println("报告服务返回:" + reportResult);
-        List<Map<String, Object>> subjectResult = (List<Map<String, Object>>) subjectRunable.result;
-        System.out.println("专题服务返回:" + subjectResult);
-        /*dataList.addAll(kpiResult);
-        dataList.addAll(reportResult);
-        dataList.addAll(subjectResult);*/
+        if (kpiRunable != null){
+            kpiResult = (List<Map<String, Object>>) kpiRunable.result;
+            log.info("指标子节点返回:" + kpiResult);
+        }else{
+            log.info("es没有kpi数据，没有开kpi线程！！！");
+        }
+        if (subjectRunable != null){
+            subjectResult = (List<Map<String, Object>>) subjectRunable.result;
+            log.info("专题服务返回:" + subjectResult);
+        }else{
+            log.info("es没有专题数据，没有开专题线程！！！");
+        }
+        if (reportRunable != null){
+            reportResult = (List<Map<String, Object>>) reportRunable.result;
+            log.info("报告服务返回:" + reportResult);
+        }else{
+            log.info("es没有报告数据，没有开报告线程！！！");
+        }
 
-        //组合数据
-        resMap.put("nextFlag", nextFlag);
+        //5.组合数据
         for (Map<String, Object> map1 : esList){
             String typeId = map1.get("typeId").toString();
             String url = homepageMapper.getUrlViaTypeId(typeId);
-            System.out.println("url------>" + url);
+            //log.info("url------>" + url);
             String id1 = map1.get("id").toString();
             if (typeId.equals("1")){
                 //指标
@@ -244,13 +293,15 @@ public class HomepageService {
                         dataMap.put("markName", map1.get("type"));
                         dataMap.put("title", map1.get("title"));
                         dataMap.put("dayOrMonth", map1.get("dayOrMonth"));
-                        dataMap.put("dayOrMonth", "全国");
+                        dataMap.put("area", "全国");
                         dataMap.put("date", map2.get("date"));
                         dataMap.put("dataName", map2.get("dataName"));
                         dataMap.put("dataValue", map2.get("dataValue"));
                         dataMap.put("chartType", map2.get("chartType"));
-                        dataMap.put("chartData", map2.get("data"));
-                        dataMap.put("chartX", map2.get("chartX"));
+                        //dataMap.put("chartData", map2.get("data"));
+                        //dataMap.put("chartX", map2.get("chartX"));
+                        dataMap.put("unit", map2.get("unit"));
+                        dataMap.put("chart", map2.get("chart"));
                         map.put("data", dataMap);
                         resList.add(map);
                     }
@@ -335,16 +386,22 @@ public class HomepageService {
         String fitstDayOrMonth = "";
         String kpiStr = "";
         String url = "";
+        int esCount;
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        System.out.println("查询es的参数--------->" + paramStr);
+        log.info("查询es的参数--------->" + paramStr);
         Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-        System.out.println("查询es的结果-------->" + esMap);
+        log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
-        int esCount = Integer.parseInt(esMap.get("count").toString());
+        if (esMap.containsKey("count") && !StringUtils.isBlank(esMap.get("count").toString())){
+            esCount = Integer.parseInt(esMap.get("count").toString());
+        }else {
+            esCount = 0;
+            log.info("es没有返回count或者es返回的count为空");
+        }
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
@@ -355,11 +412,11 @@ public class HomepageService {
         }
         resMap.put("nextFlag", nextFlag);
 
-        //3.循环将收到的数据的id拼接成字符串发送给专题服务，获取数据
+        //3.循环将收到的数据的id拼接成字符串发送给指标服务，获取数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         String typeId = esList.get(0).get("typeId").toString();
         url = homepageMapper.getUrlViaTypeId(typeId);
-        System.out.println("url------>" + url);
+        //log.info("url------>" + url);
         for (int i = 0; i < esList.size(); i++) {
             String id = esList.get(i).get("id").toString();
             if (i == 0) {
@@ -376,14 +433,17 @@ public class HomepageService {
         if (kpiStr.equals("")) {
             System.out.println("没有需要查询的指标id！！！");
         } else {
+            //String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
+            String chartDataParam = area + "," + date + "," + firstKpi + "," + "1";
+            log.info("查询第一个指标的图表数据的参数是：" + chartDataParam);
+            //chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
+            chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/allChartOfTheKpi", chartDataParam, Map.class);
+            log.info("第一个指标的图表数据是：" + chartData);
             String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
-            System.out.println(dataParam);
-            data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
-            String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
-            System.out.println(chartDataParam);
-            chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
-            System.out.println("指标服务查询出的数据是：" + data);
-            System.out.println("指标服务查询出的图表数据是：" + chartData);
+            log.info("查询同比环比数据的参数是：" + dataParam);
+            //data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
+            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/dataOfAllKpi", dataParam, List.class);
+            log.info("同比环比数据是：" + data);
         }
 
         //4.将服务查询出的数据放到es的结果中，拼接结果
@@ -411,8 +471,9 @@ public class HomepageService {
                         map1.put("markName", map1.get("type"));
                         map1.put("unit", map2.get("unit"));
                         map1.put("chartType", map2.get("chartType"));
-                        map1.put("data", map2.get("data"));
-                        map1.put("chartX", map2.get("chartX"));
+                        /*map1.put("data", map2.get("data"));
+                        map1.put("chartX", map2.get("chartX"));*/
+                        map1.put("chart", map2.get("chart"));
                         map1.put("dataName", map2.get("dataName"));
                         map1.put("dataValue", map2.get("dataValue"));
                         map1.put("url", url);
