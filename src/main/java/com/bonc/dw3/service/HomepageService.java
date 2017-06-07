@@ -51,7 +51,7 @@ public class HomepageService {
         List<Map<String, String>> resList = homepageMapper.headerSelect();
         resMap.put("default", resList.get(0));
         resMap.put("selectList", resList);
-        System.out.println(resMap);
+        //log.info("头部组件接口resMap--->" + resMap);
         return resMap;
     }
 
@@ -87,8 +87,8 @@ public class HomepageService {
             }
         }
         List<Map<String, String>> result = homepageMapper.selectAllMenu(menuSet);
-        log.info("result------>" + result);
-        
+        //log.info("result------>" + result);
+
         return result;
     }
 
@@ -102,6 +102,7 @@ public class HomepageService {
      */
     public List<Map<String, String>> moduleTab(String markType) {
         List<Map<String, String>> resList = homepageMapper.moduleTab(markType);
+        //log.info("模块选项卡接口--->" + resList);
         return resList;
     }
 
@@ -117,7 +118,7 @@ public class HomepageService {
         List<Map<String, String>> resList = homepageMapper.recentVisit();
         resMap.put("default", resList.get(0));
         resMap.put("selectList", resList);
-        System.out.println(resMap);
+        //log.info("近期访问筛选列表接口resMap--->" + resMap);
         return resMap;
     }
 
@@ -256,19 +257,19 @@ public class HomepageService {
         //多线程拿到的所有数据
         if (kpiRunable != null){
             kpiResult = (List<Map<String, Object>>) kpiRunable.result;
-            log.info("指标子节点返回:" + kpiResult);
+            //log.info("指标子节点返回:" + kpiResult);
         }else{
             log.info("es没有kpi数据，没有开kpi线程！！！");
         }
         if (subjectRunable != null){
             subjectResult = (List<Map<String, Object>>) subjectRunable.result;
-            log.info("专题服务返回:" + subjectResult);
+            //log.info("专题服务返回:" + subjectResult);
         }else{
             log.info("es没有专题数据，没有开专题线程！！！");
         }
         if (reportRunable != null){
             reportResult = (List<Map<String, Object>>) reportRunable.result;
-            log.info("报告服务返回:" + reportResult);
+            //log.info("报告服务返回:" + reportResult);
         }else{
             log.info("es没有报告数据，没有开报告线程！！！");
         }
@@ -350,7 +351,7 @@ public class HomepageService {
             }
         }
         resMap.put("data", resList);
-        System.out.println("resMap----------->" + resMap);
+
         /*if(!kpiStr.equals("")){
             resList.addAll(requestToKPI(kpiStr));
         }*/
@@ -431,19 +432,19 @@ public class HomepageService {
             }
         }
         if (kpiStr.equals("")) {
-            System.out.println("没有需要查询的指标id！！！");
+            log.info("没有需要查询的指标id！！！");
         } else {
             //String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
             String chartDataParam = area + "," + date + "," + firstKpi + "," + "1";
             log.info("查询第一个指标的图表数据的参数是：" + chartDataParam);
             //chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
             chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/allChartOfTheKpi", chartDataParam, Map.class);
-            log.info("第一个指标的图表数据是：" + chartData);
+            //log.info("第一个指标的图表数据是：" + chartData);
             String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
             log.info("查询同比环比数据的参数是：" + dataParam);
             //data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
             data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/dataOfAllKpi", dataParam, List.class);
-            log.info("同比环比数据是：" + data);
+            //log.info("同比环比数据是：" + data);
         }
 
         //4.将服务查询出的数据放到es的结果中，拼接结果
@@ -487,7 +488,6 @@ public class HomepageService {
             }
         }
         resMap.put("data", esList);
-        System.out.println("resMap---------->" + resMap);
         return resMap;
     }
 
@@ -508,8 +508,8 @@ public class HomepageService {
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
         Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-        System.out.println("查询es的参数--------->" + paramStr);
-        System.out.println("查询es的结果-------->" + esMap);
+        log.info("查询es的参数--------->" + paramStr);
+        log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
@@ -538,10 +538,10 @@ public class HomepageService {
             }
         }
         if (specialStr.equals("")) {
-            System.out.println("没有需要查询的专题id！！！");
+            log.info("没有需要查询的专题id！！！");
         } else {
             data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", specialStr, List.class);
-            System.out.println("专题服务查询出的数据是：" + data);
+            //log.info("专题服务查询出的数据是：" + data);
         }
 
         //4.将服务查询出的数据放到es的结果中，拼接结果
@@ -577,8 +577,8 @@ public class HomepageService {
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
         Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-        System.out.println("查询es的参数--------->" + paramStr);
-        System.out.println("查询es的结果-------->" + esMap);
+        log.info("查询es的参数--------->" + paramStr);
+        log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
@@ -606,10 +606,10 @@ public class HomepageService {
             }
         }
         if (reportPPTStr.equals("")) {
-            System.out.println("没有需要查询的专题id！！！");
+            log.info("没有需要查询的专题id！！！");
         } else {
             data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr, List.class);
-            System.out.println("专题服务查询出的数据是：" + data);
+            //log.info("专题服务查询出的数据是：" + data);
         }
 
         //4.将服务查询出的数据放到es的结果中，拼接结果
