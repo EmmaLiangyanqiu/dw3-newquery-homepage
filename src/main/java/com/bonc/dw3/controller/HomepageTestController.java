@@ -254,17 +254,22 @@ public class HomepageTestController {
         }
         dataMap.put("dataValue", dataValueList);
         dataMap.put("chartType", "line");
+        dataMap.put("unit", "万");
+        List<Map<String, Object>> chartList = new ArrayList<>();
+        Map<String, Object> chartMap = new HashMap<>();
         List<Integer> chartDataList = new ArrayList<>();
         for (int i = 1; i <= 7; i ++){
             chartDataList.add(i);
         }
-        dataMap.put("chartData", chartDataList);
+        chartMap.put("data", chartDataList);
         String[] a2 = {"4月30日", "5月1日", "5月2日", "5月3日", "5月4日", "5月5日", "5月6日"};
         List<String> chartXList = new ArrayList<>();
         for (String b2 : a2){
             chartXList.add(b2);
         }
-        dataMap.put("chartX", chartXList);
+        chartMap.put("chartX", chartXList);
+        chartList.add(chartMap);
+        dataMap.put("chart", chartList);
         map1.put("data", dataMap);
         resList.add(map1);
 
@@ -350,7 +355,6 @@ public class HomepageTestController {
 
         List<Map<String, Object>> chartList = new ArrayList<>();
         Map<String, Object> chartMap = new HashMap<>();
-
         List<Integer> dataList = new ArrayList<>();
         for (int i = 1; i < 8; i ++){
             dataList.add(i);
@@ -364,7 +368,6 @@ public class HomepageTestController {
         }
         //chartDataMap1.put("chartX", chartXList);
         chartMap.put("chartX", chartXList);
-
         chartList.add(chartMap);
         chartDataMap1.put("chart", chartList);
         chartDataList.add(chartDataMap1);
@@ -479,8 +482,12 @@ public class HomepageTestController {
         map2.put("dataValue", dataValueList);
         map2.put("chartType", "line");
         map2.put("unit", "万");
-        map2.put("data", dataList);
-        map2.put("chartX", chartXList);
+        List<Map<String, Object>> chartList555 = new ArrayList<>();
+        Map<String, Object> chartMap555 = new HashMap<>();
+        chartMap555.put("data", dataList);
+        chartMap555.put("chartX", chartXList);
+        chartList555.add(chartMap555);
+        map2.put("chart", chartList555);
 
         Map<String, Object> map3 = new HashMap<>();
         map3.put("indexName", "4g业务计费收入");
@@ -495,9 +502,13 @@ public class HomepageTestController {
         map3.put("dataName", dataNameList);
         map3.put("dataValue", dataValueList);
         map3.put("chartType", "line");
+        List<Map<String, Object>> chartList666 = new ArrayList<>();
+        Map<String, Object> chartMap666 = new HashMap<>();
         map3.put("unit", "千万");
-        map3.put("data", dataList);
-        map3.put("chartX", chartXList);
+        chartMap666.put("data", dataList);
+        chartMap666.put("chartX", chartXList);
+        chartList666.add(chartMap666);
+        map3.put("chart", chartList666);
 
         resList.add(map1);
         resList.add(map2);
