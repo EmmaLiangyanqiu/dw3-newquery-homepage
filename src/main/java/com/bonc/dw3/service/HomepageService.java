@@ -503,8 +503,9 @@ public class HomepageService {
         if (specialStr.equals("")) {
             log.info("没有需要查询的专题id！！！");
         } else {
+            log.info("专题服务查询的参数是---》" + specialStr);
             data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", specialStr, List.class);
-            //log.info("专题服务查询出的数据是：" + data);
+            log.info("专题服务查询出的数据是：" + data);
         }
 
         //4.将服务查询出的数据放到es的结果中，拼接结果
@@ -569,8 +570,9 @@ public class HomepageService {
             }
         }
         if (reportPPTStr.equals("")) {
-            log.info("没有需要查询的专题id！！！");
+            log.info("没有需要查询的报告id！！！");
         } else {
+            log.info("报告服务查询的参数是---》" + reportPPTStr);
             data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr, List.class);
             //log.info("专题服务查询出的数据是：" + data);
         }
