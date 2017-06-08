@@ -586,7 +586,7 @@ public class HomepageTestController {
         }*/
         String paramStr = "R_004";
         RestTemplate restTemplateTmp = new RestTemplate();
-        List<Map<String, Object>> data = restTemplateTmp.postForObject("http://192.168.31.7:7333/pptReportForHomepage/info", paramStr, List.class);
+        List<Map<String, Object>> data = restTemplateTmp.postForObject("http://10.249.216.52:8033/pptReportForHomepage/info", paramStr, List.class);
         List<String> imgList = (List<String>) data.get(0).get("img");
         for (String b : a){
             String[] s = b.split("\\|");
