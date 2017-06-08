@@ -181,7 +181,7 @@ public class HomepageService {
         if (!StringUtils.isBlank(kpiStr)) {
             kpiStr = "-1,-1," + kpiStr;
             //kpiStr = "010,2016-10-01" + kpiStr;
-            kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexForHomepage/dataOfAllKpi", kpiStr);
+            kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", kpiStr);
             kpiThread = new Thread(kpiRunable);
             kpiThread.start();
         } else {
@@ -400,13 +400,13 @@ public class HomepageService {
             //String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
             String chartDataParam = area + "," + date + "," + firstKpi + "," + "1";
             log.info("查询第一个指标的图表数据的参数是：" + chartDataParam);
-            //chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
-            chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
+            //chartData = restTemplateTmp.postForObject("http://192.168.31.6:7331/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
+            chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
             //log.info("第一个指标的图表数据是：" + chartData);
             String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
             log.info("查询同比环比数据的参数是：" + dataParam);
             //data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
-            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexForHomepage/dataOfAllKpi", dataParam, List.class);
+            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam, List.class);
             //log.info("同比环比数据是：" + data);
         }
 
