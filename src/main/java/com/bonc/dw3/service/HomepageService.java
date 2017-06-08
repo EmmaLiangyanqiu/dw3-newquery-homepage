@@ -181,7 +181,7 @@ public class HomepageService {
         if (!StringUtils.isBlank(kpiStr)) {
             kpiStr = "-1,-1," + kpiStr;
             //kpiStr = "010,2016-10-01" + kpiStr;
-            kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/dataOfAllKpi", kpiStr);
+            kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexForHomepage/dataOfAllKpi", kpiStr);
             kpiThread = new Thread(kpiRunable);
             kpiThread.start();
         } else {
