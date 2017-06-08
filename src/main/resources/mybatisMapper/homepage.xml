@@ -71,9 +71,6 @@
     </select>
 
 
-
-
-
     <!--12.根据code模糊查询默认参数和code-->
     <select id="getInfosViaCode" resultType="java.util.HashMap" parameterType="java.lang.String">
         select code, param_values value

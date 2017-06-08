@@ -124,7 +124,7 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", searchStr, Map.class);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", searchStr, Map.class);
         log.info("查询es的参数--------->" + searchStr);
         log.info("查询es的结果-------->" + esMap);
 
@@ -355,7 +355,7 @@ public class HomepageService {
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
         log.info("查询es的参数--------->" + paramStr);
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", paramStr, Map.class);
         log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -470,7 +470,7 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", paramStr, Map.class);
         log.info("查询es的参数--------->" + paramStr);
         log.info("查询es的结果-------->" + esMap);
 
@@ -539,7 +539,7 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", paramStr, Map.class);
         log.info("查询es的参数--------->" + paramStr);
         log.info("查询es的结果-------->" + esMap);
 
