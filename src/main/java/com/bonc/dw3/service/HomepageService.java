@@ -441,7 +441,7 @@ public class HomepageService {
                         map1.put("dataName", map2.get("dataName"));
                         map1.put("dataValue", map2.get("dataValue"));
                         map1.put("url", url);
-                        map1.put("area", area);
+                        map1.put("area", "内蒙古");
                         map1.put("date", date);
                         map1.remove("typeId");
                         map1.remove("type");
