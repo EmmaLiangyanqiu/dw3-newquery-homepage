@@ -401,12 +401,12 @@ public class HomepageService {
             String chartDataParam = area + "," + date + "," + firstKpi + "," + "1";
             log.info("查询第一个指标的图表数据的参数是：" + chartDataParam);
             //chartData = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
-            chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/allChartOfTheKpi", chartDataParam, Map.class);
+            chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
             //log.info("第一个指标的图表数据是：" + chartData);
             String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
             log.info("查询同比环比数据的参数是：" + dataParam);
             //data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
-            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexDetails/SlaverKpi/dataOfAllKpi", dataParam, List.class);
+            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/indexForHomepage/dataOfAllKpi", dataParam, List.class);
             //log.info("同比环比数据是：" + data);
         }
 
