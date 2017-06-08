@@ -57,43 +57,6 @@ public class HomepageService {
 
 
     /**
-     * 2.菜单树组件接口
-     *
-     * @Author gp
-     * @Date 2017/5/29
-     */
-    public List<Map<String, String>> getAllMenu(String userId) {
-        String[] inMenu = null;
-        String[] outMenu = null;
-        String roleId = homepageMapper.selectRoleByUserId(userId);
-        String[] roleList = roleId.split(",");
-        List<String> mostMenu = homepageMapper.selectMostMenu(roleList);
-        Map<String, String> inAndOut = homepageMapper.selectRoleInOut(userId);
-        if (inAndOut!= null){
-            inMenu = inAndOut.get("rolein").split(",");
-        }
-        if (inAndOut!= null){
-            outMenu = inAndOut.get("roleout").split(",");
-        }
-        Set<String> menuSet = new HashSet<>(mostMenu);
-        if (inMenu != null){
-            for (String s : inMenu) {
-                menuSet.add(s);
-            }
-        }
-        if (outMenu != null){
-            for (String s : outMenu) {
-                menuSet.remove(s);
-            }
-        }
-        List<Map<String, String>> result = homepageMapper.selectAllMenu(menuSet);
-        //log.info("result------>" + result);
-
-        return result;
-    }
-
-
-    /**
      * 3.模块选项卡接口
      *
      * @Parameter markType 模块类型
@@ -452,7 +415,7 @@ public class HomepageService {
             Map<String, Object> map1 = esList.get(i);
             String id1 = map1.get("id").toString();
             if (i == 0){
-                map1.put("indexName", map1.get("title"));
+                //map1.put("title", map1.get("title"));
                 map1.put("markType", map1.get("typeId"));
                 map1.put("markName", map1.get("type"));
                 map1.put("chartData", chartData.get("chartData"));
@@ -461,13 +424,13 @@ public class HomepageService {
                 map1.put("url", url);
                 map1.remove("typeId");
                 map1.remove("type");
-                map1.remove("title");
+                //map1.remove("title");
             }else {
                 for (int j = 1; j < data.size(); j ++){
                     Map<String, Object> map2 = data.get(j);
                     String id2 = map2.get("id").toString();
                     if (id1.equals(id2)){
-                        map1.put("indexName", map1.get("title"));
+                        //map1.put("indexName", map1.get("title"));
                         map1.put("markType", map1.get("typeId"));
                         map1.put("markName", map1.get("type"));
                         map1.put("unit", map2.get("unit"));
@@ -482,7 +445,7 @@ public class HomepageService {
                         map1.put("date", date);
                         map1.remove("typeId");
                         map1.remove("type");
-                        map1.remove("title");
+                        //map1.remove("title");
                     }
                 }
             }

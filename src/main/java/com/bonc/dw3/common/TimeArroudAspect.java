@@ -35,7 +35,7 @@ public class TimeArroudAspect implements EnvironmentAware{
      * @return
      */
     @Around(POINT)
-    public Object timeAround(ProceedingJoinPoint joinPoint) {
+    public Object timeAround(ProceedingJoinPoint joinPoint) throws Throwable{
         // 定义返回对象、得到方法需要的参数
         Object obj = null;
         Object[] args = joinPoint.getArgs();
@@ -45,6 +45,7 @@ public class TimeArroudAspect implements EnvironmentAware{
             obj = joinPoint.proceed(args);
         } catch (Throwable e) {
             logger.error("统计某方法执行耗时环绕通知出错", e);
+            throw e;
         }
 
         // 获取执行的方法名

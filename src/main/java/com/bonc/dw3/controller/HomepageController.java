@@ -1,6 +1,7 @@
 package com.bonc.dw3.controller;
 
 import com.bonc.dw3.service.HomepageService;
+import com.bonc.dw3.service.MenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +21,9 @@ public class HomepageController {
 
     @Autowired
     HomepageService homepageService;
+
+    @Autowired
+    MenuService menuService;
 
     /**
      * 1.头部栏组件接口
@@ -57,8 +61,8 @@ public class HomepageController {
                       Model model){
         String userId = paramMap.get("userId").toString();
         String token = paramMap.get("token").toString();
-        List<Map<String,String>> list = homepageService.getAllMenu(userId);
-
+        Map<String, Object> resMap = menuService.data(userId);
+        model.addAttribute("resMap", resMap);
         return "nav";
     }
 
