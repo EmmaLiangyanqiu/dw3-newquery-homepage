@@ -96,10 +96,10 @@ public class HomepageController {
      * @Author gp
      * @Date 2017/5/29
      */
-    @ApiOperation("4-1.近期访问组件接口：筛选列表接口")
+    /*@ApiOperation("4-1.近期访问组件接口：筛选列表接口")
     @PostMapping("/recentVisit")
-    public String recentVisit(/*@ApiParam("用户id")@RequestParam("userId")String userId,
-                              @ApiParam("登陆令牌")@RequestParam("token")String token,*/
+    public String recentVisit(*//*@ApiParam("用户id")@RequestParam("userId")String userId,
+                              @ApiParam("登陆令牌")@RequestParam("token")String token,*//*
                               @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                               Model model){
         String userId = paramMap.get("userId").toString();
@@ -107,7 +107,7 @@ public class HomepageController {
         Map<String, Object> resMap = homepageService.recentVisit();
         model.addAttribute("resMap", resMap);
         return "recentVisit";
-    }
+    }*/
 
     /**
      * 4-2.近期访问组件接口：近期访问列表接口
@@ -115,11 +115,11 @@ public class HomepageController {
      * @Author gp
      * @Date 2017/5/25
      */
-    @ApiOperation("4-2.近期访问组件接口：近期访问列表接口")
+    /*@ApiOperation("4-2.近期访问组件接口：近期访问列表接口")
     @PostMapping("/recentVisitList")
-    public String recentVisitList(/*@ApiParam("用户ID")@RequestParam("userId")String userId,
+    public String recentVisitList(*//*@ApiParam("用户ID")@RequestParam("userId")String userId,
                                   @ApiParam("登陆令牌")@RequestParam("token")String token,
-                                  @ApiParam("查询类型指标专题报告")@RequestParam("selectId")String selectId,*/
+                                  @ApiParam("查询类型指标专题报告")@RequestParam("selectId")String selectId,*//*
                                   @ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
                                   Model model){
         String userId = paramMap.get("userId").toString();
@@ -129,7 +129,7 @@ public class HomepageController {
         Map<String, Object> recentVisitMap = homepageService.recentVisitList(paramStr);
         model.addAttribute("resMap", recentVisitMap);
         return "recentVisitList";
-    }
+    }*/
 
 
     /**
