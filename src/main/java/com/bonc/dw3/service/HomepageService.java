@@ -741,7 +741,7 @@ public class HomepageService {
      */
     public Map<String, Object> recentVisitList(String paramStr) {
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> recentVisitMap = restTemplateTmp.postForObject("http://10.249.216.52:8044/es/fetch", paramStr, Map.class);
+        Map<String, Object> recentVisitMap = restTemplateTmp.postForObject("http://10.249.216.52:8044/HomePage/recentVisitList", paramStr, Map.class);
         return recentVisitMap;
     }
 
