@@ -71,6 +71,23 @@
     </select>
 
 
+    <!--8.地市接口-->
+    <select id="getArea" resultType="java.util.HashMap">
+        select t.prov_id, t.pro_name, area_id, area_desc
+        from (
+          select *
+          from v_dmcode_province_31 p
+          left join (
+            select area.prov_id proNo, area.area_id, area.area_desc
+            from dmcode_area area) a
+          on p.prov_id = a.proNo) t
+        order by prov_id desc, area_id ASC
+    </select>
+
+
+
+
+
     <!--12.根据code模糊查询默认参数和code-->
     <select id="getInfosViaCode" resultType="java.util.HashMap" parameterType="java.lang.String">
         select code, param_values value

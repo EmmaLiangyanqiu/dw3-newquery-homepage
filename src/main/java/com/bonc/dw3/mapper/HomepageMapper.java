@@ -74,12 +74,21 @@ public interface HomepageMapper {
 
 
     /**
-     * 根据typeId查询跳转的url
+     * 7.根据typeId查询跳转的url
      *
      * @Author gp
      * @Date 2017/5/31
      */
     String getUrlViaTypeId(String typeId);
+
+
+    /**
+     * 8.地市接口
+     *
+     * @Author gp
+     * @Date 2017/5/27
+     */
+    List<Map<String, String>> getArea();
 
 
 

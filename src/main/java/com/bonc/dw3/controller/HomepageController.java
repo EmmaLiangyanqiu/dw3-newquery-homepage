@@ -274,4 +274,18 @@ public class HomepageController {
     }
 
 
+    /**
+     * 8.地域接口
+     *
+     * @Author gp
+     * @Date 2017/6/9
+     */
+    @ApiOperation("地域接口")
+    @PostMapping("/area")
+    public String area(@ApiParam("请求参数对象") @RequestBody Map<String,Object> paramMap,
+                       Model model){
+        model.addAttribute("dataList", homepageService.area());
+        return "area";
+    }
+
 }

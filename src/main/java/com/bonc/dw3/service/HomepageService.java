@@ -604,6 +604,67 @@ public class HomepageService {
 
 
     /**
+     * 8.地市接口
+     *
+     * @Author gp
+     * @Date 2017/6/9
+     */
+    public List<Map<String, Object>> area(){
+        List<Map<String,String>> areaList = homepageMapper.getArea();
+        //找到所有的prov_id:31省+全国，放到provList里
+        List<String> provList = new ArrayList<String>();
+        for(Map<String,String> areaMap :areaList){
+            //没读到一个map，将flag=false，表示是一个新的prov_id,还没有放到provList里
+            boolean flag = false;
+            if(provList != null && provList.size()>0){
+                //倒序查找provList
+                for(int i= provList.size()-1;i>=0;i--){
+                //for(String prov :provList){
+                    String prov = provList.get(i);
+                    if(prov.equals(areaMap.get("PROV_ID"))){
+                        flag = true;//在provList中找到了一样的prov_id,跳过
+                        break;
+                    }
+                }
+                if(flag==false){
+                    provList.add(areaMap.get("PROV_ID"));
+                }
+            }else{
+                provList.add(areaMap.get("PROV_ID"));
+            }
+        }
+
+        List<Map<String,Object>> resList = new ArrayList<>();
+        for(String pro:provList){
+            Map<String,Object> provMap = new HashMap<>();
+            provMap.put("proId", pro);
+
+            List<Map<String,String>> cityList = new ArrayList<>();
+            int i;
+            for(i=0;i<areaList.size();i++){
+                Map<String,String> areaMap = areaList.get(i);
+                if(pro.equals(areaMap.get("PROV_ID"))){
+                    provMap.put("proName", areaMap.get("PRO_NAME"));
+
+                    Map<String,String> cityMap = new HashMap<>();
+                    cityMap.put("cityId", areaMap.get("AREA_ID"));
+                    cityMap.put("cityName", areaMap.get("AREA_DESC"));
+                    cityList.add(cityMap);
+                    provMap.put("city", cityList);
+
+                    areaList.remove(areaMap);
+                    i--;
+                }
+
+            }
+            resList.add(provMap);
+        }
+        System.out.println(resList);
+        return resList;
+    }
+
+
+    /**
      * 对返回结果依照ES的次序重新排序
      *
      * @param resList 处理后的结果，带有ord字段，按ord字段排序
