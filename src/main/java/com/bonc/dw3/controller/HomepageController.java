@@ -271,7 +271,7 @@ public class HomepageController {
         String userId = paramMap.get("userId").toString();
         String token = paramMap.get("token").toString();
         String selectId = paramMap.get("selectId").toString();
-        String paramStr = userId + "," + selectId;
+        String paramStr = userId + "," + token + "," + selectId;
         Map<String, Object> recentVisitMap = homepageService.recentVisitList(paramStr);
         model.addAttribute("resMap", recentVisitMap);
         return "recentVisitList";
