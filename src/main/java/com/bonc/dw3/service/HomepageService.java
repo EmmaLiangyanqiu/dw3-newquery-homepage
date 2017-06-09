@@ -51,7 +51,6 @@ public class HomepageService {
         List<Map<String, String>> resList = homepageMapper.headerSelect();
         resMap.put("default", resList.get(0));
         resMap.put("selectList", resList);
-        //log.info("头部组件接口resMap--->" + resMap);
         return resMap;
     }
 
@@ -65,7 +64,6 @@ public class HomepageService {
      */
     public List<Map<String, String>> moduleTab(String markType) {
         List<Map<String, String>> resList = homepageMapper.moduleTab(markType);
-        //log.info("模块选项卡接口--->" + resList);
         return resList;
     }
 
@@ -397,7 +395,7 @@ public class HomepageService {
                 }
             }
         }
-        if (kpiStr.equals("")) {
+        if (kpiStr.equals("") && firstKpi.equals("")) {
             log.info("没有需要查询的指标id！！！");
         } else {
             //String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
