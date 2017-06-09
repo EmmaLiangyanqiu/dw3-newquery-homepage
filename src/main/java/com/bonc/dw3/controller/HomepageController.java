@@ -303,6 +303,7 @@ public class HomepageController {
         String token = paramMap.get("token").toString();
         String dateType=paramMap.get("dateType").toString();
         String date = homepageService.getMaxDate(dateType);
+        System.out.println("date----->" + date);
         model.addAttribute("date", date);
         return "maxDate";
     }
