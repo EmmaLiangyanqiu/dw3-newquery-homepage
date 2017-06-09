@@ -74,7 +74,7 @@ public interface HomepageMapper {
 
 
     /**
-     * 7.根据typeId查询跳转的url
+     * 根据typeId查询跳转的url
      *
      * @Author gp
      * @Date 2017/5/31
@@ -83,12 +83,31 @@ public interface HomepageMapper {
 
 
     /**
-     * 8.地市接口
+     * 7.地域组件接口
      *
      * @Author gp
      * @Date 2017/5/27
      */
     List<Map<String, String>> getArea();
+
+
+    /**
+     * 8-1.日期组件接口：最大日账期
+     *
+     * @Author gp
+     * @Date 2017/6/9
+     */
+    String getDayMaxDate();
+
+
+    /**
+     * 8-2.日期组件接口：最大月账期-
+     *
+     * @Author gp
+     * @Date 2017/6/9
+     */
+    String getMonthMaxDate();
+
 
 
 

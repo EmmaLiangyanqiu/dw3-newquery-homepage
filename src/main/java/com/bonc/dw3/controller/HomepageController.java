@@ -275,17 +275,36 @@ public class HomepageController {
 
 
     /**
-     * 8.地域接口
+     * 7.地域组件接口
      *
      * @Author gp
      * @Date 2017/6/9
      */
-    @ApiOperation("地域接口")
+    @ApiOperation("7.地域接口")
     @PostMapping("/area")
     public String area(@ApiParam("请求参数对象") @RequestBody Map<String,Object> paramMap,
                        Model model){
         model.addAttribute("dataList", homepageService.area());
         return "area";
+    }
+
+
+    /**
+     * 8.日期组件接口
+     *
+     * @Author gp
+     * @Date 2017/6/9
+     */
+    @ApiOperation("8.日期接口")
+    @PostMapping("/maxDate")
+    public String maxDate(@ApiParam("请求参数对象") @RequestBody Map<String, String> paramMap,
+                          Model model ){
+        String userId=paramMap.get("userId").toString();
+        String token = paramMap.get("token").toString();
+        String dateType=paramMap.get("dateType").toString();
+        String date = homepageService.getMaxDate(dateType);
+        model.addAttribute("date", date);
+        return "maxDate";
     }
 
 }

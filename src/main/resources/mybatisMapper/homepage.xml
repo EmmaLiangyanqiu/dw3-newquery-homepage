@@ -64,14 +64,14 @@
     </select>
 
 
-    <!--7.根据typeId查询跳转的url-->
+    <!--根据typeId查询跳转的url-->
     <select id="getUrlViaTypeId" resultType="String" parameterType="java.lang.String">
         select t.url "url" from dw_newquery_module_type t
         where t.module_code = #{typeId}
     </select>
 
 
-    <!--8.地市接口-->
+    <!--7.地域组件接口-->
     <select id="getArea" resultType="java.util.HashMap">
         select t.prov_id, t.pro_name, area_id, area_desc
         from (
@@ -79,12 +79,24 @@
           from v_dmcode_province_31 p
           left join (
             select area.prov_id proNo, area.area_id, area.area_desc
-            from dmcode_area area) a
+            from dmcode_pub.dmcode_area area) a
           on p.prov_id = a.proNo) t
         order by prov_id desc, area_id ASC
     </select>
 
 
+    <!--8-1.日期组件接口：最大日账期-->
+    <select id="getDayMaxDate" resultType="String">
+        select distinct to_char(to_date(max(d.ACCT_DATE), 'yyyymmdd'), 'yyyy-mm-dd') "date"
+        from DM.V_DM_KPI_D_001001 d
+    </select>
+
+
+    <!--8-2.日期组件接口：最大月账期-->
+    <select id="getMonthMaxDate" resultType="String">
+        select distinct to_char(to_date(max(m.MONTH_ID), 'yyyymm'), 'yyyy-mm') "date"
+        from DM.V_DM_KPI_DATA_GJ_MONTH m
+    </select>
 
 
 
