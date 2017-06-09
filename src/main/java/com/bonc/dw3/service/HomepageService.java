@@ -684,10 +684,10 @@ public class HomepageService {
         String date = "";
         //是月标识
         if ((!StringUtils.isBlank(dateType)) && dateType.equals("2")){
-            date = homepageMapper.getDayMaxDate();
+            date = homepageMapper.getMonthMaxDate();
         }else {
             //日或者全部标识
-            date = homepageMapper.getMonthMaxDate();
+            date = homepageMapper.getDayMaxDate();
         }
         return date;
     }

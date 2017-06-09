@@ -305,7 +305,7 @@ public class HomepageController {
         String date = homepageService.getMaxDate(dateType);
         System.out.println("date----->" + date);
         model.addAttribute("date", date);
-        return "maxDate";
+        return "date";
     }
 
 }
