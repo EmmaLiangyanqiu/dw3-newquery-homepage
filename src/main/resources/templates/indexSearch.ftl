@@ -46,7 +46,7 @@
                                         "${key}":[
                                             <#assign dataList1 = chartMap[key]>
                                             <#list dataList1 as data1>
-                                            ${data1}<#if data1_has_next>,</#if>
+                                            "${data1}"<#if data1_has_next>,</#if>
                                             </#list>
                                         ]
                                         </#if>
@@ -138,7 +138,7 @@
                                         "${key}":[
                                             <#assign dataList1 = chartMap[key]>
                                             <#list dataList1 as data1>
-                                            ${data1}<#if data1_has_next>,</#if>
+                                            "${data1}"<#if data1_has_next>,</#if>
                                             </#list>
                                         ]
                                         </#if>
