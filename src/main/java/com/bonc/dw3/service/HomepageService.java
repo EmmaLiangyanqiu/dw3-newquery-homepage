@@ -618,7 +618,7 @@ public class HomepageService {
             boolean flag = false;
             if(provList != null && provList.size()>0){
                 //倒序查找provList
-                for(int i= provList.size()-1; i>=0; i--){
+                for(int i = provList.size()-1; i>=0; i--){
                 //for(String prov :provList){
                     String prov = provList.get(i);
                     if(prov.equals(areaMap.get("PROV_ID"))){
