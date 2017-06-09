@@ -37,6 +37,6 @@ public class MyRunable implements Runnable {
     @Override
     public void run() {
         this.result = restTemplate.postForObject(url, paramStr, Object.class);
-        log.info(this.result.toString());
+        //log.info(this.result.toString());
     }
 }
