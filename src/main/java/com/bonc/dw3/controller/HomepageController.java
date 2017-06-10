@@ -135,8 +135,14 @@ public class HomepageController {
         String paramStr = userId + "," + searchType + "," + search + "," + dayOrmonth +"," +numStart + "," + num;
         //查询es并拼接结果
         Map<String, Object> resMap = homepageService.indexSearch(paramStr, numStart, num, area, date);
+        //数据为空
+        List<Map<String, Object>> resList = (List<Map<String, Object>>) resMap.get("data");
+        if (resList.size() == 0){
+            model.addAttribute("resMap", new HashMap<>());
+        }else{
+            model.addAttribute("resMap", resMap);
+        }
 
-        model.addAttribute("resMap", resMap);
         return "indexSearch";
     }
 

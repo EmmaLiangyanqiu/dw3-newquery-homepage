@@ -378,6 +378,8 @@ public class HomepageService {
                     }
                 }
             }
+        }else{
+            log.info("es没有返回数据");
         }
 
         if (kpiStr.equals("") && firstKpi.equals("")) {
