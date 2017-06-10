@@ -206,12 +206,3 @@
 "data":[]
 </#if>
 }
-
-<#if chartType = "pie">
-{
-    <#if key = "name" || key = "value">
-    "${key}":"${chartMap11[key]}"
-        <#if key_has_next>,</#if>
-    </#if>
-}<#if chartMap11_has_next>,</#if>
-</#if>
