@@ -361,22 +361,25 @@ public class HomepageService {
 
         //3.循环将收到的数据的id拼接成字符串发送给指标服务，获取数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        String typeId = esList.get(0).get("typeId").toString();
-        url = homepageMapper.getUrlViaTypeId(typeId);
-        //log.info("url------>" + url);
-        for (int i = 0; i < esList.size(); i++) {
-            String id = esList.get(i).get("id").toString();
-            if (i == 0) {
-                firstKpi = firstKpi + id;
-                fitstDayOrMonth = esList.get(i).get("dayOrMonth").toString();
-            } else {
-                if (kpiStr.equals("")) {
-                    kpiStr = kpiStr + id;
+        if (esList.size() != 0){
+            String typeId = esList.get(0).get("typeId").toString();
+            url = homepageMapper.getUrlViaTypeId(typeId);
+            //log.info("url------>" + url);
+            for (int i = 0; i < esList.size(); i++) {
+                String id = esList.get(i).get("id").toString();
+                if (i == 0) {
+                    firstKpi = firstKpi + id;
+                    fitstDayOrMonth = esList.get(i).get("dayOrMonth").toString();
                 } else {
-                    kpiStr = kpiStr + "," + id;
+                    if (kpiStr.equals("")) {
+                        kpiStr = kpiStr + id;
+                    } else {
+                        kpiStr = kpiStr + "," + id;
+                    }
                 }
             }
         }
+
         if (kpiStr.equals("") && firstKpi.equals("")) {
             log.info("没有需要查询的指标id！！！");
         } else {
