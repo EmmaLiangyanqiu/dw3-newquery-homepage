@@ -53,24 +53,23 @@ public class HomepageService {
 
     /**
      * 3.模块选项卡接口
-     * @Parameter markType 模块类型
      *
+     * @Parameter markType 模块类型
      * @Author gp
      * @Date 2017/5/27
      */
     public List<Map<String, String>> moduleTab(String markType) {
         List<Map<String, String>> resList = homepageMapper.moduleTab(markType);
-
         return resList;
     }
 
 
     /**
      * 6.搜索：全部接口
+     *
      * @Parameter searchStr 查询es的参数
      * @Parameter numStart 查询es的起始条数
      * @Parameter num 查询es的数据条数
-     *
      * @Author gp
      * @Date 2017/5/18
      */
@@ -107,16 +106,9 @@ public class HomepageService {
 
         //1.查询ES，ES中根据权重排序，支持分页，结果中携带排序序号
         log.info("查询es的参数------------------------>" + searchStr);
-        RestTemplate restTemplateTmp = new RestTemplate();
-        //查询参数有可能有中文，需要转码
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
-        headers.setContentType(mediaType);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(searchStr,  headers);
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
+        Map<String, Object> esMap = requestToES(searchStr);
         log.info("查询es的结果-------------------------->" + esMap);
 
-        //2.判断是否还有下一页数据
         //es查询到的数据的总条数
         if (esMap.containsKey("count") && !StringUtils.isBlank(esMap.get("count").toString())) {
             esCount = Integer.parseInt(esMap.get("count").toString());
@@ -125,6 +117,8 @@ public class HomepageService {
         }
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+
+        //2.判断是否还有下一页数据
         //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
         if (count < esCount) {
             nextFlag = "1";
@@ -134,32 +128,34 @@ public class HomepageService {
         resMap.put("nextFlag", nextFlag);
 
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并送到相应的服务中查询详细数据
-        List<Map<String, Object>> esList = new ArrayList<>();
-        if (esMap.containsKey("data") && esMap.get("data") != null){
-            esList = (List<Map<String, Object>>) esMap.get("data");
-        }
-
-        for (Map<String, Object> map : esList) {
-            String type = map.get("typeId").toString();
-            //type=1指标；3报告；2专题
-            if (type.equals("1")) {
-                //kpiStr为空时，拼接字符串不要逗号
-                if (kpiStr.equals("")) {
-                    kpiStr = map.get("id").toString();
+        List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        if (esList.size() != 0) {
+            for (Map<String, Object> map : esList) {
+                String type = map.get("typeId").toString();
+                //type=1指标；3报告；2专题
+                if (type.equals("1")) {
+                    //kpiStr为空时，拼接字符串不要逗号
+                    if (kpiStr.equals("")) {
+                        kpiStr = map.get("id").toString();
+                    } else {
+                        kpiStr = kpiStr + "," + map.get("id");
+                    }
+                } else if (type.equals("3")) {
+                    //reportPPTStr为空时，拼接字符串不要逗号
+                    if (reportPPTStr.equals("")) {
+                        reportPPTStr = map.get("id").toString();
+                    } else {
+                        reportPPTStr = reportPPTStr + "," + map.get("id");
+                    }
+                } else if (type.equals("2")) {
+                    //subjectStr为空时，拼接字符串不要逗号
+                    if (subjectStr.equals("")) {
+                        subjectStr = map.get("id").toString();
+                    } else {
+                        subjectStr = subjectStr + "," + map.get("id");
+                    }
                 } else {
-                    kpiStr = kpiStr + "," + map.get("id");
-                }
-            } else if (type.equals("3")) {
-                if (reportPPTStr.equals("")) {
-                    reportPPTStr = map.get("id").toString();
-                } else {
-                    reportPPTStr = reportPPTStr + "," + map.get("id");
-                }
-            } else if (type.equals("2")) {
-                if (subjectStr.equals("")) {
-                    subjectStr = map.get("id").toString();
-                } else {
-                    subjectStr = subjectStr + "," + map.get("id");
+                    log.info("es返回了不存在的type！");
                 }
             }
         }
@@ -170,29 +166,24 @@ public class HomepageService {
         //4.多线程分别请求别的服务拿到详细的数据
         //参数处理，如果参数为""时，不开线程
         if (!StringUtils.isBlank(kpiStr)) {
-            kpiStr = "-1,-1," + kpiStr;
-            //kpiStr = "010,2016-10-01" + kpiStr;
+            //发送给指标服务查询同比环比和一个图表的数据，由于指标服务的接口有传地域和日期参数，这里没有，用“-1”占位，让指标服务去判断
+            //"-1,-1,"查询的是全国，最大账期条件下的数据
+            kpiStr = "-1,-1," + kpiStr; //kpiStr = "010,2016-10-01" + kpiStr;
             kpiRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", kpiStr);
             kpiThread = new Thread(kpiRunable);
             kpiThread.start();
-        } else {
-            log.info("es查询结果中没有指标数据！！！");
         }
         //请求专题服务
         if (!StringUtils.isBlank(subjectStr)) {
             subjectRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", subjectStr);
             subjectThread = new Thread(subjectRunable);
             subjectThread.start();
-        } else {
-            log.info("es查询结果中没有专题数据！！！");
         }
         //请求报告服务
         if (!StringUtils.isBlank(reportPPTStr)) {
             reportRunable = new MyRunable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", reportPPTStr);
             reportThread = new Thread(reportRunable);
             reportThread.start();
-        } else {
-            log.info("es查询结果中没有报告数据！！！");
         }
         //保证子线程执行完毕
         try {
@@ -211,19 +202,16 @@ public class HomepageService {
         //多线程拿到的所有数据
         if (kpiRunable != null) {
             kpiResult = (List<Map<String, Object>>) kpiRunable.result;
-            //log.info("指标子节点返回:" + kpiResult);
         } else {
             log.info("es没有kpi数据，没有开kpi线程！！！");
         }
         if (subjectRunable != null) {
             subjectResult = (List<Map<String, Object>>) subjectRunable.result;
-            //log.info("专题服务返回:" + subjectResult);
         } else {
             log.info("es没有专题数据，没有开专题线程！！！");
         }
         if (reportRunable != null) {
             reportResult = (List<Map<String, Object>>) reportRunable.result;
-            //log.info("报告服务返回:" + reportResult);
         } else {
             log.info("es没有报告数据，没有开报告线程！！！");
         }
@@ -231,13 +219,14 @@ public class HomepageService {
         //5.组合数据
         for (Map<String, Object> map1 : esList) {
             String typeId = map1.get("typeId").toString();
+            //查询数据库得到跳转的url
             String url = homepageMapper.getUrlViaTypeId(typeId);
-            //log.info("url------>" + url);
             String id1 = map1.get("id").toString();
+            //指标数据处理
             if (typeId.equals("1") && kpiResult != null) {
-                //指标
                 for (Map<String, Object> map2 : kpiResult) {
                     String id2 = map2.get("id").toString();
+                    //es中和指标服务返回的结果id对应上了，组合数据
                     if (id1.equals(id2)) {
                         Map<String, Object> map = new HashMap<>();
                         map.put("markType", typeId);
@@ -248,13 +237,12 @@ public class HomepageService {
                         dataMap.put("markName", map1.get("type"));
                         dataMap.put("title", map1.get("title"));
                         dataMap.put("dayOrMonth", map1.get("dayOrMonth"));
+                        //这里的数据全部都只查询全国的数据
                         dataMap.put("area", "全国");
                         dataMap.put("date", map2.get("date"));
                         dataMap.put("dataName", map2.get("dataName"));
                         dataMap.put("dataValue", map2.get("dataValue"));
                         dataMap.put("chartType", map2.get("chartType"));
-                        //dataMap.put("chartData", map2.get("data"));
-                        //dataMap.put("chartX", map2.get("chartX"));
                         dataMap.put("unit", map2.get("unit"));
                         dataMap.put("chart", map2.get("chart"));
                         map.put("data", dataMap);
@@ -262,7 +250,7 @@ public class HomepageService {
                     }
                 }
             } else if (typeId.equals("2") && subjectResult != null) {
-                //专题
+                //专题数据处理
                 for (Map<String, Object> map2 : subjectResult) {
                     String id2 = map2.get("id").toString();
                     if (id1.equals(id2)) {
@@ -282,7 +270,7 @@ public class HomepageService {
                     }
                 }
             } else if (typeId.equals("3") && reportResult != null) {
-                //报告
+                //报告数据处理
                 for (Map<String, Object> map2 : reportResult) {
                     String id2 = map2.get("id").toString();
                     if (id1.equals(id2)) {
@@ -302,59 +290,52 @@ public class HomepageService {
                         resList.add(map);
                     }
                 }
+            } else {
+                log.info("es返回了不存在的type！");
             }
         }
         resMap.put("data", resList);
-
-        /*if(!kpiStr.equals("")){
-            resList.addAll(requestToKPI(kpiStr));
-        }*/
-
-        //log.info("专题有-------->" + subjectList);
-        /*if(subjectList.size() > 0){
-            resList.addAll(requestToSubject(subjectList));
-        }*/
-
-        //log.info("报告有-------->" + reportPPTList);
-        /*if(reportPPTList.size() > 0){
-            resList.addAll(requestToReportPPT(reportPPTList));
-        }*/
-
-        //对返回结果依照ES的次序重新排序
-        //return reOrder(resList);
         return resMap;
     }
 
 
     /**
      * 6-2.搜索：指标接口
+     * @Parameter searchStr 查询es的参数
+     * @Parameter numStart 查询es的起始条数
+     * @Parameter num 查询es的数据条数
+     * @Parameter area 查询时选定的地域（前端传过来的）
+     * @Parameter date 查询时选定的时间（前端传过来的）
      *
      * @Author gp
      * @Date 2017/5/31
      */
     public Map<String, Object> indexSearch(String paramStr, String numStart, String num, String area, String date) {
+        //最终的返回结果
         Map<String, Object> resMap = new HashMap<>();
+        //所有指标的同比环比数据
         List<Map<String, Object>> data = new ArrayList<>();
+        //第一个指标的所有图表数据
         Map<String, Object> chartData = new HashMap<>();
+        //是否还有下一页
         String nextFlag = "";
+        //第一个指标id
         String firstKpi = "";
+        //第一个指标的日月标识
         String fitstDayOrMonth = "";
+        //需要查询的全部kpi，以逗号分隔
         String kpiStr = "";
+        //跳转的url
         String url = "";
+        //es查询出的数据条数
         int esCount;
 
+        //根据地域id得到地域的名称
         String areaStr = homepageMapper.getProvNameViaProvId(area);
-        log.info("area----->" + areaStr);
+
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        RestTemplate restTemplateTmp = new RestTemplate();
-        log.info("查询es的参数--------->" + paramStr);
-        //查询参数有可能有中文，需要转码
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
-        headers.setContentType(mediaType);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr,  headers);
-        //Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
+        log.info("查询es的参数-------->" + paramStr);
+        Map<String, Object> esMap = requestToES(paramStr);
         log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -377,7 +358,7 @@ public class HomepageService {
 
         //3.循环将收到的数据的id拼接成字符串发送给指标服务，获取数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        if (esList.size() != 0){
+        if (esList.size() != 0) {
             String typeId = esList.get(0).get("typeId").toString();
             url = homepageMapper.getUrlViaTypeId(typeId);
             //log.info("url------>" + url);
@@ -394,7 +375,7 @@ public class HomepageService {
                     }
                 }
             }
-        }else{
+        } else {
             log.info("es没有返回数据");
         }
 
@@ -443,9 +424,9 @@ public class HomepageService {
                                 map1.put("dataName", map2.get("dataName"));
                                 map1.put("dataValue", map2.get("dataValue"));
                                 map1.put("url", url);
-                                if (!StringUtils.isBlank(areaStr)){
+                                if (!StringUtils.isBlank(areaStr)) {
                                     map1.put("area", areaStr);
-                                }else{
+                                } else {
                                     map1.put("area", "全国");
                                 }
                                 map1.put("date", date);
@@ -481,16 +462,9 @@ public class HomepageService {
         String url = "";
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        RestTemplate restTemplateTmp = new RestTemplate();
-        //查询参数有可能有中文，需要转码
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
-        headers.setContentType(mediaType);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr,  headers);
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
-        //Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
         log.info("查询es的参数--------->" + paramStr);
-        log.info("查询es的结果-------->" + esMap);
+        Map<String, Object> esMap = requestToES(paramStr);
+        log.info("查询es的结果--------->" + esMap);
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
@@ -560,16 +534,8 @@ public class HomepageService {
         String url = "";
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        RestTemplate restTemplateTmp = new RestTemplate();
-        //查询参数有可能有中文，需要转码
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
-        headers.setContentType(mediaType);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr,  headers);
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
-        //Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-
         log.info("查询es的参数--------->" + paramStr);
+        Map<String, Object> esMap = requestToES(paramStr);
         log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -587,6 +553,7 @@ public class HomepageService {
 
         //3.循环将收到的数据的id拼接成字符串发送给专题服务，获取数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+
         String typeId = esList.get(0).get("typeId").toString();
         url = homepageMapper.getUrlViaTypeId(typeId);
         for (Map<String, Object> map : esList) {
@@ -709,6 +676,31 @@ public class HomepageService {
 
 
     /**
+     * 向es发请求，参数是"userId,searchType,search,tabId,startNum,num"
+     *
+     * @Author gp
+     * @Date 2017/6/12
+     */
+    public Map<String, Object> requestToES(String paramStr) {
+        RestTemplate restTemplateTmp = new RestTemplate();
+        //查询参数有可能有中文，需要转码
+        Map<String, Object> resMap = new HashMap<>();
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
+        headers.setContentType(mediaType);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
+        resMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
+        return resMap;
+    }
+
+
+
+
+
+
+
+
+    /**
      * 对返回结果依照ES的次序重新排序
      *
      * @param resList 处理后的结果，带有ord字段，按ord字段排序
@@ -753,32 +745,24 @@ public class HomepageService {
     }
 
 
-    /**
-     * 4-1.近期访问接口：筛选列表接口
-     *
-     * @Author gp
-     * @Date 2017/5/27
-     */
-    public Map<String, Object> recentVisit() {
-        Map<String, Object> resMap = new HashMap<>();
-        List<Map<String, String>> resList = homepageMapper.recentVisit();
-        resMap.put("default", resList.get(0));
-        resMap.put("selectList", resList);
-        //log.info("近期访问筛选列表接口resMap--->" + resMap);
-        return resMap;
-    }
 
-    /**
-     * 4-2.近期访问接口：近期访问列表
-     *
-     * @Author gp
-     * @Date 2017/5/25
-     */
-    public Map<String, Object> recentVisitList(String paramStr) {
-        RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> recentVisitMap = restTemplateTmp.postForObject("http://10.249.216.52:8044/HomePage/recentVisitList", paramStr, Map.class);
-        return recentVisitMap;
-    }
+
+            /*if(!kpiStr.equals("")){
+            resList.addAll(requestToKPI(kpiStr));
+        }*/
+
+    //log.info("专题有-------->" + subjectList);
+        /*if(subjectList.size() > 0){
+            resList.addAll(requestToSubject(subjectList));
+        }*/
+
+    //log.info("报告有-------->" + reportPPTList);
+        /*if(reportPPTList.size() > 0){
+            resList.addAll(requestToReportPPT(reportPPTList));
+        }*/
+
+    //对返回结果依照ES的次序重新排序
+    //return reOrder(resList);
 
 }
 
