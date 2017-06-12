@@ -25,6 +25,9 @@ public class MyRunable implements Runnable {
     String paramStr;
     //RestTemplate对象
     RestTemplate restTemplate;
+    //请求返回耗时
+    long time;
+
     //请求的结果
     public Object result = null;
 
@@ -36,7 +39,9 @@ public class MyRunable implements Runnable {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
         this.result = restTemplate.postForObject(url, paramStr, Object.class);
-        //log.info(this.result.toString());
+        this.time = System.currentTimeMillis() - start;
+        log.info(paramStr + "服务返回结果耗时：" + this.time);
     }
 }

@@ -338,7 +338,6 @@ public class HomepageService {
         Map<String, Object> esMap = requestToES(paramStr);
         log.info("查询es的结果-------->" + esMap);
 
-        //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         if (esMap.containsKey("count") && !StringUtils.isBlank(esMap.get("count").toString())) {
             esCount = Integer.parseInt(esMap.get("count").toString());
@@ -346,8 +345,11 @@ public class HomepageService {
             esCount = 0;
             log.info("es没有返回count或者es返回的count为空");
         }
+
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+
+        //2.判断是否还有下一页数据
         //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
         if (count < esCount) {
             nextFlag = "1";
