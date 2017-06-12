@@ -83,6 +83,15 @@ public interface HomepageMapper {
 
 
     /**
+     * 根据省份id获取省份名称
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    String getProvNameViaProvId(String provId);
+
+
+    /**
      * 7.地域组件接口
      *
      * @Author gp

@@ -99,6 +99,14 @@
     </select>
 
 
+    <!--9.根据省份id获取省份名称-->
+    <select id="getProvNameViaProvId" parameterType="String" resultType="String">
+        select pro_name "name" from v_dmcode_province_31 p where prov_id = #{provId}
+    </select>
+
+
+
+
 
     <!--12.根据code模糊查询默认参数和code-->
     <select id="getInfosViaCode" resultType="java.util.HashMap" parameterType="java.lang.String">

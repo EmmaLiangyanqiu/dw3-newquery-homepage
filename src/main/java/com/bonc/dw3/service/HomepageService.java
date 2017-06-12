@@ -1,5 +1,7 @@
 package com.bonc.dw3.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 import com.bonc.dw3.common.thread.MyRunable;
@@ -7,6 +9,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
@@ -103,7 +108,12 @@ public class HomepageService {
         //1.查询ES，ES中根据权重排序，支持分页，结果中携带排序序号
         log.info("查询es的参数------------------------>" + searchStr);
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", searchStr, Map.class);
+        //查询参数有可能有中文，需要转码
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
+        headers.setContentType(mediaType);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(searchStr,  headers);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
         log.info("查询es的结果-------------------------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -333,12 +343,18 @@ public class HomepageService {
         String url = "";
         int esCount;
 
+        String areaStr = homepageMapper.getProvNameViaProvId(area);
+        log.info("area----->" + areaStr);
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
         log.info("查询es的参数--------->" + paramStr);
-
+        //查询参数有可能有中文，需要转码
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
+        headers.setContentType(mediaType);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr,  headers);
         //Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", paramStr, Map.class);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
         log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -427,7 +443,11 @@ public class HomepageService {
                                 map1.put("dataName", map2.get("dataName"));
                                 map1.put("dataValue", map2.get("dataValue"));
                                 map1.put("url", url);
-                                map1.put("area", "内蒙古");
+                                if (!StringUtils.isBlank(areaStr)){
+                                    map1.put("area", areaStr);
+                                }else{
+                                    map1.put("area", "全国");
+                                }
                                 map1.put("date", date);
                                 map1.remove("typeId");
                                 map1.remove("type");
@@ -462,7 +482,12 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", paramStr, Map.class);
+        //查询参数有可能有中文，需要转码
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
+        headers.setContentType(mediaType);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr,  headers);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
         //Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
         log.info("查询es的参数--------->" + paramStr);
         log.info("查询es的结果-------->" + esMap);
@@ -536,7 +561,12 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         RestTemplate restTemplateTmp = new RestTemplate();
-        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", paramStr, Map.class);
+        //查询参数有可能有中文，需要转码
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
+        headers.setContentType(mediaType);
+        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr,  headers);
+        Map<String, Object> esMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
         //Map<String, Object> esMap = restTemplateTmp.postForObject("http://192.168.110.57:7070/es/explore", paramStr, Map.class);
 
         log.info("查询es的参数--------->" + paramStr);
