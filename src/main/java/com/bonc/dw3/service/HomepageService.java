@@ -481,7 +481,7 @@ public class HomepageService {
         for (int i = 0; i < esList.size(); i ++) {
             Map<String, Object> map = esList.get(i);
             String id = map.get("id").toString();
-            myThreads[i] = new MyThread("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", id);
+            myThreads[i] = new MyThread("http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
             myThreads[i].start();
             myThreads[i].join();
             topicList.add(id);
