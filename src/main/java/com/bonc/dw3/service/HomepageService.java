@@ -167,21 +167,21 @@ public class HomepageService {
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
                     String paramStr = "-1,-1," + id;
                     //开子线程
-                    myThreads[i] = new MyThread("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", paramStr);
+                    myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
                     myThreads[i].join();
                 } else if (typeId.equals("2")) {
                     //专题
                     topicList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", id);
+                    myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", id);
                     myThreads[i].start();
                     myThreads[i].join();
                 } else if (typeId.equals("3")) {
                     //报告
                     reportList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", id);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
                     myThreads[i].join();
                 } else {
@@ -481,7 +481,7 @@ public class HomepageService {
         for (int i = 0; i < esList.size(); i ++) {
             Map<String, Object> map = esList.get(i);
             String id = map.get("id").toString();
-            myThreads[i] = new MyThread("http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
+            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
             myThreads[i].start();
             myThreads[i].join();
             topicList.add(id);
