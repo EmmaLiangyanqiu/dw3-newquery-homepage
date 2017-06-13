@@ -93,7 +93,7 @@ public class HomepageController {
     @ApiOperation("6-1.搜索-全部搜索接口")
     @PostMapping("/allSearch")
     public String allSearch(@ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
-                            Model model){
+                            Model model) throws InterruptedException {
         String userId = paramMap.get("userId").toString();
         String searchType = paramMap.get("searchType").toString();
         String search = paramMap.get("search").toString();
@@ -157,7 +157,7 @@ public class HomepageController {
     @ApiOperation("7.搜索-专题搜索接口")
     @PostMapping("/specialSearch")
     public String specialSearch(@ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
-                                Model model){
+                                Model model) throws InterruptedException {
         Map<String, Object> resMap = new HashMap<>();
 
         String userId = paramMap.get("userId").toString();
