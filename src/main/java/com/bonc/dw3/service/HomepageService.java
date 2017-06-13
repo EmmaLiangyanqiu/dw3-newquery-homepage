@@ -362,14 +362,16 @@ public class HomepageService {
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         if (esList.size() != 0) {
             String typeId = esList.get(0).get("typeId").toString();
+            //得到跳转地址
             url = homepageMapper.getUrlViaTypeId(typeId);
-            //log.info("url------>" + url);
+            //for循环得到需要查询的kpi字符串
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 if (i == 0) {
                     firstKpi = firstKpi + id;
                     fitstDayOrMonth = esList.get(i).get("dayOrMonth").toString();
                 } else {
+                    //如果是“”，就是第一个kpi前不拼接逗号
                     if (kpiStr.equals("")) {
                         kpiStr = kpiStr + id;
                     } else {
@@ -384,14 +386,14 @@ public class HomepageService {
         if (kpiStr.equals("") && firstKpi.equals("")) {
             log.info("没有需要查询的指标id！！！");
         } else {
-            //String chartDataParam = area + "," + date + "," + firstKpi + "," + fitstDayOrMonth;
+            //指标服务返回第一个kpi的所有图表数据
+            //现在es返回的fitstDayOrMonth是汉字，所以这里先写死直接处理成code;
             String chartDataParam = area + "," + date + "," + firstKpi + "," + "1";
             log.info("查询第一个指标的图表数据的参数是：" + chartDataParam);
-            //chartData = restTemplateTmp.postForObject("http://192.168.31.6:7331/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
             chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
+            //指标服务返回所有kpi的同比环比数据等
             String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
             log.info("查询同比环比数据的参数是：" + dataParam);
-            //data = restTemplateTmp.postForObject("http://192.168.110.67:7071/indexForHomepage/dataOfAllKpi", dataParam, List.class);
             data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam, List.class);
 
             //4.将服务查询出的数据放到es的结果中，拼接结果
@@ -399,29 +401,30 @@ public class HomepageService {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
                 if (i == 0 && chartData != null) {
-                    //map1.put("title", map1.get("title"));
                     map1.put("markType", map1.get("typeId"));
                     map1.put("markName", map1.get("type"));
                     map1.put("chartData", chartData.get("chartData"));
-                    map1.put("dataName", data.get(0).get("dataName"));
-                    map1.put("dataValue", data.get(0).get("dataValue"));
+                    if (data.size() != 0){
+                        map1.put("dataName", data.get(0).get("dataName"));
+                        map1.put("dataValue", data.get(0).get("dataValue"));
+                    }else{
+                        map1.put("dataName", null);
+                        map1.put("dataValue", null);
+                    }
                     map1.put("url", url);
+                    //数据是直接放在es返回结果中的，前端不要的字段需要去掉
                     map1.remove("typeId");
                     map1.remove("type");
-                    //map1.remove("title");
                 } else {
-                    if (data != null) {
+                    if (data != null && data.size() != 0) {
                         for (int j = 1; j < data.size(); j++) {
                             Map<String, Object> map2 = data.get(j);
                             String id2 = map2.get("id").toString();
                             if (id1.equals(id2)) {
-                                //map1.put("indexName", map1.get("title"));
                                 map1.put("markType", map1.get("typeId"));
                                 map1.put("markName", map1.get("type"));
                                 map1.put("unit", map2.get("unit"));
                                 map1.put("chartType", map2.get("chartType"));
-                                /*map1.put("data", map2.get("data"));
-                                map1.put("chartX", map2.get("chartX"));*/
                                 map1.put("chart", map2.get("chart"));
                                 map1.put("dataName", map2.get("dataName"));
                                 map1.put("dataValue", map2.get("dataValue"));
@@ -434,7 +437,6 @@ public class HomepageService {
                                 map1.put("date", date);
                                 map1.remove("typeId");
                                 map1.remove("type");
-                                //map1.remove("title");
                             }
                         }
                     } else {

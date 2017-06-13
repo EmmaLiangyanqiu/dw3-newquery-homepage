@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.cloud</groupId>
-	<artifactId>dw3-newquery-homepage</artifactId>
+	<artifactId>dw3-newquery-homepage-test</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>dw3-newquery-homepage</name>
-	<description>dw3-newquery-homepage(首页)</description>
+	<name>dw3-newquery-homepage-test</name>
+	<description>dw3-newquery-homepage-test(首页测试)</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
