@@ -187,7 +187,7 @@ public class HomepageController {
     @ApiOperation("8.搜索-报告搜索接口")
     @PostMapping("/reportSearch")
     public String reportSearch(@ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
-                               Model model){
+                               Model model) throws InterruptedException {
         Map<String, Object> resMap = new HashMap<>();
 
         String userId = paramMap.get("userId").toString();
