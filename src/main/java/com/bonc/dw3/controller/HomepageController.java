@@ -121,7 +121,7 @@ public class HomepageController {
     @ApiOperation("6-2.搜索-指标搜索接口")
     @PostMapping("/indexSearch")
     public String indexSearch(@ApiParam("请求参数json串")@RequestBody Map<String, Object> paramMap,
-                              Model model){
+                              Model model) throws InterruptedException {
         String userId = paramMap.get("userId").toString();
         String searchType = paramMap.get("searchType").toString();
         String search = paramMap.get("search").toString();
