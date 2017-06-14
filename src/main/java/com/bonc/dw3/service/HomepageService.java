@@ -303,25 +303,15 @@ public class HomepageService {
      * @Author gp
      * @Date 2017/5/31
      */
-    public Map<String, Object> indexSearch(String paramStr, String numStart, String num, String area, String date) {
+    public Map<String, Object> indexSearch(String paramStr, String numStart, String num, String area, String date) throws InterruptedException {
         //最终的返回结果
         Map<String, Object> resMap = new HashMap<>();
         //所有指标的同比环比数据
         List<Map<String, Object>> data = new ArrayList<>();
         //第一个指标的所有图表数据
         Map<String, Object> chartData = new HashMap<>();
-        //是否还有下一页
-        String nextFlag = "";
-        //第一个指标id
-        String firstKpi = "";
         //第一个指标的日月标识
         String fitstDayOrMonth = "";
-        //需要查询的全部kpi，以逗号分隔
-        String kpiStr = "";
-        //跳转的url
-        String url = "";
-        //es查询出的数据条数
-        int esCount;
 
         //根据地域id得到地域的名称
         String areaStr = homepageMapper.getProvNameViaProvId(area);
@@ -331,78 +321,98 @@ public class HomepageService {
         Map<String, Object> esMap = requestToES(paramStr);
         log.info("查询es的结果-------->" + esMap);
 
+        //2.判断是否还有下一页数据
         //es查询到的记录的总条数
-        if (esMap.containsKey("count") && !StringUtils.isBlank(esMap.get("count").toString())) {
-            esCount = Integer.parseInt(esMap.get("count").toString());
-        } else {
-            esCount = 0;
-            log.info("es没有返回count或者es返回的count为空");
-        }
-
+        int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-
-        //2.判断是否还有下一页数据
-        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
-        if (count < esCount) {
-            nextFlag = "1";
-        } else {
-            nextFlag = "0";
-        }
+        String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
-        //3.循环将收到的数据的id拼接成字符串发送给指标服务，获取数据
+        //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
+        MyThread[] myThreads = new MyThread[esCount];
+        //用来给第一条指标数据发请求-请求它的图表数据
+        MyThread chartThread = null;
+        //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        //获得用于前端跳转的url
+        String typeId = esList.get(0).get("typeId").toString();
+        String url = homepageMapper.getUrlViaTypeId(typeId);
+
+        //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
         if (esList.size() != 0) {
-            String typeId = esList.get(0).get("typeId").toString();
-            //得到跳转地址
-            url = homepageMapper.getUrlViaTypeId(typeId);
+            url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
             //for循环得到需要查询的kpi字符串
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
-                if (i == 0) {
-                    firstKpi = firstKpi + id;
-                    fitstDayOrMonth = esList.get(i).get("dayOrMonth").toString();
-                } else {
-                    //如果是“”，就是第一个kpi前不拼接逗号
-                    if (kpiStr.equals("")) {
-                        kpiStr = kpiStr + id;
-                    } else {
-                        kpiStr = kpiStr + "," + id;
+                if (i == 0 ){
+                    //es返回的日月标识
+                    String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
+                    if (dayOrMonth.equals("日报")){
+                        fitstDayOrMonth = "1";
+                    }else{
+                        fitstDayOrMonth = "2";
                     }
+                    //拼接所有图表数据接口的请求参数
+                    String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth;
+                    //请求图表数据
+                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/allChartOfTheKpi", chartParam);
+                    chartThread.start();
+                    chartThread.join();
+                    //拼接同比环比接口的请求参数
+                    String dataParam = area + "," + date + "," + id;
+                    //请求同比环比数据
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    myThreads[i].start();
+                    myThreads[i].join();
+                }else{
+                    //拼接同比环比接口的请求参数
+                    String dataParam = area + "," + date + "," + id;
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    myThreads[i].start();
+                    myThreads[i].join();
                 }
             }
         } else {
-            log.info("es没有返回数据");
+            log.info("es没有返回任何指标数据！！！");
         }
 
-        if (kpiStr.equals("") && firstKpi.equals("")) {
+        //4.汇总指标服务返回的详细数据
+        //得到所有指标的同比环比数据
+        for (int i = 0; i < myThreads.length; i ++){
+            Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
+            data.add(map);
+        }
+        log.info("指标服务查询出的同比环比数据是：" + data);
+        //得到第一条指标的所有图表数据
+        if (chartThread != null){
+            chartData = (Map<String, Object>) chartThread.result;
+            log.info("指标服务查询出的第一条指标的图表数据是：" + chartData);
+        }else{
+            log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
+        }
+
+        //5.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
+        if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
         } else {
-            //指标服务返回第一个kpi的所有图表数据
-            //现在es返回的fitstDayOrMonth是汉字，所以这里先写死直接处理成code;
-            String chartDataParam = area + "," + date + "," + firstKpi + "," + "1";
-            log.info("查询第一个指标的图表数据的参数是：" + chartDataParam);
-            chartData = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/allChartOfTheKpi", chartDataParam, Map.class);
-            //指标服务返回所有kpi的同比环比数据等
-            String dataParam = area + "," + date + "," + firstKpi + "," + kpiStr;
-            log.info("查询同比环比数据的参数是：" + dataParam);
-            data = restTemplate.postForObject("http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam, List.class);
-
-            //4.将服务查询出的数据放到es的结果中，拼接结果
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
+                //第一条数据
                 if (i == 0 && chartData != null) {
                     map1.put("markType", map1.get("typeId"));
                     map1.put("markName", map1.get("type"));
                     map1.put("chartData", chartData.get("chartData"));
+                    //找同比环比数据
                     if (data.size() != 0){
-                        map1.put("dataName", data.get(0).get("dataName"));
-                        map1.put("dataValue", data.get(0).get("dataValue"));
-                    }else{
-                        map1.put("dataName", null);
-                        map1.put("dataValue", null);
+                        for (int j = 0; j < data.size(); j ++){
+                            String id2 = data.get(j).get("id").toString();
+                            if (id2.equals(id1)){
+                                map1.put("dataName", data.get(j).get("dataName"));
+                                map1.put("dataValue", data.get(j).get("dataValue"));
+                            }
+                        }
                     }
                     map1.put("url", url);
                     //数据是直接放在es返回结果中的，前端不要的字段需要去掉
@@ -435,7 +445,6 @@ public class HomepageService {
                     } else {
                         log.info("所有指标数据查询为空！");
                     }
-
                 }
             }
 
