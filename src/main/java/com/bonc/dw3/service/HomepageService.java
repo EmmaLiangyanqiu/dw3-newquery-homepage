@@ -167,21 +167,21 @@ public class HomepageService {
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
                     String paramStr = "-1,-1," + id;
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", paramStr);
+                    myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
                     myThreads[i].join();
                 } else if (typeId.equals("2")) {
                     //专题
                     topicList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", id);
+                    myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
                     myThreads[i].start();
                     myThreads[i].join();
                 } else if (typeId.equals("3")) {
                     //报告
                     reportList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", id);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
                     myThreads[i].join();
                 } else {
@@ -356,19 +356,19 @@ public class HomepageService {
                     //拼接所有图表数据接口的请求参数
                     String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth;
                     //请求图表数据
-                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/allChartOfTheKpi", chartParam);
+                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     chartThread.start();
                     chartThread.join();
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id;
                     //请求同比环比数据
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
                     myThreads[i].join();
                 }else{
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id;
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
                     myThreads[i].join();
                 }
@@ -490,7 +490,7 @@ public class HomepageService {
         //3.遍历es返回的所有的数据，开启子线程查询专题服务得到详细的数据
         for (int i = 0; i < esList.size(); i ++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
+            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST-TEST/subject/specialForHomepage/icon", id);
             myThreads[i].start();
             myThreads[i].join();
         }
@@ -578,7 +578,7 @@ public class HomepageService {
         //3.遍历es返回的所有的数据，开启子线程查询报告服务得到详细的数据
         for (int i = 0; i < esList.size(); i ++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", id);
+            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
             myThreads[i].start();
             myThreads[i].join();
         }
