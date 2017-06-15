@@ -94,13 +94,15 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
+        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        int count = Integer.parseInt(numStart) + queryNum - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
+        log.info("esCount is "+esCount);
         //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[esCount];
+        MyThread[] myThreads = new MyThread[queryNum];
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
 
@@ -114,8 +116,8 @@ public class HomepageService {
         		log.error("thread is null and id is " + i);
         	}else{
         		map = (Map<String, Object>) myThreads[i].result;
+        		dataList.add(map);
         	}
-            dataList.add(map);
         }
 
         //5.组合es数据和所有服务返回的详细数据
