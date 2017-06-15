@@ -116,6 +116,7 @@ public class HomepageService {
         		log.error("thread is null and id is " + i);
         	}else{
         		map = (Map<String, Object>) myThreads[i].result;
+        		log.info(i+" thread result is "+map);
         		dataList.add(map);
         	}
         }
