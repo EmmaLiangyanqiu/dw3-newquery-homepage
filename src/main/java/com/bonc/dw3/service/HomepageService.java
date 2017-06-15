@@ -123,6 +123,7 @@ public class HomepageService {
 
         //5.组合es数据和所有服务返回的详细数据
         List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList);
+        log.debug(""+resList);
         resMap.put("data", resList);
 
         return resMap;
