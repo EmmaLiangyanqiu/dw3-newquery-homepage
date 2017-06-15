@@ -109,7 +109,12 @@ public class HomepageService {
 
         //4.汇总所有服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
-            Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
+        	Map<String, Object> map = new HashMap<String, Object>();
+        	if(null == myThreads[i]){
+        		log.error("thread is null and id is " + i);
+        	}else{
+        		map = (Map<String, Object>) myThreads[i].result;
+        	}
             dataList.add(map);
         }
 
