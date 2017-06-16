@@ -249,6 +249,7 @@ public class HomepageService {
                         dataMap.put("unit", map2.get("unit"));
                         dataMap.put("chart", map2.get("chart"));
                         map.put("data", dataMap);
+                        log.info(id1+"--------"+dataMap);
                         resList.add(map);
                     }
                 }
