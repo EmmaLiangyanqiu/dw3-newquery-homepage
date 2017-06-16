@@ -22,7 +22,7 @@
                 <#assign chartTypeStr = "chartType">
                 <#assign chartType = allDataMap[chartTypeStr]!''>
                 <#if key != "dataName" && key != "dataValue" && key != "chart">
-                "${key}":"${allDataMap[key]}"
+                "${key}":"${allDataMap[key]!''}"
                 </#if>
                 <#if key = "dataName" || key = "dataValue">
                 "${key}":[
