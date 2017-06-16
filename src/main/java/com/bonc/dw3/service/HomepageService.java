@@ -509,7 +509,7 @@ public class HomepageService {
         //3.遍历es返回的所有的数据，开启子线程查询专题服务得到详细的数据
         for (int i = 0; i < esList.size(); i ++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST-TEST/subject/specialForHomepage/icon", id);
+            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
             myThreads[i].start();
             myThreads[i].join();
         }
