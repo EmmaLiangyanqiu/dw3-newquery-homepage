@@ -113,7 +113,7 @@
                 {
                     <#list dataMap?keys as key>
                         <#assign chartStr21 = "chartType">
-                        <#assign chartType21 = dataMap[chartStr21]>
+                        <#assign chartType21 = dataMap[chartStr21]!''>
                         <#if key != "chart" && key != "dataValue" && key != "dataName">
                         "${key}":"${dataMap[key]}"
                         </#if>
@@ -178,7 +178,7 @@
                                 }
                                 </#list>
                             </#if>
-                            <#if chartType21 = "pie">
+                            <#if chartType21 = "pie" || chartType21 = "product" || chartType21 = "businessPie">
                                 <#assign chartListPie = dataMap[key]>
                                 <#list chartListPie as chartMapPie>
                                 {
