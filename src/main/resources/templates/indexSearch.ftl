@@ -31,9 +31,9 @@
                             {
                             <#list chartDataMap?keys as key>
                             <#assign chartStr = "chartType">
-                            <#assign chartType = chartDataMap[chartStr]>
+                            <#assign chartType = chartDataMap[chartStr]!''>
                             <#if key = "chartType" || key = "unit">
-                                "${key}":"${chartDataMap[key]}"
+                                "${key}":"${chartDataMap[key]!''}"
                             </#if>
                             <#if key = "chart">
                                 "${key}":[

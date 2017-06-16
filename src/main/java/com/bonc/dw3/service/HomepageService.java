@@ -94,6 +94,7 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
+        //本次查询数目
         int queryNum = Integer.parseInt(num);
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + queryNum - 1;
@@ -111,12 +112,11 @@ public class HomepageService {
 
         //4.汇总所有服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
-        	Map<String, Object> map = new HashMap<String, Object>();
         	if(null == myThreads[i]){
         		log.error("thread is null and id is " + i);
         	}else{
-        		map = (Map<String, Object>) myThreads[i].result;
-        		log.info(i+" thread result is "+map);
+        		Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
+        		//log.info(i+" thread result is "+map);
         		dataList.add(map);
         	}
         }
@@ -249,7 +249,7 @@ public class HomepageService {
                         dataMap.put("unit", map2.get("unit"));
                         dataMap.put("chart", map2.get("chart"));
                         map.put("data", dataMap);
-                        log.info(id1+"--------"+dataMap);
+                        //log.info(id1+"--------"+dataMap);
                         resList.add(map);
                     }
                 }
@@ -334,13 +334,15 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
+        //本次查询数目
+        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        int count = Integer.parseInt(numStart) + queryNum - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
-        MyThread[] myThreads = new MyThread[esCount];
+        MyThread[] myThreads = new MyThread[queryNum];
         //用来给第一条指标数据发请求-请求它的图表数据
         MyThread chartThread = null;
         //es查询到的数据
@@ -390,8 +392,13 @@ public class HomepageService {
         //4.汇总指标服务返回的详细数据
         //得到所有指标的同比环比数据
         for (int i = 0; i < myThreads.length; i ++){
-            Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-            data.add(map);
+        	if(null == myThreads[i]){
+        		log.error("thread is null and id is " + i);
+        	}else{
+        		Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
+        		//log.info(i+" thread result is "+map);
+        		data.add(map);
+        	}
         }
         log.info("指标服务查询出的同比环比数据是：" + data);
         //得到第一条指标的所有图表数据
@@ -484,13 +491,15 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
+        //本次查询数目
+        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        int count = Integer.parseInt(numStart) + queryNum - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[esCount];
+        MyThread[] myThreads = new MyThread[queryNum];
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //获得用于前端跳转的url
@@ -507,8 +516,13 @@ public class HomepageService {
 
         //4.汇总专题服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
-            Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-            data.add(map);
+        	if(null == myThreads[i]){
+        		log.error("thread is null and id is " + i);
+        	}else{
+        		Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
+        		//log.info(i+" thread result is "+map);
+        		data.add(map);
+        	}
         }
         log.info("专题服务查询出的数据是：" + data);
 
@@ -572,13 +586,15 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
+        //本次查询数目
+        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        int count = Integer.parseInt(numStart) + queryNum - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[esCount];
+        MyThread[] myThreads = new MyThread[queryNum];
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //获得用于前端跳转的url
@@ -595,8 +611,13 @@ public class HomepageService {
 
         //4.汇总报告服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
-            Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-            data.add(map);
+        	if(null == myThreads[i]){
+        		log.error("thread is null and id is " + i);
+        	}else{
+        		Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
+        		//log.info(i+" thread result is "+map);
+        		data.add(map);
+        	}
         }
         log.info("专题服务查询出的数据是：" + data);
 
