@@ -26,7 +26,7 @@
                         </#if>
                         <#if key = "chartData">
                         "${key}":[
-                            <#assign chartDataList = dataMap[key]>
+                            <#assign chartDataList = dataMap[key]!''>
                             <#list chartDataList as chartDataMap>
                             {
                             <#list chartDataMap?keys as key>
