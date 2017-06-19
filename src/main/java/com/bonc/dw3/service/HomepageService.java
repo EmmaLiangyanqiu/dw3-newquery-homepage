@@ -396,7 +396,7 @@ public class HomepageService {
         		log.error("thread is null and id is " + i);
         	}else{
         		Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-        		//log.info(i+" thread result is "+map);
+        		log.info(i+" thread result is "+map);
         		data.add(map);
         	}
         }
@@ -457,6 +457,7 @@ public class HomepageService {
                                 map1.put("date", date);
                                 map1.remove("typeId");
                                 map1.remove("type");
+                                log.info(id1+"--------"+map1);
                             }
                         }
                     } else {
