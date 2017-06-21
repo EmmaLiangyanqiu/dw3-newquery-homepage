@@ -278,7 +278,8 @@ public class HomepageService {
                         map.put("markType", typeId);
                         map.put("ord", map1.get("ord"));
                         map.put("id", id1);
-                        map.put("url", url);
+                        //map.put("url", url);
+                        map.put("url", map2.get("url"));
                         Map<String, Object> dataMap = new HashMap<>();
                         dataMap.put("src", map2.get("src"));
                         dataMap.put("title", map1.get("title"));
