@@ -581,7 +581,8 @@ public class HomepageService {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
                             map1.put("src", map2.get("src").toString());
-                            map1.put("url", url);
+                            //map1.put("url", url);
+                            map1.put("url", map2.get("url").toString());
                         }
                     }
                     map1.remove("typeId");
