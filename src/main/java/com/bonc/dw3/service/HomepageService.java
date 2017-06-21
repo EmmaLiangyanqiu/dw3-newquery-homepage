@@ -339,7 +339,10 @@ public class HomepageService {
         Map<String, Object> chartData = new HashMap<>();
         //第一个指标的日月标识
         String fitstDayOrMonth = "";
+        //跳转的url
         String url = "";
+        //前端请求的起始条数
+        int numStartValue = 0;
 
         //根据地域id得到地域的名称
         String areaStr = homepageMapper.getProvNameViaProvId(area);
@@ -373,7 +376,7 @@ public class HomepageService {
             //for循环得到需要查询的kpi字符串
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
-                if (i == 0 ){
+                if (i == 0 && numStartValue == 1){
                     //es返回的日月标识
                     String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
                     if (dayOrMonth.equals("日报")){
