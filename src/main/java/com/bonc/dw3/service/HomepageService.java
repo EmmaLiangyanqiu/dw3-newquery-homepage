@@ -404,7 +404,9 @@ public class HomepageService {
 
         //4.join全部线程
         joinAllThreads(myThreads);
-        chartThread.join();
+        if (null != chartThread){
+            chartThread.join();
+        }
         log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.汇总指标服务返回的详细数据
