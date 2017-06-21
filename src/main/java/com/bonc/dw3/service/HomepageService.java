@@ -339,6 +339,7 @@ public class HomepageService {
         Map<String, Object> chartData = new HashMap<>();
         //第一个指标的日月标识
         String fitstDayOrMonth = "";
+        String url = "";
 
         //根据地域id得到地域的名称
         String areaStr = homepageMapper.getProvNameViaProvId(area);
@@ -363,9 +364,6 @@ public class HomepageService {
         //用来给第一条指标数据发请求-请求它的图表数据
         MyThread chartThread = null;
 
-        //获得用于前端跳转的url
-        String typeId = esList.get(0).get("typeId").toString();
-        String url = homepageMapper.getUrlViaTypeId(typeId);
         //用于打印时间
         long start = System.currentTimeMillis();
 
@@ -525,9 +523,6 @@ public class HomepageService {
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //根据es返回的数据条数控制线程数组的大小
         MyThread[] myThreads = new MyThread[esList.size()];
-        //获得用于前端跳转的url
-        String typeId = esList.get(0).get("typeId").toString();
-        String url = homepageMapper.getUrlViaTypeId(typeId);
         //用于打印时间
         long start = System.currentTimeMillis();
 
@@ -555,7 +550,7 @@ public class HomepageService {
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.组合es数据和专题服务返回的详细数据，组合好的数据直接放在esList中
-        combineTopicData(esList, data, url);
+        combineTopicData(esList, data);
 
         resMap.put("data", esList);
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
@@ -567,12 +562,11 @@ public class HomepageService {
      * 专题搜索接口：组合esList和专题服务返回的结果
      * @param esList es返回的数据
      * @param data 专题服务返回的数据
-     * @param url 专题数据的跳转路径
      *
      * @Author gp
      * @Date 2017/6/14
      */
-    private void combineTopicData(List<Map<String, Object>> esList, List<Map<String, Object>> data, String url) {
+    private void combineTopicData(List<Map<String, Object>> esList, List<Map<String, Object>> data) {
         if (esList.size() != 0) {
             if (data.size() != 0) {
                 for (Map<String, Object> map1 : esList) {
@@ -581,7 +575,6 @@ public class HomepageService {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
                             map1.put("src", map2.get("src").toString());
-                            //map1.put("url", url);
                             map1.put("url", map2.get("url").toString());
                         }
                     }
@@ -625,9 +618,7 @@ public class HomepageService {
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //根据es返回的数据条数控制线程数组的大小
         MyThread[] myThreads = new MyThread[esList.size()];
-        //获得用于前端跳转的url
-        String typeId = esList.get(0).get("typeId").toString();
-        String url = homepageMapper.getUrlViaTypeId(typeId);
+
         //用于打印时间
         long start = System.currentTimeMillis();
 
@@ -656,7 +647,7 @@ public class HomepageService {
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //6.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
-        combineReportData(esList, data, url);
+        combineReportData(esList, data);
 
         resMap.put("data", esList);
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
@@ -668,16 +659,18 @@ public class HomepageService {
      * 报告搜索接口：组合esList和报告服务返回的结果
      * @param esList es返回的数据
      * @param data 报告服务返回的数据
-     * @param url 报告数据的跳转路径
      *
      * @Author gp
      * @Date 2017/6/14
      */
-    private void combineReportData(List<Map<String, Object>> esList, List<Map<String, Object>> data, String url) {
+    private void combineReportData(List<Map<String, Object>> esList, List<Map<String, Object>> data) {
         if (esList.size() == 0) {
             log.info("es没有查询到报告数据！！！");
         } else {
             if (data.size() != 0) {
+                //获得用于前端跳转的url
+                String typeId = esList.get(0).get("typeId").toString();
+                String url = homepageMapper.getUrlViaTypeId(typeId);
                 //拼接数据
                 for (Map<String, Object> map1 : esList) {
                     String id1 = map1.get("id").toString();
