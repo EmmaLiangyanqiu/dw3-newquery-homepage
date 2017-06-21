@@ -110,6 +110,10 @@ public class HomepageService {
         long start = System.currentTimeMillis();
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
         startAllThreads(esList, myThreads, kpiList, topicList, reportList);
+
+        for (int i = 0; i < myThreads.length; i ++){
+            myThreads[i].join();
+        }
         System.out.println("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //4.汇总所有服务返回的详细数据
@@ -182,21 +186,21 @@ public class HomepageService {
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
-                    myThreads[i].join();
+                    //myThreads[i].join();
                 } else if (typeId.equals("2")) {
                     //专题
                     topicList.add(id);
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
                     myThreads[i].start();
-                    myThreads[i].join();
+                    //myThreads[i].join();
                 } else if (typeId.equals("3")) {
                     //报告
                     reportList.add(id);
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
-                    myThreads[i].join();
+                    //myThreads[i].join();
                 } else {
                     log.info("es返回了不存在的type！外星type！");
                 }
