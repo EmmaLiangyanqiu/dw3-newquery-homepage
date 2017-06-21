@@ -461,7 +461,7 @@ public class HomepageService {
                     map1.remove("type");
                 } else {
                     if (data != null && data.size() != 0) {
-                        for (int j = 1; j < data.size(); j++) {
+                        for (int j = 0; j < data.size(); j++) {
                             Map<String, Object> map2 = data.get(j);
                             String id2 = map2.get("id").toString();
                             if (id1.equals(id2)) {
