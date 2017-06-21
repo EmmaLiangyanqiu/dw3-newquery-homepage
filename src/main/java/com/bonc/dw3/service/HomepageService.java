@@ -95,20 +95,22 @@ public class HomepageService {
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //本次查询数目
-        int queryNum = Integer.parseInt(num);
+        //int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + queryNum - 1;
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         log.info("esCount is "+esCount);
-        //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[queryNum];
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        //根据es返回的数据条数控制线程数组的大小
+        MyThread[] myThreads = new MyThread[esList.size()];
 
+        long start = System.currentTimeMillis();
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
         startAllThreads(esList, myThreads, kpiList, topicList, reportList);
+        System.out.println("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //4.汇总所有服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
@@ -120,11 +122,13 @@ public class HomepageService {
         		dataList.add(map);
         	}
         }
+        System.out.println("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.组合es数据和所有服务返回的详细数据
         List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList);
         log.debug(""+resList);
         resMap.put("data", resList);
+        System.out.println("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         return resMap;
     }
