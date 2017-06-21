@@ -342,7 +342,7 @@ public class HomepageService {
         //跳转的url
         String url = "";
         //前端请求的起始条数
-        int numStartValue = 0;
+        int numStartValue = Integer.parseInt(numStart);
 
         //根据地域id得到地域的名称
         String areaStr = homepageMapper.getProvNameViaProvId(area);
