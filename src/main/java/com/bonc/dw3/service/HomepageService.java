@@ -94,29 +94,26 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
-        //本次查询数目
-        //int queryNum = Integer.parseInt(num);
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
-        log.info("esCount is "+esCount);
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //根据es返回的数据条数控制线程数组的大小
         MyThread[] myThreads = new MyThread[esList.size()];
-
+        //用于打印时间
         long start = System.currentTimeMillis();
+
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
         startAllThreads(esList, myThreads, kpiList, topicList, reportList);
 
-        for (int i = 0; i < myThreads.length; i ++){
-            myThreads[i].join();
-        }
-        System.out.println("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+        //4.join全部线程
+        joinAllThreads(myThreads);
+        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
-        //4.汇总所有服务返回的详细数据
+        //5.汇总所有服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
         	if(null == myThreads[i]){
         		log.error("thread is null and id is " + i);
@@ -126,15 +123,29 @@ public class HomepageService {
         		dataList.add(map);
         	}
         }
-        System.out.println("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
-        //5.组合es数据和所有服务返回的详细数据
+        //6.组合es数据和所有服务返回的详细数据
         List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList);
-        log.debug(""+resList);
+        //log.debug(""+resList);
         resMap.put("data", resList);
-        System.out.println("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         return resMap;
+    }
+
+
+    /**
+     * join全部线程
+     * @param myThreads 线程数组
+     *
+     * @Author gp
+     * @Date 2017/6/21
+     */
+    private void joinAllThreads(MyThread[] myThreads) throws InterruptedException {
+        for (int i = 0; i < myThreads.length; i ++){
+            myThreads[i].join();
+        }
     }
 
     /**
@@ -186,21 +197,18 @@ public class HomepageService {
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
-                    //myThreads[i].join();
                 } else if (typeId.equals("2")) {
                     //专题
                     topicList.add(id);
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate,"http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
                     myThreads[i].start();
-                    //myThreads[i].join();
                 } else if (typeId.equals("3")) {
                     //报告
                     reportList.add(id);
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
-                    //myThreads[i].join();
                 } else {
                     log.info("es返回了不存在的type！外星type！");
                 }
@@ -342,22 +350,23 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
-        //本次查询数目
-        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + queryNum - 1;
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
-        //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
-        MyThread[] myThreads = new MyThread[queryNum];
-        //用来给第一条指标数据发请求-请求它的图表数据
-        MyThread chartThread = null;
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
+        MyThread[] myThreads = new MyThread[esList.size()];
+        //用来给第一条指标数据发请求-请求它的图表数据
+        MyThread chartThread = null;
+
         //获得用于前端跳转的url
         String typeId = esList.get(0).get("typeId").toString();
         String url = homepageMapper.getUrlViaTypeId(typeId);
+        //用于打印时间
+        long start = System.currentTimeMillis();
 
         //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
         if (esList.size() != 0) {
@@ -378,26 +387,28 @@ public class HomepageService {
                     //请求图表数据
                     chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     chartThread.start();
-                    chartThread.join();
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id;
                     //请求同比环比数据
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
-                    myThreads[i].join();
                 }else{
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id;
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
-                    myThreads[i].join();
                 }
             }
         } else {
             log.info("es没有返回任何指标数据！！！");
         }
 
-        //4.汇总指标服务返回的详细数据
+        //4.join全部线程
+        joinAllThreads(myThreads);
+        chartThread.join();
+        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+
+        //5.汇总指标服务返回的详细数据
         //得到所有指标的同比环比数据
         for (int i = 0; i < myThreads.length; i ++){
         	if(null == myThreads[i]){
@@ -416,8 +427,9 @@ public class HomepageService {
         }else{
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
         }
+        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
-        //5.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
+        //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
         } else {
@@ -465,7 +477,7 @@ public class HomepageService {
                                 map1.put("date", date);
                                 map1.remove("typeId");
                                 map1.remove("type");
-                                log.info(id1+"--------"+map1);
+                                //log.info(id1+"--------"+map1);
                             }
                         }
                     } else {
@@ -476,6 +488,9 @@ public class HomepageService {
 
         }
         resMap.put("data", esList);
+
+        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+
         return resMap;
     }
 
@@ -500,45 +515,49 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
-        //本次查询数目
-        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + queryNum - 1;
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
-        //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[queryNum];
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        //根据es返回的数据条数控制线程数组的大小
+        MyThread[] myThreads = new MyThread[esList.size()];
         //获得用于前端跳转的url
         String typeId = esList.get(0).get("typeId").toString();
         String url = homepageMapper.getUrlViaTypeId(typeId);
+        //用于打印时间
+        long start = System.currentTimeMillis();
 
         //3.遍历es返回的所有的数据，开启子线程查询专题服务得到详细的数据
         for (int i = 0; i < esList.size(); i ++) {
             String id = esList.get(i).get("id").toString();
             myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
             myThreads[i].start();
-            myThreads[i].join();
         }
 
-        //4.汇总专题服务返回的详细数据
+        //4.join全部线程
+        joinAllThreads(myThreads);
+        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+
+        //5.汇总专题服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
         	if(null == myThreads[i]){
         		log.error("thread is null and id is " + i);
         	}else{
         		Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-        		//log.info(i+" thread result is "+map);
         		data.add(map);
         	}
         }
         log.info("专题服务查询出的数据是：" + data);
+        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.组合es数据和专题服务返回的详细数据，组合好的数据直接放在esList中
         combineTopicData(esList, data, url);
 
         resMap.put("data", esList);
+        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         return resMap;
     }
 
@@ -595,30 +614,33 @@ public class HomepageService {
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
-        //本次查询数目
-        int queryNum = Integer.parseInt(num);
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + queryNum - 1;
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
         String nextFlag = isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
-        //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[queryNum];
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        //根据es返回的数据条数控制线程数组的大小
+        MyThread[] myThreads = new MyThread[esList.size()];
         //获得用于前端跳转的url
         String typeId = esList.get(0).get("typeId").toString();
         String url = homepageMapper.getUrlViaTypeId(typeId);
+        //用于打印时间
+        long start = System.currentTimeMillis();
 
         //3.遍历es返回的所有的数据，开启子线程查询报告服务得到详细的数据
         for (int i = 0; i < esList.size(); i ++) {
             String id = esList.get(i).get("id").toString();
             myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
             myThreads[i].start();
-            myThreads[i].join();
         }
 
-        //4.汇总报告服务返回的详细数据
+        //4.join全部线程
+        joinAllThreads(myThreads);
+        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+
+        //5.汇总报告服务返回的详细数据
         for (int i = 0; i < myThreads.length; i ++){
         	if(null == myThreads[i]){
         		log.error("thread is null and id is " + i);
@@ -629,11 +651,13 @@ public class HomepageService {
         	}
         }
         log.info("专题服务查询出的数据是：" + data);
+        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
-        //5.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
+        //6.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
         combineReportData(esList, data, url);
 
         resMap.put("data", esList);
+        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         return resMap;
     }
 
