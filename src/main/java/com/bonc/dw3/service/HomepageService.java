@@ -441,7 +441,7 @@ public class HomepageService {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
                 //第一条数据
-                if (i == 0 && chartData != null) {
+                if (i == 0 && chartData != null && numStartValue == 1) {
                     map1.put("markType", map1.get("typeId"));
                     map1.put("markName", map1.get("type"));
                     map1.put("chartData", chartData.get("chartData"));
