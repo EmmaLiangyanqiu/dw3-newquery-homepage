@@ -452,6 +452,7 @@ public class HomepageService {
                             if (id2.equals(id1)){
                                 map1.put("dataName", data.get(j).get("dataName"));
                                 map1.put("dataValue", data.get(j).get("dataValue"));
+                                map1.put("unit", data.get(j).get("unit"));
                             }
                         }
                     }
