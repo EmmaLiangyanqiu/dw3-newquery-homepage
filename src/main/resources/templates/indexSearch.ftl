@@ -14,7 +14,7 @@
                 {
                     <#list dataMap?keys as key>
                         <#if key != "chartData" && key != "dataName" && key != "dataValue">
-                        "${key}":"${dataMap[key]}"
+                        "${key}":"${dataMap[key]!''}"
                         </#if>
                         <#if key = "dataName" || key = "dataValue">
                         "${key}":[
