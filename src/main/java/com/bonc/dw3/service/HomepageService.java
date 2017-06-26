@@ -683,6 +683,7 @@ public class HomepageService {
                     for (Map<String, Object> map2 : data) {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
+
                             map1.put("img", map2.get("img"));
                             map1.put("issue", map2.get("issue").toString());
                             map1.put("issueTime", map2.get("issueTime").toString());
