@@ -654,7 +654,6 @@ public class HomepageService {
 
         //6.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
         combineReportData(esList, data);
-
         resMap.put("data", esList);
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         return resMap;
