@@ -786,7 +786,6 @@ public class HomepageService {
      */
     public Map<String, Object> requestToES(String paramStr) {
         RestTemplate restTemplateTmp = new RestTemplate();
-
         //查询参数有可能有中文，需要转码
         Map<String, Object> resMap = new HashMap<>();
         HttpHeaders headers = new HttpHeaders();
