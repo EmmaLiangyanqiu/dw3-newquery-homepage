@@ -73,15 +73,50 @@
 
     <!--7.地域组件接口-->
     <select id="getArea" resultType="java.util.HashMap">
-        select t.prov_id, t.pro_name, area_id, area_desc
-        from (
-          select *
-          from v_dmcode_province_31 p
-          left join (
-            select area.prov_id proNo, area.area_id, area.area_desc
-            from dmcode_pub.dmcode_area area) a
-          on p.prov_id = a.proNo) t
-        order by prov_id desc, area_id ASC
+        select prov_id, pro_name, area_id, area_desc
+      from (select p.prov_id, p.pro_name, a.area_id, a.area_desc, to_number(p.ord2) pro_ord ,a.ord area_ord
+              from dmcode_pub.dmcode_province p
+              left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+             where a.is_valid = '1'
+               and p.s_n_mark is not null
+               and a.area_id != '999'
+
+            union all
+            select '111' prov_id, '全国' pro_name，area_id, area_desc,-3 pro_ord ,a.ord area_ord
+              from dmcode_pub.dmcode_area a
+             where is_valid = '1'
+               and area_id != '999'
+
+            union all
+            select '112' prov_id,
+                   '北十省' pro_name,
+                   a.area_id,
+                   a.area_desc,
+                   -2 pro_ord ,
+                   a.ord area_ord
+              from dmcode_pub.dmcode_province p
+              left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+             where a.is_valid = '1'
+               and p.s_n_mark = '10'
+               and a.area_id != '999'
+
+            union all
+            select '113' prov_id,
+                   '南二十一省' pro_name,
+                   a.area_id,
+                   a.area_desc,
+                   -1 pro_ord ,
+                   a.ord area_ord
+              from dmcode_pub.dmcode_province p
+              left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+             where a.is_valid = '1'
+               and p.s_n_mark = '21'
+               and a.area_id != '999'
+            )
+     order by to_number(pro_ord) asc, to_number(area_ord) asc
     </select>
 
 
@@ -101,7 +136,7 @@
 
     <!--9.根据省份id获取省份名称-->
     <select id="getProvNameViaProvId" parameterType="String" resultType="String">
-        select pro_name "name" from v_dmcode_province_31 p where prov_id = #{provId}
+        select pro_name "name" from v_dw_newquery_DMCODE_PROVINCE p where prov_id = #{provId}
     </select>
 
 

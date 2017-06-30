@@ -42,7 +42,7 @@ public class HomepageService {
         Map<String, Object> resMap = new HashMap<>();
 
         List<Map<String, String>> resList = homepageMapper.headerSelect();
-        resMap.put("default", resList.get(0));
+        resMap.put("default", resList.get(1));
         resMap.put("selectList", resList);
 
         return resMap;
@@ -476,7 +476,7 @@ public class HomepageService {
                                 } else {
                                     map1.put("area", "全国");
                                 }
-                                map1.put("date", date);
+                                map1.put("date", map2.get("date"));
                                 map1.remove("typeId");
                                 map1.remove("type");
                                 //log.info(id1+"--------"+map1);
