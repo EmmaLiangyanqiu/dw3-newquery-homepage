@@ -34,15 +34,30 @@ public class SystemVariableService {
 		if(systemVariablesList != null){			
 			for(Map<String,Object> variables:systemVariablesList){
 				if(DATEDAYCODE.equals(variables.get("SYS_CODE"))){
-					acctTypeDay = variables.get("CODE_VALUE").toString();
+					setAcctTypeDay(variables.get("CODE_VALUE").toString());
 				}
 				
 				if(FULLCITYCODE.equals(variables.get("SYS_CODE"))){
-					cityType = variables.get("CODE_VALUE").toString();
+					setCityType(variables.get("CODE_VALUE").toString());
 				}
 			}
 		}
     }
-	
-	 
+
+	public static String getAcctTypeDay() {
+		return acctTypeDay;
+	}
+
+	public static void setAcctTypeDay(String acctTypeDay) {
+		SystemVariableService.acctTypeDay = acctTypeDay;
+	}
+
+	public static String getCityType() {
+		return cityType;
+	}
+
+	public static void setCityType(String cityType) {
+		SystemVariableService.cityType = cityType;
+	}
+
 }

@@ -22,7 +22,6 @@ public class HomepageService {
 
     //日志对象
     private static Logger log = LoggerFactory.getLogger(HomepageService.class);
-
     //通过zuul向其它服务发送请求的REST对象
     @Autowired
     private RestTemplate restTemplate;
@@ -313,7 +312,7 @@ public class HomepageService {
                     log.info("es返回了不存在的type！" + "这条非法数据是：" + map1);
                 }
             } catch (NullPointerException e) {
-                log.info(map1 + "----相应服务没有返回正常的数据!!!");
+                log.info(map1 + "----相应服务没有返回正常的数据！！！");
             }
         }
         return resList;
@@ -441,12 +440,15 @@ public class HomepageService {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map1 = esList.get(i);
                 try {
+
+
                     String id1 = map1.get("id").toString();
                     //第一条数据
                     if (i == 0 && chartData != null && numStartValue == 1) {
                         map1.put("markType", map1.get("typeId"));
                         map1.put("markName", map1.get("type"));
                         map1.put("chartData", chartData.get("chartData"));
+                        map1.put("date", chartData.get("date"));
                         //找同比环比数据
                         if (data.size() != 0) {
                             for (int j = 0; j < data.size(); j++) {
@@ -491,10 +493,9 @@ public class HomepageService {
                             log.info("所有指标数据查询为空！");
                         }
                     }
-                } catch (NullPointerException e) {
-                    log.info(map1 + "----指标服务没有返回正常的数据!!!");
+                }catch (NullPointerException e){
+                    log.info(map1 + "----指标服务没有返回正常的数据！！！");
                 }
-
             }
 
         }
