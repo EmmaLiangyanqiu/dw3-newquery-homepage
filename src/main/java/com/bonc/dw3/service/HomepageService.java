@@ -440,8 +440,6 @@ public class HomepageService {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map1 = esList.get(i);
                 try {
-
-
                     String id1 = map1.get("id").toString();
                     //第一条数据
                     if (i == 0 && chartData != null && numStartValue == 1) {
@@ -493,7 +491,7 @@ public class HomepageService {
                             log.info("所有指标数据查询为空！");
                         }
                     }
-                }catch (NullPointerException e){
+                } catch (NullPointerException e) {
                     log.info(map1 + "----指标服务没有返回正常的数据！！！");
                 }
             }
