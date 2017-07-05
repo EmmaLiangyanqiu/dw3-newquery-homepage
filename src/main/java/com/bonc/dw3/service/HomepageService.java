@@ -433,6 +433,19 @@ public class HomepageService {
         }
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
+        //清理从指标服务返回的不合格数据
+        if (!chartData.containsKey("id")){
+            log.info(chartData + "------chartData没有返回id，舍弃");
+            chartData = null;
+        }
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (int j = 0; j < data.size(); j ++){
+            if (!data.get(j).containsKey("id")){
+                log.info(data.get(j) + "----同比环比数据没有返回id，舍弃！！！");
+            }else{
+                dataList.add(data.get(j));
+            }
+        }
         //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
         List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
@@ -440,78 +453,69 @@ public class HomepageService {
         } else {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map1 = esList.get(i);
-                //try {
-                    String id1 = map1.get("id").toString();
-                    //第一条数据
-                    if (i == 0 && chartData != null && numStartValue == 1) {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("ord", map1.get("ord"));
-                        map.put("dayOrMonth", map1.get("dayOrMonth"));
-                        map.put("id", map1.get("id"));
-                        map.put("title", map1.get("title"));
-                        map.put("markType", map1.get("typeId"));
-                        map.put("markName", map1.get("type"));
-                        map.put("chartData", chartData.get("chartData"));
-                        map.put("date", chartData.get("date"));
-                        map.put("url", url);
-                        //找同比环比数据
-                        if (data.size() != 0) {
-                            for (int j = 0; j < data.size(); j++) {
-                                String id2 = "";
-                                try {
-                                    id2 = data.get(j).get("id").toString();
-                                }catch (NullPointerException e){
-                                    log.info(data.get(j) + "---------返回的数据不对！！！");
-                                }
-                                if (id2.equals(id1)) {
-                                    map.put("dataName", data.get(j).get("dataName"));
-                                    map.put("dataValue", data.get(j).get("dataValue"));
-                                    map.put("unit", data.get(j).get("unit"));
-                                }
+                String id1 = map1.get("id").toString();
+                //第一条数据
+                if (i == 0 && chartData != null && numStartValue == 1) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("ord", map1.get("ord"));
+                    map.put("dayOrMonth", map1.get("dayOrMonth"));
+                    map.put("id", map1.get("id"));
+                    map.put("title", map1.get("title"));
+                    map.put("markType", map1.get("typeId"));
+                    map.put("markName", map1.get("type"));
+                    map.put("chartData", chartData.get("chartData"));
+                    map.put("date", chartData.get("date"));
+                    map.put("url", url);
+                    //找同比环比数据
+                    if (dataList.size() != 0) {
+                        for (int j = 0; j < dataList.size(); j++) {
+                            String id2 = dataList.get(j).get("id").toString();
+                            if (id2.equals(id1)) {
+                                map.put("dataName", dataList.get(j).get("dataName"));
+                                map.put("dataValue", dataList.get(j).get("dataValue"));
+                                map.put("unit", dataList.get(j).get("unit"));
                             }
-                        }
-                        resList.add(map);
-                    } else {
-                        if (data != null && data.size() != 0) {
-                            for (int j = 0; j < data.size(); j++) {
-                                Map<String, Object> map2 = data.get(j);
-                                String id2 = "";
-                                try {
-                                    id2 = map2.get("id").toString();
-                                }catch (NullPointerException e){
-                                    log.info(map2 + "-------返回的数据不对！");
-                                }
-                                if (id1.equals(id2)) {
-                                    Map<String, Object> map = new HashMap<>();
-                                    map.put("ord", map1.get("ord"));
-                                    map.put("dayOrMonth", map1.get("dayOrMonth"));
-                                    map.put("id", map1.get("id"));
-                                    map.put("title", map1.get("title"));
-                                    map.put("markType", map1.get("typeId"));
-                                    map.put("markName", map1.get("type"));
-                                    map.put("unit", map2.get("unit"));
-                                    map.put("chartType", map2.get("chartType"));
-                                    map.put("chart", map2.get("chart"));
-                                    map.put("dataName", map2.get("dataName"));
-                                    map.put("dataValue", map2.get("dataValue"));
-                                    map.put("url", url);
-                                    if (!StringUtils.isBlank(areaStr)) {
-                                        map.put("area", areaStr);
-                                    } else {
-                                        map.put("area", "全国");
-                                    }
-                                    map.put("date", map2.get("date"));
-                                    resList.add(map);
-                                }
-                            }
-                        } else {
-                            log.info("所有指标数据查询为空！");
                         }
                     }
-                /*} catch (NullPointerException e) {
-                    System.out.println("***********************************" + e);
-                    log.info(map1 + "----指标服务没有返回正常的数据！！！");
-                }*/
+                    if (!(map.containsKey("dataName") || map.containsKey("dataValue") || map.containsKey("unit"))){
+                        String[] a = {"-", "-", "-", "-"};
+                        map.put("dataName", a);
+                        map.put("dataValue", a);
+                        map.put("unit", "");
+                    }
+                    resList.add(map);
+                } else {
+                    if (data != null && data.size() != 0) {
+                        for (int j = 0; j < data.size(); j++) {
+                            Map<String, Object> map2 = data.get(j);
+                            String id2 = map2.get("id").toString();
+                            if (id1.equals(id2)) {
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("ord", map1.get("ord"));
+                                map.put("dayOrMonth", map1.get("dayOrMonth"));
+                                map.put("id", map1.get("id"));
+                                map.put("title", map1.get("title"));
+                                map.put("markType", map1.get("typeId"));
+                                map.put("markName", map1.get("type"));
+                                map.put("unit", map2.get("unit"));
+                                map.put("chartType", map2.get("chartType"));
+                                map.put("chart", map2.get("chart"));
+                                map.put("dataName", map2.get("dataName"));
+                                map.put("dataValue", map2.get("dataValue"));
+                                map.put("url", url);
+                                if (!StringUtils.isBlank(areaStr)) {
+                                    map.put("area", areaStr);
+                                } else {
+                                    map.put("area", "全国");
+                                }
+                                map.put("date", map2.get("date"));
+                                resList.add(map);
+                            }
+                        }
+                    } else {
+                        log.info("所有指标数据查询为空！");
+                    }
+                }
             }
 
         }
