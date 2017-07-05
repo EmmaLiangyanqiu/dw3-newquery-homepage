@@ -485,9 +485,9 @@ public class HomepageService {
                     }
                     resList.add(map);
                 } else {
-                    if (data != null && data.size() != 0) {
-                        for (int j = 0; j < data.size(); j++) {
-                            Map<String, Object> map2 = data.get(j);
+                    if (dataList != null && dataList.size() != 0) {
+                        for (int j = 0; j < dataList.size(); j++) {
+                            Map<String, Object> map2 = dataList.get(j);
                             String id2 = map2.get("id").toString();
                             if (id1.equals(id2)) {
                                 Map<String, Object> map = new HashMap<>();
