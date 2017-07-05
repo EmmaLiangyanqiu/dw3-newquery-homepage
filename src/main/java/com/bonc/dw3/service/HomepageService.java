@@ -419,15 +419,15 @@ public class HomepageService {
                 log.error("thread is null and id is " + i);
             } else {
                 Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-                log.info(i + " thread result is " + map);
+                //log.info(i + " thread result is " + map);
                 data.add(map);
             }
         }
-        log.info("指标服务查询出的同比环比数据是：" + data);
+        //log.info("指标服务查询出的同比环比数据是：" + data);
         //得到第一条指标的所有图表数据
         if (chartThread != null) {
             chartData = (Map<String, Object>) chartThread.result;
-            log.info("指标服务查询出的第一条指标的图表数据是：" + chartData);
+            //log.info("指标服务查询出的第一条指标的图表数据是：" + chartData);
         } else {
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
         }
