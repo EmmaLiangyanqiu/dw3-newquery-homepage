@@ -29,6 +29,6 @@ public class MyThread extends Thread {
         this.result = restTemplate.postForObject(url, paramStr, Object.class);
         this.time = System.currentTimeMillis() - start;
         log.info(paramStr + "服务返回结果耗时：" + this.time + "ms");
-        log.info(paramStr + "服务返回的结果是" + this.result);
+        log.info(paramStr + "--------------返回的结果是" + this.result);
     }
 }
