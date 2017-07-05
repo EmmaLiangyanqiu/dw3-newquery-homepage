@@ -457,7 +457,12 @@ public class HomepageService {
                         //找同比环比数据
                         if (data.size() != 0) {
                             for (int j = 0; j < data.size(); j++) {
-                                String id2 = data.get(j).get("id").toString();
+                                String id2 = "";
+                                try {
+                                    id2 = data.get(j).get("id").toString();
+                                }catch (NullPointerException e){
+                                    log.info(data.get(j) + "---------返回的数据不对！！！");
+                                }
                                 if (id2.equals(id1)) {
                                     map.put("dataName", data.get(j).get("dataName"));
                                     map.put("dataValue", data.get(j).get("dataValue"));
