@@ -434,6 +434,7 @@ public class HomepageService {
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
+        List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
         } else {
@@ -443,48 +444,54 @@ public class HomepageService {
                     String id1 = map1.get("id").toString();
                     //第一条数据
                     if (i == 0 && chartData != null && numStartValue == 1) {
-                        map1.put("markType", map1.get("typeId"));
-                        map1.put("markName", map1.get("type"));
-                        map1.put("chartData", chartData.get("chartData"));
-                        map1.put("date", chartData.get("date"));
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("ord", map1.get("ord"));
+                        map.put("dayOrMonth", map1.get("dayOrMonth"));
+                        map.put("id", map1.get("id"));
+                        map.put("title", map1.get("title"));
+                        map.put("markType", map1.get("typeId"));
+                        map.put("markName", map1.get("type"));
+                        map.put("chartData", chartData.get("chartData"));
+                        map.put("date", chartData.get("date"));
+                        map.put("url", url);
                         //找同比环比数据
                         if (data.size() != 0) {
                             for (int j = 0; j < data.size(); j++) {
                                 String id2 = data.get(j).get("id").toString();
                                 if (id2.equals(id1)) {
-                                    map1.put("dataName", data.get(j).get("dataName"));
-                                    map1.put("dataValue", data.get(j).get("dataValue"));
-                                    map1.put("unit", data.get(j).get("unit"));
+                                    map.put("dataName", data.get(j).get("dataName"));
+                                    map.put("dataValue", data.get(j).get("dataValue"));
+                                    map.put("unit", data.get(j).get("unit"));
                                 }
                             }
                         }
-                        map1.put("url", url);
-                        //数据是直接放在es返回结果中的，前端不要的字段需要去掉
-                        map1.remove("typeId");
-                        map1.remove("type");
+                        resList.add(map);
                     } else {
                         if (data != null && data.size() != 0) {
                             for (int j = 0; j < data.size(); j++) {
                                 Map<String, Object> map2 = data.get(j);
                                 String id2 = map2.get("id").toString();
                                 if (id1.equals(id2)) {
-                                    map1.put("markType", map1.get("typeId"));
-                                    map1.put("markName", map1.get("type"));
-                                    map1.put("unit", map2.get("unit"));
-                                    map1.put("chartType", map2.get("chartType"));
-                                    map1.put("chart", map2.get("chart"));
-                                    map1.put("dataName", map2.get("dataName"));
-                                    map1.put("dataValue", map2.get("dataValue"));
-                                    map1.put("url", url);
+                                    Map<String, Object> map = new HashMap<>();
+                                    map.put("ord", map1.get("ord"));
+                                    map.put("dayOrMonth", map1.get("dayOrMonth"));
+                                    map.put("id", map1.get("id"));
+                                    map.put("title", map1.get("title"));
+                                    map.put("markType", map1.get("typeId"));
+                                    map.put("markName", map1.get("type"));
+                                    map.put("unit", map2.get("unit"));
+                                    map.put("chartType", map2.get("chartType"));
+                                    map.put("chart", map2.get("chart"));
+                                    map.put("dataName", map2.get("dataName"));
+                                    map.put("dataValue", map2.get("dataValue"));
+                                    map.put("url", url);
                                     if (!StringUtils.isBlank(areaStr)) {
-                                        map1.put("area", areaStr);
+                                        map.put("area", areaStr);
                                     } else {
-                                        map1.put("area", "全国");
+                                        map.put("area", "全国");
                                     }
-                                    map1.put("date", map2.get("date"));
-                                    map1.remove("typeId");
-                                    map1.remove("type");
-                                    //log.info(id1+"--------"+map1);
+                                    map.put("date", map2.get("date"));
+                                    resList.add(map);
                                 }
                             }
                         } else {
@@ -492,12 +499,13 @@ public class HomepageService {
                         }
                     }
                 } catch (NullPointerException e) {
+                    System.out.println("***********************************" + e);
                     log.info(map1 + "----指标服务没有返回正常的数据！！！");
                 }
             }
 
         }
-        resMap.put("data", esList);
+        resMap.put("data", resList);
 
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
