@@ -475,7 +475,12 @@ public class HomepageService {
                         if (data != null && data.size() != 0) {
                             for (int j = 0; j < data.size(); j++) {
                                 Map<String, Object> map2 = data.get(j);
-                                String id2 = map2.get("id").toString();
+                                String id2 = "";
+                                try {
+                                    id2 = map2.get("id").toString();
+                                }catch (NullPointerException e){
+                                    log.info(map2 + "-------返回的数据不对！");
+                                }
                                 if (id1.equals(id2)) {
                                     Map<String, Object> map = new HashMap<>();
                                     map.put("ord", map1.get("ord"));
