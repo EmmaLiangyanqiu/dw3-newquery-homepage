@@ -42,6 +42,9 @@
                                     <#list chartList as chartMap>
                                     {
                                         <#list chartMap?keys as key>
+                                        <#if key = "title">
+                                        "${key}":"${chartMap[key]!''}"
+                                        </#if>
                                         <#if key = "data" || key = "sequentialData" || key = "totalData">
                                         "${key}":[
                                             <#assign dataList1 = chartMap[key]>
@@ -50,7 +53,7 @@
                                             </#list>
                                         ]
                                         </#if>
-                                        <#if key = "chartX" || key = "tableTitle">
+                                        <#if key = "chartX" || key = "tableTitle" || key = "example">
                                         "${key}":[
                                             <#assign dataList2 = chartMap[key]>
                                             <#list dataList2 as data2>
@@ -127,13 +130,14 @@
                         </#if>
                         <#if key = "chart">
                         "${key}":[
-
-
                             <#if chartType21 = "line" || chartType21 = "monthBar" || chartType21 = "cityBar" || chartType21 = "cityRank">
                                 <#assign chartList = dataMap[key]>
                                 <#list chartList as chartMap>
                                 {
                                     <#list chartMap?keys as key>
+                                        <#if key = "title">
+                                        "${key}":"${chartMap[key]!''}"
+                                        </#if>
                                         <#if key = "data" || key = "sequentialData" || key = "totalData">
                                         "${key}":[
                                             <#assign dataList1 = chartMap[key]>
@@ -142,7 +146,7 @@
                                             </#list>
                                         ]
                                         </#if>
-                                        <#if key = "chartX" || key = "tableTitle">
+                                        <#if key = "chartX" || key = "tableTitle" || key = "example">
                                         "${key}":[
                                             <#assign dataList2 = chartMap[key]>
                                             <#list dataList2 as data2>

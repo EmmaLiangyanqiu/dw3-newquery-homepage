@@ -107,7 +107,7 @@ public class HomepageService {
 
         //4.join全部线程
         joinAllThreads(myThreads);
-        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+        //log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.汇总所有服务返回的详细数据
         for (int i = 0; i < myThreads.length; i++) {
@@ -115,17 +115,17 @@ public class HomepageService {
                 log.error("thread is null and id is " + i);
             } else {
                 Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-                log.info(i + " thread result is " + map);
+                //log.info(i + " thread result is " + map);
                 dataList.add(map);
             }
         }
-        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+        //log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //6.组合es数据和所有服务返回的详细数据
         List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList);
         //log.debug(""+resList);
         resMap.put("data", resList);
-        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+        //log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         return resMap;
     }
@@ -262,7 +262,7 @@ public class HomepageService {
                             dataMap.put("unit", map2.get("unit"));
                             dataMap.put("chart", map2.get("chart"));
                             map.put("data", dataMap);
-                            log.info(id1 + "--------" + dataMap);
+                            //log.info(id1 + "--------" + dataMap);
                             resList.add(map);
                         }
                     }
@@ -464,6 +464,7 @@ public class HomepageService {
                     map.put("markType", map1.get("typeId"));
                     map.put("markName", map1.get("type"));
                     map.put("chartData", chartData.get("chartData"));
+                    //log.info("------------------------------------------->" + chartData.get("chartData"));
                     map.put("date", chartData.get("date"));
                     map.put("url", url);
                     //找同比环比数据
@@ -579,7 +580,7 @@ public class HomepageService {
                 data.add(map);
             }
         }
-        log.info("专题服务查询出的数据是：" + data);
+        //log.info("专题服务查询出的数据是：" + data);
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.组合es数据和专题服务返回的详细数据，组合好的数据直接放在esList中
@@ -676,7 +677,7 @@ public class HomepageService {
                 data.add(map);
             }
         }
-        log.info("专题服务查询出的数据是：" + data);
+        //log.info("专题服务查询出的数据是：" + data);
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //6.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
