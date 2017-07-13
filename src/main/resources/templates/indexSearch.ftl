@@ -182,7 +182,7 @@
                                 }
                                 </#list>
                             </#if>
-                            <#if chartType21 = "pie" || chartType21 = "product" || chartType21 = "businessPie" || chartType = "channel" >
+                            <#if chartType21 = "pie" || chartType21 = "product" || chartType21 = "businessPie" || chartType21 = "channel" >
                                 <#assign chartListPie = dataMap[key]>
                                 <#list chartListPie as chartMapPie>
                                 {
