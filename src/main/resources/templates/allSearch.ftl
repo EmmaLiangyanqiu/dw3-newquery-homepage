@@ -35,8 +35,6 @@
                 </#if>
                 <#if key = "chart">
                 "${key}":[
-
-
                     <#if chartType = "line" || chartType = "monthBar" || chartType = "cityBar" || chartType = "cityRank">
                         <#assign chartList = allDataMap[key]>
                         <#list chartList as chartMap>
@@ -89,7 +87,7 @@
                         }
                         </#list>
                     </#if>
-                    <#if chartType = "pie" || chartType = "product" || chartType = "businessPie">
+                    <#if chartType = "pie" || chartType = "product" || chartType = "businessPie" || chartType = "channel" >
                         <#assign chartListPie = allDataMap[key]>
                         <#list chartListPie as chartMapPie>
                         {

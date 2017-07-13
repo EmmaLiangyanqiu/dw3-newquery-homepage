@@ -89,7 +89,7 @@
                                     }
                                     </#list>
                                 </#if>
-                                <#if chartType = "pie" || chartType = "product" || chartType = "businessPie">
+                                <#if chartType = "pie" || chartType = "product" || chartType = "businessPie" || chartType = "channel" >
                                     <#assign chartListPie = chartDataMap[key]>
                                     <#list chartListPie as chartMapPie>
                                     {
@@ -182,7 +182,7 @@
                                 }
                                 </#list>
                             </#if>
-                            <#if chartType21 = "pie" || chartType21 = "product" || chartType21 = "businessPie">
+                            <#if chartType21 = "pie" || chartType21 = "product" || chartType21 = "businessPie" || chartType = "channel" >
                                 <#assign chartListPie = dataMap[key]>
                                 <#list chartListPie as chartMapPie>
                                 {
