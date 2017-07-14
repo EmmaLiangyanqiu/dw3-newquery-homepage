@@ -227,7 +227,7 @@ public class HomepageService {
         //得到第一条指标的所有图表数据
         if (null != chartThread) {
             chartData = (Map<String, Object>) chartThread.result;
-            log.info("chartData------------------------------>" + chartData);
+            //log.info("chartData------------------------------>" + chartData);
         } else {
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
         }
@@ -287,7 +287,7 @@ public class HomepageService {
                         map.put("unit", "");
                     }
                     resList.add(map);
-                    log.info("第一条指标数据=================================》" + map);
+                    //log.info("第一条指标数据=================================》" + map);
                 } else {
                     //除第一条指标以外的指标
                     if (dataList != null && dataList.size() != 0) {
