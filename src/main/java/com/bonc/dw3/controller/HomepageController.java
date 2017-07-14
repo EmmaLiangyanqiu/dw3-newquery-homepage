@@ -1,7 +1,6 @@
 package com.bonc.dw3.controller;
 
 import com.bonc.dw3.service.HomepageService;
-import com.bonc.dw3.service.MenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,11 +20,6 @@ public class HomepageController {
     //homepage service对象
     @Autowired
     HomepageService homepageService;
-
-    //菜单栏 service对象
-    @Autowired
-    MenuService menuService;
-
 
     /**
      * 1.头部栏组件接口

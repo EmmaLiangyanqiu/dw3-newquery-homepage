@@ -50,6 +50,5 @@
 	<mappers>
         <mapper resource="mybatisMapper/homepage.xml"/>
         <mapper resource="mybatisMapper/system-variables.xml"/>
-        <mapper resource="mybatisMapper/tbusersMapper.xml"/>
 	</mappers>
 </configuration>
