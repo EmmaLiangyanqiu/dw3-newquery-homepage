@@ -220,6 +220,7 @@ public class HomepageService {
             chartThread.join();
         }
         log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+        long allThreadsJoin = System.currentTimeMillis();
 
         //5.汇总指标服务返回的详细数据
         //得到所有指标的同比环比数据
@@ -231,11 +232,12 @@ public class HomepageService {
         } else {
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
         }
-        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+        log.info("汇总所有服务返回的数据的时间:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
+        long getAllData = System.currentTimeMillis();
 
         //数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
-        if (!chartData.containsKey("id")) {
-            log.info(chartData + "------chartData没有返回id，舍弃");
+        if ((chartData != null) && (!chartData.containsKey("id"))) {
+            log.info(chartData + "------chartData没有返回id，舍弃！！！");
             chartData = null;
         }
         List<Map<String, Object>> dataList = new ArrayList<>();
@@ -246,6 +248,8 @@ public class HomepageService {
                 dataList.add(data.get(j));
             }
         }
+        log.info("过滤不合格数据的时间:" + (System.currentTimeMillis() - getAllData) + "ms");
+        long filterData = System.currentTimeMillis();
 
         //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
         //List<Map<String, Object>> resList = combineKpiData(esList, dataList, chartData, numStartValue, url, areaStr);
@@ -324,8 +328,8 @@ public class HomepageService {
             }
 
         }
+        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - filterData) + "ms");
         resMap.put("data", resList);
-        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         return resMap;
     }
