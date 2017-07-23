@@ -157,7 +157,9 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         log.info("查询es的参数-------->" + paramStr);
+        long esStart = System.currentTimeMillis();
         Map<String, Object> esMap = requestToES(paramStr);
+        long esTime = System.currentTimeMillis() - esStart;
         log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -219,7 +221,9 @@ public class HomepageService {
         if (null != chartThread) {
             chartThread.join();
         }
-        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
+        long threadTime = System.currentTimeMillis() - start;
+        log.info("es查询到返回的时间:" + esTime + "ms");
+        log.info("所有线程返回的时间:" + threadTime + "ms");
         long allThreadsJoin = System.currentTimeMillis();
 
         //5.汇总指标服务返回的详细数据
@@ -232,23 +236,29 @@ public class HomepageService {
         } else {
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
         }
-        log.info("汇总所有服务返回的数据的时间:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
+        log.info("汇总所有服务返回的数据耗时:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
         long getAllData = System.currentTimeMillis();
 
         //数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
+        //过滤图表数据
         if ((chartData != null) && (!chartData.containsKey("id"))) {
             log.info(chartData + "------chartData没有返回id，舍弃！！！");
             chartData = null;
         }
+        //过滤同比环比数据
         List<Map<String, Object>> dataList = new ArrayList<>();
-        for (int j = 0; j < data.size(); j++) {
-            if (!data.get(j).containsKey("id")) {
-                log.info(data.get(j) + "----同比环比数据没有返回id，舍弃！！！");
-            } else {
-                dataList.add(data.get(j));
+        if ((data.size()) != 0 && (data != null)){
+            for (int j = 0; j < data.size(); j++) {
+                if (!data.get(j).containsKey("id")) {
+                    log.info(data.get(j) + "----同比环比数据没有返回id，舍弃！！！");
+                } else {
+                    dataList.add(data.get(j));
+                }
             }
+        }else{
+            log.info("全部指标的同比环比数据为空！！！");
         }
-        log.info("过滤不合格数据的时间:" + (System.currentTimeMillis() - getAllData) + "ms");
+        log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
         long filterData = System.currentTimeMillis();
 
         //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
@@ -266,6 +276,7 @@ public class HomepageService {
                     map.put("ord", map1.get("ord"));
                     map.put("dayOrMonth", map1.get("dayOrMonth"));
                     map.put("id", map1.get("id"));
+                    map.put("isMinus", map1.get("isMinus"));
                     map.put("title", map1.get("title"));
                     map.put("markType", map1.get("typeId"));
                     map.put("markName", map1.get("type"));
@@ -303,6 +314,7 @@ public class HomepageService {
                                 map.put("ord", map1.get("ord"));
                                 map.put("dayOrMonth", map1.get("dayOrMonth"));
                                 map.put("id", map1.get("id"));
+                                map.put("isMinus", map1.get("isMinus"));
                                 map.put("title", map1.get("title"));
                                 map.put("markType", map1.get("typeId"));
                                 map.put("markName", map1.get("type"));
@@ -328,7 +340,7 @@ public class HomepageService {
             }
 
         }
-        log.info("拼接好数据的时间:" + (System.currentTimeMillis() - filterData) + "ms");
+        log.info("组合数据耗时:" + (System.currentTimeMillis() - filterData) + "ms");
         resMap.put("data", resList);
 
         return resMap;
@@ -691,6 +703,7 @@ public class HomepageService {
                             map.put("markType", typeId);
                             map.put("ord", map1.get("ord"));
                             map.put("id", id1);
+                            map.put("isMinus", map1.get("isMinus"));
                             map.put("url", url);
                             Map<String, Object> dataMap = new HashMap<>();
                             dataMap.put("markName", map1.get("type"));
