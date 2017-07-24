@@ -47,7 +47,7 @@ public class HomepageService {
 
         List<Map<String, String>> resList = homepageMapper.headerSelect();
         //默认是专题
-        resMap.put("default", resList.get(1));
+        resMap.put("default", resList.get(0));
         resMap.put("selectList", resList);
 
         return resMap;
