@@ -47,9 +47,8 @@ public class HomepageService {
 
         List<Map<String, String>> resList = homepageMapper.headerSelect();
         //默认是专题
-        resMap.put("default", resList.get(0));
+        resMap.put("default", resList.get(1));
         resMap.put("selectList", resList);
-
         return resMap;
     }
 
@@ -301,6 +300,14 @@ public class HomepageService {
                         map.put("dataValue", a);
                         map.put("unit", "");
                     }
+                    //单位为null的判断和处理：这里不处理的话，下面toString时可能报错
+                    String unit = dealUnit(map.get("unit"));
+                    map.put("unit", unit);
+                    //是否占比指标
+                    String unitNow = map.get("unit").toString();
+                    String isPercentage = isPercentageKpi(unitNow);
+                    map.put("isPercentage", isPercentage);
+
                     resList.add(map);
                     //log.info("第一条指标数据=================================》" + map);
                 } else {
@@ -318,7 +325,16 @@ public class HomepageService {
                                 map.put("title", map1.get("title"));
                                 map.put("markType", map1.get("typeId"));
                                 map.put("markName", map1.get("type"));
-                                map.put("unit", map2.get("unit"));
+                                //map.put("unit", map2.get("unit"));
+                                //单位为null的处理：这里不处理的话，下面toString时可能报错
+                                String unit = dealUnit(map2.get("unit"));
+                                map.put("unit", unit);
+
+                                //是否占比指标
+                                String unitNow = map.get("unit").toString();
+                                String isPercentage = isPercentageKpi(unitNow);
+                                map.put("isPercentage", isPercentage);
+
                                 map.put("chartType", map2.get("chartType"));
                                 map.put("chart", map2.get("chart"));
                                 map.put("dataName", map2.get("dataName"));
@@ -715,7 +731,16 @@ public class HomepageService {
                             dataMap.put("dataName", map2.get("dataName"));
                             dataMap.put("dataValue", map2.get("dataValue"));
                             dataMap.put("chartType", map2.get("chartType"));
-                            dataMap.put("unit", map2.get("unit"));
+
+                            //单位为null的处理：这里不处理的话，下面toString时可能报错
+                            String unit = dealUnit(map2.get("unit"));
+                            dataMap.put("unit", unit);
+
+                            //是否占比指标
+                            String unitNow = dataMap.get("unit").toString();
+                            String isPercentage = isPercentageKpi(unitNow);
+                            dataMap.put("isPercentage", isPercentage);
+
                             dataMap.put("chart", map2.get("chart"));
                             map.put("data", dataMap);
                             resList.add(map);
@@ -766,10 +791,43 @@ public class HomepageService {
                     log.info("es返回了不存在的type！" + "这条非法数据是：" + map1);
                 }
             } catch (NullPointerException e) {
-                log.info(map1 + "----相应服务没有返回正常的数据！！！");
+                log.info("----存在服务没有返回正常数据！！！");
             }
         }
         return resList;
+    }
+
+
+    /**
+     * 单位是否为null的判断，为null时处理为空字符串
+     * 不为null时，取它本身即可
+     *
+     * @Author gp
+     * @Date 2017/7/31
+     */
+    private String dealUnit(Object o) {
+        String unit = "";
+        if (o != null){
+            unit = o.toString();
+        }
+        return unit;
+    }
+
+
+    /**
+     * 判断是否占比指标
+     *
+     * @Author gp
+     * @Date 2017/7/31
+     */
+    private String isPercentageKpi(String unitNow) {
+        String isPercentage = "";
+        if ((!StringUtils.isBlank(unitNow)) && ("%".equals(unitNow) || "PP".equals(unitNow) || "pp".equals(unitNow))){
+            isPercentage = "1";
+        }else{
+            isPercentage = "0";
+        }
+        return isPercentage;
     }
 
 
