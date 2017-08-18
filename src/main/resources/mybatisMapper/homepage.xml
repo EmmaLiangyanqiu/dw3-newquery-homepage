@@ -70,8 +70,95 @@
         where t.module_code = #{typeId}
     </select>
 
-
-    <!--7.地域组件接口-->
+    <!--因为太长又重复将其拆分为几个sql-->
+    <sql id="unionWhole">
+        union all
+        select '111' prov_id, '全国' pro_name，area_id, area_desc,-3 pro_ord ,a.ord area_ord
+        from dmcode_pub.dmcode_area a
+        where is_valid = '1'
+        and area_id != '999'
+    </sql>
+    <sql id="unionNorth">
+        union all
+        select '112' prov_id,
+        '北十省' pro_name,
+        a.area_id,
+        a.area_desc,
+        -2 pro_ord ,
+        a.ord area_ord
+        from dmcode_pub.dmcode_province p
+        left join dmcode_pub.dmcode_area a
+        on p.prov_id = a.prov_id
+        where a.is_valid = '1'
+        and p.s_n_mark = '10'
+        and a.area_id != '999'
+    </sql>
+    <sql id="unionSouth">
+        union all
+        select '113' prov_id,
+        '南二十一省' pro_name,
+        a.area_id,
+        a.area_desc,
+        -1 pro_ord ,
+        a.ord area_ord
+        from dmcode_pub.dmcode_province p
+        left join dmcode_pub.dmcode_area a
+        on p.prov_id = a.prov_id
+        where a.is_valid = '1'
+        and p.s_n_mark = '21'
+        and a.area_id != '999'
+    </sql>
+    <!--3有条件的地域接口查询-->
+    <select id="getArea" resultType="java.util.HashMap">
+        select prov_id, pro_name, area_id, area_desc
+        from (
+        <choose>
+            <when test='provId=="111"'>
+                select p.prov_id, p.pro_name, a.area_id, a.area_desc, to_number(p.ord2) pro_ord ,a.ord area_ord
+                from dmcode_pub.dmcode_province p
+                left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+                where a.is_valid = '1'
+                and p.s_n_mark is not null
+                and a.area_id != '999'
+                <include refid="unionWhole"/>
+                <include refid="unionNorth"/>
+                <include refid="unionSouth"/>
+            </when>
+            <when test='provId=="112"'>
+                select p.prov_id, p.pro_name, a.area_id, a.area_desc, to_number(p.ord2) pro_ord ,a.ord area_ord
+                from dmcode_pub.dmcode_province p
+                left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+                where a.is_valid = '1'
+                and p.s_n_mark='10'
+                and a.area_id != '999'
+                <include refid="unionNorth"/>
+            </when>
+            <when test='provId=="113"'>
+                select p.prov_id, p.pro_name, a.area_id, a.area_desc, to_number(p.ord2) pro_ord ,a.ord area_ord
+                from dmcode_pub.dmcode_province p
+                left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+                where a.is_valid = '1'
+                and p.s_n_mark ='21'
+                and a.area_id != '999'
+                <include refid="unionSouth"/>
+            </when>
+            <otherwise>
+                select p.prov_id, p.pro_name, a.area_id, a.area_desc, to_number(p.ord2) pro_ord ,a.ord area_ord
+                from dmcode_pub.dmcode_province p
+                left join dmcode_pub.dmcode_area a
+                on p.prov_id = a.prov_id
+                where a.is_valid = '1'
+                and p.prov_id=#{provId}
+                and a.area_id != '999'
+            </otherwise>
+        </choose>
+        )
+        order by to_number(pro_ord) asc, to_number(area_ord) asc
+    </select>
+    <!--&lt;!&ndash;7.地域组件接口&ndash;&gt;
     <select id="getArea" resultType="java.util.HashMap">
         select prov_id, pro_name, area_id, area_desc
       from (select p.prov_id, p.pro_name, a.area_id, a.area_desc, to_number(p.ord2) pro_ord ,a.ord area_ord
@@ -117,7 +204,7 @@
                and a.area_id != '999'
             )
      order by to_number(pro_ord) asc, to_number(area_ord) asc
-    </select>
+    </select>-->
 
 
     <!--8-1.日期组件接口：最大日账期-->

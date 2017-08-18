@@ -51,6 +51,14 @@
                                     </#list>
                                 ]
                                 </#if>
+                                <#if key = "yoyData">
+                                "YoYData":[
+                                    <#assign dataList111 = chartMap[key]>
+                                    <#list dataList111 as data111>
+                                    "${data111}"<#if data111_has_next>,</#if>
+                                    </#list>
+                                ]
+                                </#if>
                                 <#if key = "chartX" || key = "tableTitle" || key = "example">
                                 "${key}":[
                                     <#assign dataList2 = chartMap[key]>

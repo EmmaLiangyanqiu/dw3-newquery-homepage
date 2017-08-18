@@ -3,6 +3,7 @@ package com.bonc.dw3.service;
 import java.util.*;
 
 import com.bonc.dw3.common.thread.MyThread;
+import com.bonc.dw3.mapper.UserInfoMapper;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,7 @@ public class HomepageService {
      * @Author gp
      * @Date 2017/5/18
      */
-    public Map<String, Object> allSearch(String searchStr, String numStart, String num) throws InterruptedException {
+    public Map<String, Object> allSearch(String searchStr, String numStart, String num, String userId) throws InterruptedException {
         //最后返回给前端的结果 {"nextFlag":"","data":""}
         Map<String, Object> resMap = new HashMap<>();
         //所有服务返回的数据
@@ -105,8 +106,13 @@ public class HomepageService {
         //根据es返回的数据条数控制线程数组的大小
         MyThread[] myThreads = new MyThread[esList.size()];
 
+        //获取用户的省份权限，一下查询详细数据时就只能查询该省份
+        String provId=userInfoMapper.queryProvByUserId(userId);
+        String areaStr = homepageMapper.getProvNameViaProvId(provId);
+        log.info("该用户的省份权限为：" + provId);
+
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
-        startAllThreads(esList, myThreads, kpiList, topicList, reportList);
+        startAllThreads(esList, myThreads, kpiList, topicList, reportList, provId);
 
         //4.join全部线程
         joinAllThreads(myThreads);
@@ -115,7 +121,7 @@ public class HomepageService {
         dataList = getMyThreadsData(myThreads);
 
         //6.组合es数据和所有服务返回的详细数据
-        List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList);
+        List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList, areaStr);
         resMap.put("data", resList);
 
         return resMap;
@@ -473,7 +479,8 @@ public class HomepageService {
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         return resMap;
     }
-
+    @Autowired
+    UserInfoMapper userInfoMapper;
 
     /**
      * 7.地域组件接口
@@ -481,8 +488,9 @@ public class HomepageService {
      * @Author gp
      * @Date 2017/6/9
      */
-    public List<Map<String, Object>> area() {
-        List<Map<String, String>> areaList = homepageMapper.getArea();
+    public List<Map<String, Object>> area(String userId) {
+        String provId=userInfoMapper.queryProvByUserId(userId);
+        List<Map<String, String>> areaList = homepageMapper.getArea(provId);
         //找到所有的prov_id:31省+全国，放到provList里
         List<String> provList = new ArrayList<String>();
         for (Map<String, String> areaMap : areaList) {
@@ -644,7 +652,8 @@ public class HomepageService {
                                  MyThread[] myThreads,
                                  List<String> kpiList,
                                  List<String> topicList,
-                                 List<String> reportList) throws InterruptedException {
+                                 List<String> reportList,
+                                 String provId) throws InterruptedException {
         if (esList.size() != 0) {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map = esList.get(i);
@@ -656,8 +665,10 @@ public class HomepageService {
                 if (typeId.equals(systemVariableService.kpi)) {
                     //指标
                     kpiList.add(id);
+
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
-                    String paramStr = "-1,-1," + id;
+                    //String paramStr = "-1,-1," + id;
+                    String paramStr = provId + ",-1," + id;
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
@@ -701,7 +712,8 @@ public class HomepageService {
                                                          List<Map<String, Object>> dataList,
                                                          List<String> kpiList,
                                                          List<String> topicList,
-                                                         List<String> reportList) {
+                                                         List<String> reportList,
+                                                         String areaStr) {
         List<Map<String, Object>> resList = new ArrayList<>();
         for (Map<String, Object> map1 : esList) {
             try {
@@ -725,8 +737,8 @@ public class HomepageService {
                             dataMap.put("markName", map1.get("type"));
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("dayOrMonth", map1.get("dayOrMonth"));
-                            //这里的数据全部都只查询全国的数据
-                            dataMap.put("area", "全国");
+                            //这个用户有什么省份的权限，这里的地域就是查的什么省份的数据，且只能看这个省份的数据
+                            dataMap.put("area", areaStr);
                             dataMap.put("date", map2.get("date"));
                             dataMap.put("dataName", map2.get("dataName"));
                             dataMap.put("dataValue", map2.get("dataValue"));

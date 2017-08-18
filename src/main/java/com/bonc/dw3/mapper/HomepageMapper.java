@@ -97,7 +97,7 @@ public interface HomepageMapper {
      * @Author gp
      * @Date 2017/5/27
      */
-    List<Map<String, String>> getArea();
+    List<Map<String, String>> getArea(@Param("provId")String provId);
 
 
     /**

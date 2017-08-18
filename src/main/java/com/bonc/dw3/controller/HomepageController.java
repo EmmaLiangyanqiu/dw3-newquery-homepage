@@ -79,7 +79,7 @@ public class HomepageController {
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + tabId + "," + numStart + "," + num;
         //查询es并拼接结果
-        Map<String, Object> resMap = homepageService.allSearch(paramStr, numStart, num);
+        Map<String, Object> resMap = homepageService.allSearch(paramStr, numStart, num, userId);
 
         model.addAttribute("resMap", resMap);
         return "allSearch";
@@ -192,7 +192,8 @@ public class HomepageController {
     @PostMapping("/area")
     public String area(@ApiParam("请求参数对象") @RequestBody Map<String, Object> paramMap,
                        Model model) {
-        model.addAttribute("dataList", homepageService.area());
+        String userId= (String) paramMap.get("userId");
+        model.addAttribute("dataList", homepageService.area(userId));
         return "area";
     }
 
