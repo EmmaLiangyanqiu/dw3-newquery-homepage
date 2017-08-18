@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.dw3.mapper.UserInfoMapper">
+    <select id="queryProvByUserId" resultType="string">
+        select prov_id from tfw_user where id=#{userId}
+    </select>
+
+    <!--查询全国、北十、南21所含省份-->
+    <select id="queryProvById" resultType="string">
+        select prov_id from v_dw_newquery_DMCODE_PROVINCE where prov_id !='999'
+        <choose>
+            <when test='provId=="111"'></when>
+            <when test='provId=="112"'>and s_n_mark='10' union all select '112' prov_id from dual</when>
+            <when test='provId=="113"'>and s_n_mark='21' union all select '113' prov_id from dual</when>
+            <otherwise>and prov_id=#{provId}</otherwise>
+        </choose>
+
+    </select>
+</mapper>
