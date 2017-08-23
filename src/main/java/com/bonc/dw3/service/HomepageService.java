@@ -203,17 +203,17 @@ public class HomepageService {
                     //拼接所有图表数据接口的请求参数
                     String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth;
                     //请求图表数据
-                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/allChartOfTheKpi", chartParam);
+                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     chartThread.start();
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id;
                     //请求同比环比数据
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
                 } else {
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id;
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
                 }
             }
@@ -404,7 +404,7 @@ public class HomepageService {
         //3.遍历es返回的所有的数据，开启子线程查询专题服务得到详细的数据
         for (int i = 0; i < esList.size(); i++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", id);
+            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
             myThreads[i].start();
         }
 
@@ -461,7 +461,7 @@ public class HomepageService {
         //3.遍历es返回的所有的数据，开启子线程查询报告服务得到详细的数据
         for (int i = 0; i < esList.size(); i++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", id);
+            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
             myThreads[i].start();
         }
 
@@ -577,7 +577,7 @@ public class HomepageService {
         MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
         headers.setContentType(mediaType);
         HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
-        resMap = restTemplateTmp.postForObject("http://10.249.216.108:8999/es/explore", requestEntity, Map.class);
+        resMap = restTemplateTmp.postForObject("http://10.249.216.108:8998/es/explore", requestEntity, Map.class);
         return resMap;
     }
 
@@ -670,19 +670,19 @@ public class HomepageService {
                     //String paramStr = "-1,-1," + id;
                     String paramStr = provId + ",-1," + id;
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/index/indexForHomepage/dataOfAllKpi", paramStr);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
                 } else if (typeId.equals(systemVariableService.subject)) {
                     //专题
                     topicList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/subject/specialForHomepage/icon", id);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/subject/specialForHomepage/icon", id);
                     myThreads[i].start();
                 } else if (typeId.equals(systemVariableService.report)) {
                     //报告
                     reportList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL/reportPPT/pptReportForHomepage/info", id);
+                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
                 } else {
                     log.info("es返回了不存在的type！外星type！");
