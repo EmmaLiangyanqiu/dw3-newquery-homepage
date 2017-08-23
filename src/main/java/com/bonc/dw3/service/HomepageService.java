@@ -414,6 +414,7 @@ public class HomepageService {
 
         //5.汇总专题服务返回的详细数据
         data = getMyThreadsData(myThreads);
+        log.info("专题服务返回的数据为：" + data);
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.组合es数据和专题服务返回的详细数据，组合好的数据直接放在esList中
