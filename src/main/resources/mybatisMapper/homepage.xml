@@ -209,15 +209,17 @@
 
     <!--8-1.日期组件接口：最大日账期-->
     <select id="getDayMaxDate" resultType="String">
-        select distinct to_char(to_date(max(d.ACCT_DATE), 'yyyymmdd'), 'yyyy-mm-dd') "date"
-        from DM.V_DM_KPI_D_001001 d
+        select distinct to_char(to_date(max(d.MAX_DATE), 'yyyymmdd'), 'yyyy-mm-dd') "date"
+        from dw_newquery_kpi_maxdate d
+        where label_type = 'D'
     </select>
 
 
     <!--8-2.日期组件接口：最大月账期-->
     <select id="getMonthMaxDate" resultType="String">
-        select distinct to_char(to_date(max(m.MONTH_ID), 'yyyymm'), 'yyyy-mm') "date"
-        from DM.V_DM_KPI_DATA_GJ_MONTH m
+        select distinct to_char(to_date(max(d.MAX_DATE), 'yyyymm'), 'yyyy-mm') "date"
+        from dw_newquery_kpi_maxdate d
+        where label_type = 'M'
     </select>
 
 
