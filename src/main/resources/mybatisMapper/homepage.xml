@@ -210,7 +210,7 @@
     <!--8-1.日期组件接口：最大日账期-->
     <select id="getDayMaxDate" resultType="String">
         select distinct to_char(to_date(max(d.MAX_DATE), 'yyyymmdd'), 'yyyy-mm-dd') "date"
-        from dw_newquery_kpi_maxdate d
+        from  <if test ='table != null and table != ""'>${table}</if> d
         where label_type = 'D'
     </select>
 
@@ -218,7 +218,7 @@
     <!--8-2.日期组件接口：最大月账期-->
     <select id="getMonthMaxDate" resultType="String">
         select distinct to_char(to_date(max(d.MAX_DATE), 'yyyymm'), 'yyyy-mm') "date"
-        from dw_newquery_kpi_maxdate d
+        from  <if test ='table != null and table != ""'>${table}</if> d
         where label_type = 'M'
     </select>
 
@@ -227,6 +227,25 @@
     <select id="getProvNameViaProvId" parameterType="String" resultType="String">
         select pro_name "name" from v_dw_newquery_DMCODE_PROVINCE p where prov_id = #{provId}
     </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

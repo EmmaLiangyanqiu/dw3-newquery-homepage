@@ -30,6 +30,12 @@ public class SystemVariableService {
     public static final String SUBJECT = "code_1016";
     //报告
     public static final String REPORT = "code_1017";
+    //预发布用户userId
+    public static final String YUFABUUSERID = "code_1020";
+    //预发布-指标-最大账期表
+    public static final String KPIMAXDATETABLE_YUFABU = "code_1021";
+    //发布-指标-最大账期表
+    public static final String KPIMAXDATETABLE = "code_1022";
 
     //系统变量
     //日标识
@@ -46,6 +52,12 @@ public class SystemVariableService {
     public static String subject ="";
     //报告
     public static String report ="";
+    //预发布用户userId
+    public static String yufabuUserId = "";
+    //预发布-指标-最大账期表
+    public static String kpiMaxDateTableYufabu = "";
+    //发布-指标-最大账期表
+    public static String kpiMaxDateTable = "";
 
 	List<Map<String,Object>> systemVariablesList=new LinkedList<>();
 
@@ -84,6 +96,18 @@ public class SystemVariableService {
                 //报告
                 if(REPORT.equals(variables.get("code"))){
                     setReport(variables.get("value").toString());
+                }
+                //预发布用户userId
+                if (YUFABUUSERID.equals(variables.get("code"))){
+                    setYufabuUserId(variables.get("value").toString());
+                }
+                //预发布指标最大账期表
+                if (KPIMAXDATETABLE_YUFABU.equals(variables.get("code"))){
+                    setKpiMaxDateTableYufabu(variables.get("value").toString());
+                }
+                //发布指标最大账期表
+                if (KPIMAXDATETABLE.equals(variables.get("code"))){
+                    setKpiMaxDateTable(variables.get("value").toString());
                 }
 			}
 		}
@@ -143,5 +167,29 @@ public class SystemVariableService {
 
     public static void setReport(String report) {
         SystemVariableService.report = report;
+    }
+
+    public static String getYufabuUserId() {
+        return yufabuUserId;
+    }
+
+    public static void setYufabuUserId(String yufabuUserId) {
+        SystemVariableService.yufabuUserId = yufabuUserId;
+    }
+
+    public static String getKpiMaxDateTableYufabu() {
+        return kpiMaxDateTableYufabu;
+    }
+
+    public static void setKpiMaxDateTableYufabu(String kpiMaxDateTableYufabu) {
+        SystemVariableService.kpiMaxDateTableYufabu = kpiMaxDateTableYufabu;
+    }
+
+    public static String getKpiMaxDateTable() {
+        return kpiMaxDateTable;
+    }
+
+    public static void setKpiMaxDateTable(String kpiMaxDateTable) {
+        SystemVariableService.kpiMaxDateTable = kpiMaxDateTable;
     }
 }

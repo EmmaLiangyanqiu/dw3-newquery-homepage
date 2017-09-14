@@ -106,7 +106,7 @@ public interface HomepageMapper {
      * @Author gp
      * @Date 2017/6/9
      */
-    String getDayMaxDate();
+    String getDayMaxDate(@Param("table")String table);
 
 
     /**
@@ -115,7 +115,7 @@ public interface HomepageMapper {
      * @Author gp
      * @Date 2017/6/9
      */
-    String getMonthMaxDate();
+    String getMonthMaxDate(@Param("table")String table);
 
 
 

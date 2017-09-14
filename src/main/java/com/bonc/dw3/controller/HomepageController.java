@@ -192,7 +192,7 @@ public class HomepageController {
     @PostMapping("/area")
     public String area(@ApiParam("请求参数对象") @RequestBody Map<String, Object> paramMap,
                        Model model) {
-        String userId= (String) paramMap.get("userId");
+        String userId= paramMap.get("userId").toString();
         model.addAttribute("dataList", homepageService.area(userId));
         return "area";
     }
@@ -210,7 +210,8 @@ public class HomepageController {
     public String maxDate(@ApiParam("请求参数对象") @RequestBody Map<String, String> paramMap,
                           Model model) {
         String dateType = paramMap.get("dateType").toString();
-        String date = homepageService.getMaxDate(dateType);
+        String userId= paramMap.get("userId").toString();
+        String date = homepageService.getMaxDate(dateType, userId);
 
         model.addAttribute("date", date);
         return "date";

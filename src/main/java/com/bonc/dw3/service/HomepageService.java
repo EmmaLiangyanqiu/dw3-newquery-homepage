@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.bonc.dw3.common.thread.MyThread;
 import com.bonc.dw3.mapper.UserInfoMapper;
+import freemarker.ext.beans.HashAdapter;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -551,14 +552,26 @@ public class HomepageService {
      * @Author gp
      * @Date 2017/6/9
      */
-    public String getMaxDate(String dateType) {
+    public String getMaxDate(String dateType, String userId) {
         String date = "";
+        String table = "";
+        String yufabuUserIdStr = SystemVariableService.getYufabuUserId();
+        String[] yufabuUserIds = yufabuUserIdStr.split(",");
+        List<String> yufabuUserIdsList = Arrays.asList(yufabuUserIds);
+        //userId属于预发布用户
+        if (yufabuUserIdsList.contains(userId)){
+            table = SystemVariableService.kpiMaxDateTableYufabu;
+        }else{
+            //该用户不属于预发布用户
+            table = SystemVariableService.kpiMaxDateTable;
+        }
+
         //是月标识
         if ((!StringUtils.isBlank(dateType)) && dateType.equals("2")) {
-            date = homepageMapper.getMonthMaxDate();
+            date = homepageMapper.getMonthMaxDate(table);
         } else {
             //日或者全部标识
-            date = homepageMapper.getDayMaxDate();
+            date = homepageMapper.getDayMaxDate(table);
         }
         return date;
     }
