@@ -113,7 +113,7 @@ public class HomepageService {
         log.info("该用户的省份权限为：" + provId);
 
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
-        startAllThreads(esList, myThreads, kpiList, topicList, reportList, provId);
+        startAllThreads(esList, myThreads, kpiList, topicList, reportList, provId, userId);
 
         //4.join全部线程
         joinAllThreads(myThreads);
@@ -144,7 +144,8 @@ public class HomepageService {
                                            String numStart,
                                            String num,
                                            String area,
-                                           String date) throws InterruptedException {
+                                           String date,
+                                           String userId) throws InterruptedException {
         //最终的返回结果
         Map<String, Object> resMap = new HashMap<>();
         //所有指标的同比环比数据
@@ -202,18 +203,18 @@ public class HomepageService {
                         fitstDayOrMonth = systemVariableService.month;
                     }
                     //拼接所有图表数据接口的请求参数
-                    String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth;
+                    String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth + "," + userId;
                     //请求图表数据
                     chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     chartThread.start();
                     //拼接同比环比接口的请求参数
-                    String dataParam = area + "," + date + "," + id;
+                    String dataParam = area + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
                 } else {
                     //拼接同比环比接口的请求参数
-                    String dataParam = area + "," + date + "," + id;
+                    String dataParam = area + "," + date + "," + id + "," + userId;
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE/index/indexForHomepage/dataOfAllKpi", dataParam);
                     myThreads[i].start();
                 }
@@ -667,7 +668,8 @@ public class HomepageService {
                                  List<String> kpiList,
                                  List<String> topicList,
                                  List<String> reportList,
-                                 String provId) throws InterruptedException {
+                                 String provId,
+                                 String userId) throws InterruptedException {
         if (esList.size() != 0) {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map = esList.get(i);
@@ -682,7 +684,7 @@ public class HomepageService {
 
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
                     //String paramStr = "-1,-1," + id;
-                    String paramStr = provId + ",-1," + id;
+                    String paramStr = provId + ",-1," + id + "," + userId;
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
