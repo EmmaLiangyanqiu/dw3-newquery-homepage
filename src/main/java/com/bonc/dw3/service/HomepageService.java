@@ -288,7 +288,14 @@ public class HomepageService {
                     map.put("markType", map1.get("typeId"));
                     map.put("markName", map1.get("type"));
                     map.put("chartData", chartData.get("chartData"));
-                    map.put("date", chartData.get("date"));
+                    String chartDataDate = chartData.get("date").toString();
+                    String dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
+                    map.put("date", dateStr);
+                    if (!StringUtils.isBlank(areaStr)) {
+                        map.put("area", areaStr);
+                    } else {
+                        map.put("area", "全国");
+                    }
                     map.put("url", url);
                     //找同比环比数据
                     if (dataList.size() != 0) {
