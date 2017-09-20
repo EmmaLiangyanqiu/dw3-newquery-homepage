@@ -288,9 +288,16 @@ public class HomepageService {
                     map.put("markType", map1.get("typeId"));
                     map.put("markName", map1.get("type"));
                     map.put("chartData", chartData.get("chartData"));
-                    String chartDataDate = chartData.get("date").toString();
-                    String dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
+                    //返回账期（格式转换）
+                    String chartDataDate = chartData.get("date").toString().replace("-", "");
+                    String dateStr = "";
+                    if (chartDataDate.length() == 6){
+                        dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4) + "月";
+                    }else{
+                        dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
+                    }
                     map.put("date", dateStr);
+                    //返回地域
                     if (!StringUtils.isBlank(areaStr)) {
                         map.put("area", areaStr);
                     } else {
