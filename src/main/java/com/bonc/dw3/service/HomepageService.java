@@ -606,7 +606,8 @@ public class HomepageService {
         MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
         headers.setContentType(mediaType);
         HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
-        resMap = restTemplateTmp.postForObject("http://10.249.216.108:8998/es/explore", requestEntity, Map.class);
+        //resMap = restTemplateTmp.postForObject("http://10.249.216.108:8998/es/explore", requestEntity, Map.class);
+        resMap = restTemplateTmp.postForObject("http://10.249.216.117:8998/es/explore", requestEntity, Map.class);
         return resMap;
     }
 
