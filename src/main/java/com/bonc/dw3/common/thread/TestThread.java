@@ -34,9 +34,9 @@ public class TestThread extends Thread {
 
     @Override
     public void run() {
-        JSONObject json=new JSONObject(paramMap);
-        log.info("T-----查询服务的参数是：" + json.toJSONString());
-        this.result = restTemplate.postForObject(url, json, Object.class);
+        //JSONObject json=new JSONObject(paramMap);
+        //log.info("T-----查询服务的参数是：" + json.toJSONString());
+        this.result = restTemplate.postForObject(url, paramMap, Object.class);
         log.info("T-----返回的结果是：" + this.result);
     }
 }

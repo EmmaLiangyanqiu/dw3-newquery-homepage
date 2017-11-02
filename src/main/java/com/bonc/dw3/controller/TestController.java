@@ -25,8 +25,8 @@ import java.util.Map;
 public class TestController {
 
 
-    @Autowired
-    RestTemplate restTemplate;
+    /*@Autowired
+    RestTemplate restTemplate;*/
 
     /**
      * 1.头部栏组件接口
@@ -54,7 +54,7 @@ public class TestController {
         paramMap.put("selectType", dimensionMap.get("selectType"));
         paramMap.put("provId", dimensionMap.get("provId"));
         paramMap.put("cityId", dimensionMap.get("cityId"));
-        TestThread testThread = new TestThread(restTemplate, "http://10.249.216.57:9777/gpTest/test", paramMap);
+        TestThread testThread = new TestThread(new RestTemplate(), "http://10.249.216.57:9777/gpTest/test", paramMap);
         testThread.start();
         String result = testThread.result.toString();
         return result;
