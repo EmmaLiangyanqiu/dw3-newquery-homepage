@@ -1,5 +1,6 @@
 package com.bonc.dw3.common.thread;
 
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
@@ -33,8 +34,9 @@ public class TestThread extends Thread {
 
     @Override
     public void run() {
-        log.info("T-----查询服务的参数是：" + paramMap);
-        this.result = restTemplate.postForObject(url, paramMap, Object.class);
+        JSONObject json=new JSONObject(paramMap);
+        log.info("T-----查询服务的参数是：" + json.toJSONString());
+        this.result = restTemplate.postForObject(url, json, Object.class);
         log.info("T-----返回的结果是：" + this.result);
     }
 }
