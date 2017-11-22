@@ -46,7 +46,6 @@ public class HomepageService {
      */
     public Map<String, Object> headerSelect() {
         Map<String, Object> resMap = new HashMap<>();
-
         List<Map<String, String>> resList = homepageMapper.headerSelect();
         //默认是专题
         resMap.put("default", resList.get(1));
@@ -58,7 +57,7 @@ public class HomepageService {
     /**
      * 3.模块选项卡接口
      *
-     * @Parameter markType 模块类型
+     * @param markType 模块类型
      * @Author gp
      * @Date 2017/5/27
      */
@@ -71,23 +70,31 @@ public class HomepageService {
     /**
      * 6.搜索：全部接口
      *
-     * @Parameter searchStr 查询es的参数
-     * @Parameter numStart 查询es的起始条数
-     * @Parameter num 查询es的数据条数
+     * @param searchStr 查询es的参数
+     * @param numStart  查询es的起始条数
+     * @param num       查询es的数据条数
+     * @param userId    用户Id
      * @Author gp
      * @Date 2017/5/18
      */
-    public Map<String, Object> allSearch(String searchStr, String numStart, String num, String userId) throws InterruptedException {
+    public Map<String, Object> allSearch(String searchStr,
+                                         String numStart,
+                                         String num,
+                                         String userId) throws InterruptedException {
         //最后返回给前端的结果 {"nextFlag":"","data":""}
         Map<String, Object> resMap = new HashMap<>();
         //所有服务返回的数据
         List<Map<String, Object>> dataList = new ArrayList<>();
+        //报表服务返回的数据
+        List<Map<String, Object>> statementDataList = new ArrayList<>();
         //es返回的所有指标
         List<String> kpiList = new ArrayList<>();
         //es返回的所有专题
         List<String> topicList = new ArrayList<>();
         //es返回的所有报告
         List<String> reportList = new ArrayList<>();
+        //es返回的所有报表
+        List<String> statementList = new ArrayList<>();
 
         //1.查询ES，ES中根据权重排序，支持分页，结果中携带排序序号
         log.info("查询es的参数------->" + searchStr);
@@ -113,16 +120,20 @@ public class HomepageService {
         log.info("该用户的省份权限为：" + provId);
 
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
-        startAllThreads(esList, myThreads, kpiList, topicList, reportList, provId, userId);
+        //es支持地域维度搜索，并过滤用户的省份权限，首页服务的全部搜索接口不再过滤省份权限
+        startAllThreads(esList, myThreads, kpiList, topicList, reportList,statementList, userId, provId);
 
         //4.join全部线程
         joinAllThreads(myThreads);
 
         //5.汇总所有服务返回的详细数据
         dataList = getMyThreadsData(myThreads);
+        //查询数据
+        statementDataList = homepageMapper.selectStatementData(statementList);
+        dataList.addAll(statementDataList);
 
         //6.组合es数据和所有服务返回的详细数据
-        List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList, areaStr);
+        List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList, statementList, areaStr);
         resMap.put("data", resList);
 
         return resMap;
@@ -388,6 +399,9 @@ public class HomepageService {
     /**
      * 6-3.搜索：专题接口
      *
+     * @param paramStr 查询es的参数
+     * @param numStart 查询es请求的起始条数
+     * @param num      查询es请求的条数
      * @Author gp
      * @Date 2017/5/31
      */
@@ -445,6 +459,9 @@ public class HomepageService {
     /**
      * 6-4.搜索：报告接口
      *
+     * @param paramStr 查询es的参数
+     * @param numStart 查询es请求的起始条数
+     * @param num      查询es请求的条数
      * @Author gp
      * @Date 2017/5/31
      */
@@ -496,17 +513,104 @@ public class HomepageService {
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         return resMap;
     }
+
+
+    /**
+     * 6-5.搜索：报表接口
+     *
+     * @param paramStr 查询es的参数
+     * @param numStart 查询es请求的起始条数
+     * @param num      查询es的条数
+     * @Author gp
+     * @Date 2017/11/22
+     */
+    public Map<String, Object> statementSearch(String paramStr,
+                                               String numStart,
+                                               String num) {
+        //返回前端的结果
+        Map<String, Object> resMap = new HashMap<>();
+
+        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
+        log.info("查询es的参数--------->" + paramStr);
+        Map<String, Object> esMap = requestToES(paramStr);
+        log.info("查询es的结果--------->" + esMap);
+
+        //2.判断是否还有下一页数据
+        //es查询到的记录的总条数
+        int esCount = Integer.parseInt(esMap.get("count").toString());
+        //前端显示的总条数
+        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        String nextFlag = isNext(esCount, count);
+        resMap.put("nextFlag", nextFlag);
+
+        //es查询到的数据
+        List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+
+        //3.遍历es返回的所有的数据，查询报表的详细数据（包括url,img,issue,issueTime）
+        List<Map<String, Object>> data = new ArrayList<>();
+        List<String> statementIdList = new ArrayList<>();
+        if (esList.size() == 0) {
+            log.info("es没有返回报表数据！");
+        } else {
+            for (int i = 0; i < esList.size(); i++) {
+                statementIdList.add(esList.get(i).get("id").toString());
+            }
+            data = homepageMapper.selectStatementData(statementIdList);
+        }
+
+
+        //4.组合es数据和详细报表的数据
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        if (esList.size() == 0) {
+            log.info("es没有返回报表数据！");
+        } else {
+            if (data.size() != 0) {
+                //拼接数据
+                for (Map<String, Object> map1 : esList) {
+                    String id1 = map1.get("id").toString();
+                    for (Map<String, Object> map2 : data) {
+                        String id2 = map2.get("id").toString();
+                        if (id1.equals(id2)){
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("title", map1.get("title"));
+                            dataMap.put("ord", map1.get("ord"));
+                            dataMap.put("id", map1.get("id"));
+                            dataMap.put("type", map1.get("type"));
+                            dataMap.put("tabName", map1.get("dayOrMonth"));
+                            /*dataMap.put("img", map2.get("icon"));
+                            dataMap.put("issue", map2.get("issue"));
+                            dataMap.put("issueTime", map2.get("issueTime"));
+                            dataMap.put("url", map2.get("url"));*/
+                            dataMap.put("img", "u977.png");
+                            dataMap.put("issue", "张三");
+                            dataMap.put("issueTime", "2021年10月15日");
+                            dataMap.put("url", map2.get("url"));
+                            dataList.add(dataMap);
+                        }
+                    }
+                }
+            } else {
+                log.info("报表查询出的详细数据为空！！！");
+            }
+
+        }
+        resMap.put("data", dataList);
+        return resMap;
+    }
+
+
     @Autowired
     UserInfoMapper userInfoMapper;
 
     /**
      * 7.地域组件接口
      *
+     * @param userId 用户Id
      * @Author gp
      * @Date 2017/6/9
      */
     public List<Map<String, Object>> area(String userId) {
-        String provId=userInfoMapper.queryProvByUserId(userId);
+        String provId = userInfoMapper.queryProvByUserId(userId);
         List<Map<String, String>> areaList = homepageMapper.getArea(provId);
         //找到所有的prov_id:31省+全国，放到provList里
         List<String> provList = new ArrayList<String>();
@@ -564,6 +668,8 @@ public class HomepageService {
     /**
      * 8.日期组件接口
      *
+     * @param userId   用户Id
+     * @param dateType 日月类型
      * @Author gp
      * @Date 2017/6/9
      */
@@ -574,9 +680,9 @@ public class HomepageService {
         String[] yufabuUserIds = yufabuUserIdStr.split(",");
         List<String> yufabuUserIdsList = Arrays.asList(yufabuUserIds);
         //userId属于预发布用户
-        if (yufabuUserIdsList.contains(userId)){
+        if (yufabuUserIdsList.contains(userId)) {
             table = SystemVariableService.kpiMaxDateTableYufabu;
-        }else{
+        } else {
             //该用户不属于预发布用户
             table = SystemVariableService.kpiMaxDateTable;
         }
@@ -593,8 +699,9 @@ public class HomepageService {
 
 
     /**
-     * 向es发请求，参数是"userId,searchType,search,tabId,startNum,num"
+     * 向es搜索引擎发请求
      *
+     * @param paramStr "userId,searchType,search,tabId,startNum,num" 即"用户Id,搜索类型,搜索内容,日月标识,起始条数,记录条数"
      * @Author gp
      * @Date 2017/6/12
      */
@@ -606,8 +713,8 @@ public class HomepageService {
         MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
         headers.setContentType(mediaType);
         HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
-        //resMap = restTemplateTmp.postForObject("http://10.249.216.108:8998/es/explore", requestEntity, Map.class);
-        resMap = restTemplateTmp.postForObject("http://10.249.216.117:8998/es/explore", requestEntity, Map.class);
+        //es支持维度搜索
+        resMap = restTemplateTmp.postForObject("http://10.249.216.116:8998/es/explore", requestEntity, Map.class);
         return resMap;
     }
 
@@ -615,11 +722,11 @@ public class HomepageService {
     /**
      * 汇总所有线程返回的数据
      *
-     * @param myThreads
+     * @param myThreads 线程数组
      * @Author gp
      * @Date 2017/7/13
      */
-    private List<Map<String,Object>> getMyThreadsData(MyThread[] myThreads) {
+    private List<Map<String, Object>> getMyThreadsData(MyThread[] myThreads) {
         List<Map<String, Object>> dataList = new ArrayList<>();
         for (int i = 0; i < myThreads.length; i++) {
             if (null == myThreads[i]) {
@@ -642,7 +749,9 @@ public class HomepageService {
      */
     private void joinAllThreads(MyThread[] myThreads) throws InterruptedException {
         for (int i = 0; i < myThreads.length; i++) {
-            myThreads[i].join();
+            if (myThreads[i] != null){
+                myThreads[i].join();
+            }
         }
     }
 
@@ -683,8 +792,9 @@ public class HomepageService {
                                  List<String> kpiList,
                                  List<String> topicList,
                                  List<String> reportList,
-                                 String provId,
-                                 String userId) throws InterruptedException {
+                                 List<String> statementList,
+                                 String userId,
+                                 String provId) throws InterruptedException {
         if (esList.size() != 0) {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map = esList.get(i);
@@ -715,6 +825,9 @@ public class HomepageService {
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
+                } else if (typeId.equals("4")){
+                    //报表
+                    statementList.add(id);
                 } else {
                     log.info("es返回了不存在的type！外星type！");
                 }
@@ -744,17 +857,20 @@ public class HomepageService {
                                                          List<String> kpiList,
                                                          List<String> topicList,
                                                          List<String> reportList,
+                                                         List<String> statementList,
                                                          String areaStr) {
         List<Map<String, Object>> resList = new ArrayList<>();
         for (Map<String, Object> map1 : esList) {
             try {
                 String typeId = map1.get("typeId").toString();
                 //查询数据库得到跳转的url
-                String url = homepageMapper.getUrlViaTypeId(typeId);
+                //String url = homepageMapper.getUrlViaTypeId(typeId);
                 String id1 = map1.get("id").toString();
                 //指标数据处理
                 if (typeId.equals(systemVariableService.kpi) && kpiList.size() != 0) {
                     for (Map<String, Object> map2 : dataList) {
+                        //查询数据库得到跳转的url
+                        String url = homepageMapper.getUrlViaTypeId(typeId);
                         String id2 = map2.get("id").toString();
                         //es中和指标服务返回的结果id对应上了，组合数据
                         if (id1.equals(id2)) {
@@ -810,6 +926,8 @@ public class HomepageService {
                         }
                     }
                 } else if (typeId.equals(systemVariableService.report) && reportList.size() != 0) {
+                    //查询数据库得到跳转的url
+                    String url = homepageMapper.getUrlViaTypeId(typeId);
                     //报告数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
@@ -830,7 +948,29 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else {
+                } else if (typeId.equals("4") && statementList.size() != 0){
+                    //报告数据处理
+                    for (Map<String, Object> map2 : dataList) {
+                        String id2 = map2.get("id").toString();
+                        if (id1.equals(id2)) {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("markType", typeId);
+                            map.put("ord", map1.get("ord"));
+                            map.put("id", id1);
+                            map.put("url", map2.get("url"));
+                            Map<String, Object> dataMap = new HashMap<>();
+                            dataMap.put("img", "u977.png");
+                            dataMap.put("title", map1.get("title"));
+                            dataMap.put("type", map1.get("type"));
+                            dataMap.put("tabName", map1.get("dayOrMonth"));
+                            dataMap.put("issue", "张三");
+                            dataMap.put("issueTime", "2021年10月15日");
+                            map.put("data", dataMap);
+                            resList.add(map);
+                        }
+                    }
+                }
+                else {
                     log.info("es返回了不存在的type！" + "这条非法数据是：" + map1);
                 }
             } catch (NullPointerException e) {
@@ -850,7 +990,7 @@ public class HomepageService {
      */
     private String dealUnit(Object o) {
         String unit = "";
-        if (o != null){
+        if (o != null) {
             unit = o.toString();
         }
         return unit;
@@ -865,171 +1005,13 @@ public class HomepageService {
      */
     private String isPercentageKpi(String unitNow) {
         String isPercentage = "";
-        if ((!StringUtils.isBlank(unitNow)) && ("%".equals(unitNow) || "PP".equals(unitNow) || "pp".equals(unitNow))){
+        if ((!StringUtils.isBlank(unitNow)) && ("%".equals(unitNow) || "PP".equals(unitNow) || "pp".equals(unitNow))) {
             isPercentage = "1";
-        }else{
+        } else {
             isPercentage = "0";
         }
         return isPercentage;
     }
-
-
-    /**
-     * 指标搜索接口：组合es数据和服务返回的详细数据
-     *
-     * @param esList es搜索返回的结果
-     * @param dataList 所有服务返回的同比环比数据
-     * @param chartData 指标的图表数据
-     * @param numStartValue 前端请求的起始数据
-     * @param url 指标的跳转路径
-     * @param areaStr 前端传的地域
-     * @Author gp
-     * @Date 2017/7/13
-     */
-    /*private List<Map<String,Object>> combineKpiData(List<Map<String, Object>> esList,
-                                                    List<Map<String, Object>> dataList,
-                                                    Map<String, Object> chartData,
-                                                    int numStartValue,
-                                                    String url,
-                                                    String areaStr) {
-        List<Map<String, Object>> resList = new ArrayList<>();
-        if (esList.size() == 0) {
-            log.info("没有需要查询的指标id！！！");
-        } else {
-            for (int i = 0; i < esList.size(); i++) {
-                Map<String, Object> map1 = esList.get(i);
-                String id1 = map1.get("id").toString();
-                //第一条数据
-                if (i == 0 && chartData != null && numStartValue == 1) {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("ord", map1.get("ord"));
-                    map.put("dayOrMonth", map1.get("dayOrMonth"));
-                    map.put("id", map1.get("id"));
-                    map.put("title", map1.get("title"));
-                    map.put("markType", map1.get("typeId"));
-                    map.put("markName", map1.get("type"));
-                    map.put("chartData", chartData.get("chartData"));
-                    map.put("date", chartData.get("date"));
-                    map.put("url", url);
-                    //找同比环比数据
-                    if (dataList.size() != 0) {
-                        for (int j = 0; j < dataList.size(); j++) {
-                            String id2 = dataList.get(j).get("id").toString();
-                            if (id2.equals(id1)) {
-                                map.put("dataName", dataList.get(j).get("dataName"));
-                                map.put("dataValue", dataList.get(j).get("dataValue"));
-                                map.put("unit", dataList.get(j).get("unit"));
-                            }
-                        }
-                    }
-                    //看是否找到了同比环比数据，如果没找到，置空结构，字段不能少
-                    if (!(map.containsKey("dataName") || map.containsKey("dataValue") || map.containsKey("unit"))) {
-                        String[] a = {"-", "-", "-", "-"};
-                        map.put("dataName", a);
-                        map.put("dataValue", a);
-                        map.put("unit", "");
-                    }
-                    resList.add(map);
-                    log.info("第一条指标数据=================================》" + map);
-                } else {
-                    //除第一条指标以外的指标
-                    if (dataList != null && dataList.size() != 0) {
-                        for (int j = 0; j < dataList.size(); j++) {
-                            Map<String, Object> map2 = dataList.get(j);
-                            String id2 = map2.get("id").toString();
-                            if (id1.equals(id2)) {
-                                Map<String, Object> map = new HashMap<>();
-                                map.put("ord", map1.get("ord"));
-                                map.put("dayOrMonth", map1.get("dayOrMonth"));
-                                map.put("id", map1.get("id"));
-                                map.put("title", map1.get("title"));
-                                map.put("markType", map1.get("typeId"));
-                                map.put("markName", map1.get("type"));
-                                map.put("unit", map2.get("unit"));
-                                map.put("chartType", map2.get("chartType"));
-                                map.put("chart", map2.get("chart"));
-                                map.put("dataName", map2.get("dataName"));
-                                map.put("dataValue", map2.get("dataValue"));
-                                map.put("url", url);
-                                if (!StringUtils.isBlank(areaStr)) {
-                                    map.put("area", areaStr);
-                                } else {
-                                    map.put("area", "全国");
-                                }
-                                map.put("date", map2.get("date"));
-                                resList.add(map);
-                            }
-                        }
-                    } else {
-                        log.info("所有指标数据查询为空！");
-                    }
-                }
-            }
-
-        }
-        return resList;
-    }*/
-
-
-    /**
-     * 指标搜索接口：开启线程查询指标服务
-     * @param esList es搜索引擎返回的结果
-     * @param myThreads 线程数组
-     * @param chartThread 请求图表接口的线程
-     * @param numStartValue 前端搜索的指标起始值
-     * @param fitstDayOrMonth 第一条指标日月标识
-     * @param url 指标跳转的路径
-     * @param area 前端参数：地域
-     * @param date 前端参数：日期
-     *
-     * @Author gp
-     * @Date 2017/7/13
-     */
-    /*private void startKpiThreads(List<Map<String, Object>> esList,
-                                 MyThread[] myThreads,
-                                 MyThread chartThread,
-                                 int numStartValue,
-                                 String fitstDayOrMonth,
-                                 String url,
-                                 String area,
-                                 String date) {
-        if (esList.size() != 0) {
-            url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
-            //for循环得到需要查询的kpi字符串
-            for (int i = 0; i < esList.size(); i++) {
-                String id = esList.get(i).get("id").toString();
-                log.info("*************************************" + numStartValue);
-                if (i == 0 && numStartValue == 1) {
-                    //es返回的日月标识
-                    String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
-                    if (dayOrMonth.equals("日报")) {
-                        fitstDayOrMonth = systemVariableService.day;
-                    } else {
-                        fitstDayOrMonth = systemVariableService.month;
-                    }
-                    //拼接所有图表数据接口的请求参数
-                    String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth;
-                    log.info("*************************************" + chartParam);
-                    //请求图表数据
-                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/allChartOfTheKpi", chartParam);
-                    chartThread.start();
-                    //拼接同比环比接口的请求参数
-                    String dataParam = area + "," + date + "," + id;
-                    //请求同比环比数据
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
-                    myThreads[i].start();
-                } else {
-                    //拼接同比环比接口的请求参数
-                    String dataParam = area + "," + date + "," + id;
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-TEST/index/indexForHomepage/dataOfAllKpi", dataParam);
-                    myThreads[i].start();
-                }
-            }
-        } else {
-            log.info("es没有返回任何指标数据！！！");
-        }
-
-    }*/
 
 
     /**
@@ -1040,7 +1022,8 @@ public class HomepageService {
      * @Author gp
      * @Date 2017/6/14
      */
-    private void combineTopicData(List<Map<String, Object>> esList, List<Map<String, Object>> data) {
+    private void combineTopicData(List<Map<String, Object>> esList,
+                                  List<Map<String, Object>> data) {
         if (esList.size() != 0) {
             if (data.size() != 0) {
                 for (Map<String, Object> map1 : esList) {
@@ -1071,7 +1054,8 @@ public class HomepageService {
      * @Author gp
      * @Date 2017/6/14
      */
-    private void combineReportData(List<Map<String, Object>> esList, List<Map<String, Object>> data) {
+    private void combineReportData(List<Map<String, Object>> esList,
+                                   List<Map<String, Object>> data) {
         if (esList.size() == 0) {
             log.info("es没有查询到报告数据！！！");
         } else {
@@ -1099,7 +1083,6 @@ public class HomepageService {
             }
         }
     }
-
 
 
 }

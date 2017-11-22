@@ -69,12 +69,6 @@ public class DynamicDataSourceRegister
 
     /**
      * 创建DataSource
-     *
-     * @param type
-     * @param driverClassName
-     * @param url
-     * @param username
-     * @param password
      * @return
      * @author SHANHY
      * @create 2016年1月24日
@@ -88,7 +82,7 @@ public class DynamicDataSourceRegister
 
             Class<? extends DataSource> dataSourceType;
             dataSourceType = (Class<? extends DataSource>) Class.forName((String) type);
-
+            System.out.println( "--------------------------->" + dsMap);
             String driverClassName = dsMap.get("driver-class-name").toString();
             String url = dsMap.get("url").toString();
             String username = dsMap.get("username").toString();

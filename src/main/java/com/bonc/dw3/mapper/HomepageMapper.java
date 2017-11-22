@@ -118,6 +118,15 @@ public interface HomepageMapper {
     String getMonthMaxDate(@Param("table")String table);
 
 
+    /**
+     * 2-2.菜单树组件接口：根据roleList查找用户的大部分的menuId
+     *
+     * @Author gp
+     * @Date 2017/5/29
+     */
+    List<Map<String, Object>> selectStatementData(@Param("statementIdList") List<String> statementIdList);
+
+
 
 
 

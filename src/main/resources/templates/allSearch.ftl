@@ -106,7 +106,6 @@
                         }<#if chartMapPie_has_next>,</#if>
                         </#list>
                     </#if>
-
                 ]
                 </#if>
                 <#if key_has_next>,</#if>
@@ -122,6 +121,15 @@
                 </#list>
             }
             </#if>
+                <#if key = "data" && markType = "4">
+                "${key}":{
+                    <#assign allDataMap2 = dataMap[key]>
+                    <#list allDataMap2?keys as key>
+                    "${key}":"${allDataMap2[key]}"
+                        <#if key_has_next>,</#if>
+                    </#list>
+                }
+                </#if>
             <#if key = "data" && markType = "3">
             "${key}":{
                 <#assign allDataMap3 = dataMap[key]>

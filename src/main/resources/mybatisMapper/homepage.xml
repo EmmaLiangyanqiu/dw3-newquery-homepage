@@ -229,6 +229,18 @@
     </select>
 
 
+    <!--11.根据statementIdList查找报表的详细数据-->
+    <select id="selectStatementData" resultType="java.util.HashMap">
+        select report_table_code "id",
+               icon "icon",
+               url "url"
+        from V_DW_NEWQUERY_REPORT_TABLE
+        where report_table_code in
+        <foreach collection="statementIdList" open="(" close=")" item="statementId" separator=",">
+            #{statementId}
+        </foreach>
+    </select>
+
 
 
 

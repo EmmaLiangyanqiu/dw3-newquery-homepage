@@ -182,6 +182,31 @@ public class HomepageController {
 
 
     /**
+     * @Author gp
+     * @Date 2017/11/22
+     */
+    @ApiOperation("11.搜索-报表搜索接口")
+    @PostMapping("/statementSearch")
+    public String statementSearch(@ApiParam("请求参数json串") @RequestBody Map<String, Object> param,
+                                Model model) throws InterruptedException {
+        Map<String, Object> resultMap = new HashMap<>();
+        String userId = param.get("userId").toString();
+        String searchType = param.get("searchType").toString();
+        String search = param.get("search").toString();
+        String tabId = param.get("tabId").toString();
+        String numStart = param.get("numStart").toString();
+        String num = param.get("num").toString();
+        //es查询参数处理
+        String paramStr = userId + "," + searchType + "," + search + "," + tabId + "," + numStart + "," + num;
+        //查询es获得数据
+        resultMap = homepageService.statementSearch(paramStr, numStart, num);
+
+        model.addAttribute("resMap", resultMap);
+        return "statementSearch";
+    }
+
+
+    /**
      * 9.地域组件接口
      *
      * @Parameter paramMap 例：{"userId":"41","token":"2"}
