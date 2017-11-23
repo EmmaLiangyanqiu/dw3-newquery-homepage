@@ -128,9 +128,11 @@ public class HomepageService {
 
         //5.汇总所有服务返回的详细数据
         dataList = getMyThreadsData(myThreads);
-        //查询数据
-        statementDataList = homepageMapper.selectStatementData(statementList);
-        dataList.addAll(statementDataList);
+        if (statementList.size() != 0){
+            //查询数据
+            statementDataList = homepageMapper.selectStatementData(statementList);
+            dataList.addAll(statementDataList);
+        }
 
         //6.组合es数据和所有服务返回的详细数据
         List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList, statementList, areaStr);
@@ -839,6 +841,7 @@ public class HomepageService {
         log.info("指标有-------->" + kpiList);
         log.info("专题有-------->" + topicList);
         log.info("报告有-------->" + reportList);
+        log.info("报表有-------->" + statementList);
     }
 
 
