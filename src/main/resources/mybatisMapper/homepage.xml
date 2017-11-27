@@ -53,6 +53,7 @@
         select t.label_code "tabId", t.label_name "tabName"
         from dw_newquery_switch_label t
         where module_type = #{markType}
+        order by ord
     </select>
 
 
