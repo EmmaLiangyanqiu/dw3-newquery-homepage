@@ -17,12 +17,19 @@
 		<version>1.4.1.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<distributionManagement>
+	<!--<distributionManagement>
 	  <repository>
 	    <id>thirdparty</id>
 	    <url>http://192.168.31.6:8081/nexus/content/repositories/thirdparty</url>
 	  </repository>
-	</distributionManagement>
+	</distributionManagement>-->
+    <repositories>
+        <repository>
+            <id>bonc-public</id>
+            <name>bonc-public</name>
+            <url>http://code.bonc.com.cn/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
