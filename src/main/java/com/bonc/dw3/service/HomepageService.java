@@ -264,6 +264,12 @@ public class HomepageService {
         if ((chartData != null) && (!chartData.containsKey("id"))) {
             log.info(chartData + "------chartData没有返回id，舍弃！！！");
             chartData = null;
+        }else if ((chartData != null) && (chartData.containsKey("id"))){
+            String id = (String) chartData.get("id");
+            if (StringUtils.isBlank(id)){
+                log.info(chartData + "------chartData返回无效的id，舍弃！！！");
+                chartData = null;
+            }
         }
         //过滤同比环比数据
         List<Map<String, Object>> dataList = new ArrayList<>();
@@ -272,7 +278,12 @@ public class HomepageService {
                 if (!data.get(j).containsKey("id")) {
                     log.info(data.get(j) + "----同比环比数据没有返回id，舍弃！！！");
                 } else {
-                    dataList.add(data.get(j));
+                    String id = (String) data.get(j).get("id");
+                    if (StringUtils.isBlank(id)){
+                        log.info(data.get(j) + "----同比环比数据返回无效的id，舍弃！！！");
+                    }else{
+                        dataList.add(data.get(j));
+                    }
                 }
             }
         }else{
