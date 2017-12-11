@@ -711,7 +711,8 @@ public class HomepageService {
 
     /**
      * 向es搜索引擎发请求
-     * @param paramStr "userId,searchType,search,tabId,startNum,num" 即"用户Id,搜索类型,搜索内容,日月标识,起始条数,记录条数"
+     * @param paramStr "userId,searchType,search,tabId,startNum,num"
+     *                 即"用户Id,搜索类型,搜索内容,日月标识,起始条数,记录条数"
      * @Author gp
      * @Date 2017/6/12
      */
@@ -1073,7 +1074,6 @@ public class HomepageService {
             }
         }
     }
-
 
 }
 
