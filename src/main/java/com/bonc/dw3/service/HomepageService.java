@@ -1,10 +1,8 @@
 package com.bonc.dw3.service;
 
 import java.util.*;
-
 import com.bonc.dw3.common.thread.MyThread;
 import com.bonc.dw3.mapper.UserInfoMapper;
-import freemarker.ext.beans.HashAdapter;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
-
 import com.bonc.dw3.mapper.HomepageMapper;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @CrossOrigin(origins = "*")
 public class HomepageService {
-
     /**
      * 日志对象
      */
@@ -41,7 +37,6 @@ public class HomepageService {
 
     /**
      * 1.头部栏组件接口
-     *
      * @Author gp
      * @Date 2017/5/27
      */
@@ -56,7 +51,6 @@ public class HomepageService {
 
     /**
      * 3.模块选项卡接口
-     *
      * @param markType 模块类型
      * @Author gp
      * @Date 2017/5/27
@@ -68,7 +62,6 @@ public class HomepageService {
 
     /**
      * 6.搜索：全部接口
-     *
      * @param searchStr 查询es的参数
      * @param numStart  查询es的起始条数
      * @param num       查询es的数据条数
@@ -82,10 +75,6 @@ public class HomepageService {
                                          String userId) throws InterruptedException {
         //最后返回给前端的结果 {"nextFlag":"","data":""}
         Map<String, Object> resMap = new HashMap<>(5);
-        //所有服务返回的数据
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        //报表服务返回的数据
-        List<Map<String, Object>> statementDataList = new ArrayList<>();
         //es返回的所有指标
         List<String> kpiList = new ArrayList<>();
         //es返回的所有专题
@@ -113,7 +102,7 @@ public class HomepageService {
         //根据es返回的数据条数控制线程数组的大小
         MyThread[] myThreads = new MyThread[esList.size()];
 
-        //获取用户的省份权限，一下查询详细数据时就只能查询该省份
+        //获取用户的省份权限，查询详细数据时就只能查询该省份
         String provId=userInfoMapper.queryProvByUserId(userId);
         String areaStr = homepageMapper.getProvNameViaProvId(provId);
         log.info("该用户的省份权限为：" + provId);
@@ -126,15 +115,38 @@ public class HomepageService {
         joinAllThreads(myThreads);
 
         //5.汇总所有服务返回的详细数据
+        //所有服务返回的数据
+        List<Map<String, Object>> dataList = new ArrayList<>();
         dataList = getMyThreadsData(myThreads);
+        //报表详细数据
+        List<Map<String, Object>> statementDataList = new ArrayList<>();
         if (statementList.size() != 0){
             //查询数据
             statementDataList = homepageMapper.selectStatementData(statementList);
             dataList.addAll(statementDataList);
         }
 
-        //6.组合es数据和所有服务返回的详细数据
-        List<Map<String, Object>> resList = combineAllTypeData(esList, dataList, kpiList, topicList, reportList, statementList, areaStr);
+        //6.过滤无效数据
+        List<Map<String, Object>> dataListFinally = new ArrayList<>();
+        if ((dataList.size()) != 0 && (dataList != null)){
+            for (int j = 0; j < dataList.size(); j++) {
+                if (!dataList.get(j).containsKey("id")) {
+                    log.info(dataList.get(j) + "----数据没有返回id，舍弃！！！");
+                } else {
+                    String id = (String) dataList.get(j).get("id");
+                    if (StringUtils.isBlank(id)){
+                        log.info(dataList.get(j) + "----数据返回无效的id，舍弃！！！");
+                    }else{
+                        dataListFinally.add(dataList.get(j));
+                    }
+                }
+            }
+        }else{
+            log.info("全部数据为空！！！");
+        }
+
+        //7.组合es数据和所有服务返回的详细数据
+        List<Map<String, Object>> resList = combineAllTypeData(esList, dataListFinally, kpiList, topicList, reportList, statementList, areaStr);
         resMap.put("data", resList);
 
         return resMap;
@@ -142,7 +154,6 @@ public class HomepageService {
 
     /**
      * 6-2.搜索：指标搜索接口
-     *
      * @Parameter searchStr 查询es的参数
      * @Parameter numStart 查询es的起始条数
      * @Parameter num 查询es的数据条数
@@ -256,7 +267,7 @@ public class HomepageService {
         log.info("汇总所有服务返回的数据耗时:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
         long getAllData = System.currentTimeMillis();
 
-        //数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
+        //6.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
         //过滤图表数据
         String idStr = "id";
         if ((chartData != null) && (!chartData.containsKey(idStr))) {
@@ -274,11 +285,11 @@ public class HomepageService {
         if ((data.size()) != 0 && (data != null)){
             for (int j = 0; j < data.size(); j++) {
                 if (!data.get(j).containsKey("id")) {
-                    log.info(data.get(j) + "----同比环比数据没有返回id，舍弃！！！");
+                    log.info(data.get(j) + "----同环比数据没有返回id，舍弃！！！");
                 } else {
                     String id = (String) data.get(j).get("id");
                     if (StringUtils.isBlank(id)){
-                        log.info(data.get(j) + "----同比环比数据返回无效的id，舍弃！！！");
+                        log.info(data.get(j) + "----同环比数据返回无效的id，舍弃！！！");
                     }else{
                         dataList.add(data.get(j));
                     }
@@ -290,7 +301,7 @@ public class HomepageService {
         log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
         long filterData = System.currentTimeMillis();
 
-        //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
+        //7.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
         List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
@@ -406,14 +417,15 @@ public class HomepageService {
 
     /**
      * 6-3.搜索：专题接口
-     *
      * @param paramStr 查询es的参数
      * @param numStart 查询es请求的起始条数
      * @param num      查询es请求的条数
      * @Author gp
      * @Date 2017/5/31
      */
-    public Map<String, Object> specialSearch(String paramStr, String numStart, String num) throws InterruptedException {
+    public Map<String, Object> specialSearch(String paramStr,
+                                             String numStart,
+                                             String num) throws InterruptedException {
         //返回给前端的结果
         Map<String, Object> resMap = new HashMap<>(5);
         //服务返回的所有详细数据
@@ -465,14 +477,15 @@ public class HomepageService {
 
     /**
      * 6-4.搜索：报告接口
-     *
      * @param paramStr 查询es的参数
      * @param numStart 查询es请求的起始条数
      * @param num      查询es请求的条数
      * @Author gp
      * @Date 2017/5/31
      */
-    public Map<String, Object> reportPPTSearch(String paramStr, String numStart, String num) throws InterruptedException {
+    public Map<String, Object> reportPPTSearch(String paramStr,
+                                               String numStart,
+                                               String num) throws InterruptedException {
         //返回给前端的结果
         Map<String, Object> resMap = new HashMap<>(5);
         //报告服务返回的详细数据
@@ -524,7 +537,6 @@ public class HomepageService {
 
     /**
      * 6-5.搜索：报表接口
-     *
      * @param paramStr 查询es的参数
      * @param numStart 查询es请求的起始条数
      * @param num      查询es的条数
@@ -564,7 +576,6 @@ public class HomepageService {
             }
             data = homepageMapper.selectStatementData(statementIdList);
         }
-
 
         //4.组合es数据和详细报表的数据
         List<Map<String, Object>> dataList = new ArrayList<>();
@@ -607,7 +618,6 @@ public class HomepageService {
 
     /**
      * 7.地域组件接口
-     *
      * @param userId 用户Id
      * @Author gp
      * @Date 2017/6/9
@@ -669,7 +679,6 @@ public class HomepageService {
 
     /**
      * 8.日期组件接口
-     *
      * @param userId   用户Id
      * @param dateType 日月类型
      * @Author gp
@@ -702,7 +711,6 @@ public class HomepageService {
 
     /**
      * 向es搜索引擎发请求
-     *
      * @param paramStr "userId,searchType,search,tabId,startNum,num" 即"用户Id,搜索类型,搜索内容,日月标识,起始条数,记录条数"
      * @Author gp
      * @Date 2017/6/12
@@ -722,7 +730,6 @@ public class HomepageService {
 
     /**
      * 汇总所有线程返回的数据
-     *
      * @param myThreads 线程数组
      * @Author gp
      * @Date 2017/7/13
@@ -742,7 +749,6 @@ public class HomepageService {
 
     /**
      * join全部线程
-     *
      * @param myThreads 线程数组
      * @Author gp
      * @Date 2017/6/21
@@ -757,7 +763,6 @@ public class HomepageService {
 
     /**
      * 判断是否还有下一页
-     *
      * @param esCount es返回结果的条数
      * @param count   前端已经显示的数据条数
      * @Author gp
@@ -776,7 +781,6 @@ public class HomepageService {
 
     /**
      * 综合搜索接口：开启所有线程
-     *
      * @param esList     es查询结果
      * @param myThreads  线程数组
      * @param kpiList    es中的指标数据id集合
@@ -800,13 +804,11 @@ public class HomepageService {
                 String typeId = map.get("typeId").toString();
                 //数据id
                 String id = map.get("id").toString();
-                //typeId=1指标；2专题；3报告
+                //typeId=1指标；2专题；3报告；4报表
                 if (typeId.equals(SystemVariableService.kpi)) {
                     //指标
                     kpiList.add(id);
-
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
-                    //String paramStr = "-1,-1," + id;
                     String paramStr = provId + ",-1," + id + "," + userId;
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
@@ -841,7 +843,6 @@ public class HomepageService {
 
     /**
      * 综合搜索接口：组合esList和所有服务的返回结果
-     *
      * @param esList     es查询结果
      * @param dataList   所有服务查询结果
      * @param kpiList    es中的指标数据id集合
@@ -979,7 +980,6 @@ public class HomepageService {
     /**
      * 单位是否为null的判断，为null时处理为空字符串
      * 不为null时，取它本身即可
-     *
      * @Author gp
      * @Date 2017/7/31
      */
@@ -993,7 +993,6 @@ public class HomepageService {
 
     /**
      * 判断是否占比指标
-     *
      * @Author gp
      * @Date 2017/7/31
      */
@@ -1010,7 +1009,6 @@ public class HomepageService {
 
     /**
      * 专题搜索接口：组合esList和专题服务返回的结果
-     *
      * @param esList es返回的数据
      * @param data   专题服务返回的数据
      * @Author gp
@@ -1041,7 +1039,6 @@ public class HomepageService {
 
     /**
      * 报告搜索接口：组合esList和报告服务返回的结果
-     *
      * @param esList es返回的数据
      * @param data   报告服务返回的数据
      * @Author gp
