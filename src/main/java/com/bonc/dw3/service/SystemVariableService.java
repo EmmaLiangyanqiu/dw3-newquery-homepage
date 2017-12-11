@@ -9,54 +9,114 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author gp
+ */
 @Component
 public class SystemVariableService {
 
 	@Autowired
 	private  SystemVariablesMapper systemVariablesMapper;
 
-	//数据库存的code
-	//日标识
+    /**
+     * 日标识
+     */
     public static final String DAY = "code_1003";
-    //月标识
+
+    /**
+     * 月标识
+     */
     public static final String MONTH = "code_1004";
-    //有下一页
+
+    /**
+     * 有下一页
+     */
 	public static final String HASNEXT = "code_1018";
-	//没有下一页
+
+    /**
+     * 没有下一页
+     */
 	public static final String NONEXT = "code_1019";
-	//指标
+
+    /**
+     * 指标
+     */
     public static final String KPI = "code_1015";
-    //专题
+
+    /**
+     * 专题
+     */
     public static final String SUBJECT = "code_1016";
-    //报告
+
+    /**
+     * 报告
+     */
     public static final String REPORT = "code_1017";
-    //预发布用户userId
+
+    /**
+     * 预发布用户userId
+     */
     public static final String YUFABUUSERID = "code_1020";
-    //预发布-指标-最大账期表
+
+    /**
+     * 预发布-指标-最大账期表
+     */
     public static final String KPIMAXDATETABLE_YUFABU = "code_1021";
-    //发布-指标-最大账期表
+
+    /**
+     * 发布-指标-最大账期表
+     */
     public static final String KPIMAXDATETABLE = "code_1022";
 
-    //系统变量
-    //日标识
+
+    /**
+     * 系统变量  日标识
+     */
     public static String day = "";
-    //月标识
+
+    /**
+     * 月标识
+     */
     public static String month = "";
-    //有下一页
+
+    /**
+     * 有下一页
+     */
 	public static String hasNext = "";
-	//没有下一页
+
+    /**
+     * 没有下一页
+     */
 	public static String noNext ="";
-	//指标
+
+    /**
+     * 指标
+     */
     public static String kpi ="";
-    //专题
+
+    /**
+     * 专题
+     */
     public static String subject ="";
-    //报告
+
+    /**
+     * 报告
+     */
     public static String report ="";
-    //预发布用户userId
+
+    /**
+     * 预发布用户userId
+     */
     public static String yufabuUserId = "";
-    //预发布-指标-最大账期表
+
+    /**
+     * 预发布-指标-最大账期表
+     */
     public static String kpiMaxDateTableYufabu = "";
-    //发布-指标-最大账期表
+
+    /**
+     * 发布-指标-最大账期表
+     */
     public static String kpiMaxDateTable = "";
 
 	List<Map<String,Object>> systemVariablesList=new LinkedList<>();

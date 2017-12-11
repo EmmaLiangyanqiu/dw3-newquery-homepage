@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Candy
+ */
 @Api(value = "首页测试1102", description = "测试")
 @CrossOrigin(origins = "*")
 @RestController
@@ -39,16 +42,15 @@ public class TestController {
     @PostMapping("/test")
     public String headerSelect(@ApiParam("请求参数json串") @RequestBody String paramStr,
                                Model model) {
-        Map<String, Object> paramMap = new HashMap<>();
+        Map<String, Object> paramMap = new HashMap<>(10);
 
         RestTemplate restTemplateTmp = new RestTemplate();
         //查询参数有可能有中文，需要转码
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(10);
         HttpHeaders headers = new HttpHeaders();
         MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
         headers.setContentType(mediaType);
         HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
-        //resMap = restTemplateTmp.postForObject("http://10.249.216.108:8998/es/explore", requestEntity, Map.class);
         resMap = restTemplateTmp.postForObject("http://10.249.216.117:8998/es/explore", requestEntity, Map.class);
         Map<String, Object> dimensionMap = (Map<String, Object>) resMap.get("dimension");
         paramMap.put("selectType", dimensionMap.get("selectType"));

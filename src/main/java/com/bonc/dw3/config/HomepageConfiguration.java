@@ -11,13 +11,17 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+/**
+ * @author Candy
+ */
 @Configuration
 @EnableSwagger2
 public class HomepageConfiguration {
 	@Bean
 	public Docket buildDocket() {
 		return new Docket(DocumentationType.SWAGGER_2).apiInfo(buildApiInf()).select()
-				.apis(RequestHandlerSelectors.basePackage("com.bonc.dw3.controller"))// 要扫描的API(Controller)基础包
+                // 要扫描的API(Controller)基础包
+				.apis(RequestHandlerSelectors.basePackage("com.bonc.dw3.controller"))
 				.paths(PathSelectors.any()).build();
 	}
 

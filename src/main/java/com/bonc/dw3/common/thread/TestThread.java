@@ -9,21 +9,31 @@ import java.util.Map;
 
 /**
  * Created by Candy on 2017/6/13.
+ * @author Candy
  */
 public class TestThread extends Thread {
 
     private static Logger log = LoggerFactory.getLogger(TestThread.class);
 
-    //发送请求的rest对象
+    /**
+     * 发送请求的rest对象
+     */
     RestTemplate restTemplate;
-    //请求的url地址
+
+    /**
+     * 请求的url地址
+     */
     String url;
-    //String paramStr;
-    //请求的参数
+
+    /**
+     * 请求的参数
+     */
     Map<String, Object> paramMap;
-    //从请求到返回耗时
-    //long time;
-    public Object result = null; //请求返回的结果
+
+    /**
+     * 请求返回的结果
+     */
+    public Object result = null;
 
 
     public TestThread(RestTemplate restTemplate, String url, Map<String, Object> paramMap){
@@ -34,8 +44,6 @@ public class TestThread extends Thread {
 
     @Override
     public void run() {
-        //JSONObject json=new JSONObject(paramMap);
-        //log.info("T-----查询服务的参数是：" + json.toJSONString());
         this.result = restTemplate.postForObject(url, paramMap, Object.class);
         log.info("T-----返回的结果是：" + this.result);
     }

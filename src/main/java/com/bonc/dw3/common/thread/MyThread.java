@@ -6,16 +6,36 @@ import org.springframework.web.client.RestTemplate;
 
 /**
  * Created by Candy on 2017/6/13.
+ * @author gp
  */
 public class MyThread extends Thread {
 
     private static Logger log = LoggerFactory.getLogger(MyThread.class);
 
-    RestTemplate restTemplate; //发送请求的rest对象
-    String url; //请求的url地址
-    String paramStr; //请求的参数
-    public Object result = null; //请求返回的结果
-    long time; //从请求到返回耗时
+    /**
+     * 发送请求的rest对象
+     */
+    RestTemplate restTemplate;
+
+    /**
+     * 请求的url地址
+     */
+    String url;
+
+    /**
+     * 请求的参数
+     */
+    String paramStr;
+
+    /**
+     * 请求返回的结果
+     */
+    public Object result = null;
+
+    /**
+     * 从请求到返回耗时
+     */
+    long time;
 
     public MyThread(RestTemplate restTemplate, String url, String paramStr){
         this.restTemplate = restTemplate;

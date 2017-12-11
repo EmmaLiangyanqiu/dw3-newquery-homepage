@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+/**
+ * @author Candy
+ */
 @Api(value = "首页查询-1", description = "测试")
 @CrossOrigin(origins = "*")
 @Controller
@@ -113,7 +116,7 @@ public class HomepageController {
         //数据为空
         List<Map<String, Object>> resList = (List<Map<String, Object>>) resMap.get("data");
         if (resList.size() == 0) {
-            model.addAttribute("resMap", new HashMap<>());
+            model.addAttribute("resMap", new HashMap<>(1));
         } else {
             model.addAttribute("resMap", resMap);
         }
@@ -133,7 +136,7 @@ public class HomepageController {
     @PostMapping("/specialSearch")
     public String specialSearch(@ApiParam("请求参数json串") @RequestBody Map<String, Object> paramMap,
                                 Model model) throws InterruptedException {
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(10);
 
         String userId = paramMap.get("userId").toString();
         String searchType = paramMap.get("searchType").toString();
@@ -163,7 +166,7 @@ public class HomepageController {
     @PostMapping("/reportSearch")
     public String reportSearch(@ApiParam("请求参数json串") @RequestBody Map<String, Object> paramMap,
                                Model model) throws InterruptedException {
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(10);
 
         String userId = paramMap.get("userId").toString();
         String searchType = paramMap.get("searchType").toString();
@@ -189,7 +192,7 @@ public class HomepageController {
     @PostMapping("/statementSearch")
     public String statementSearch(@ApiParam("请求参数json串") @RequestBody Map<String, Object> param,
                                 Model model) throws InterruptedException {
-        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Object> resultMap = new HashMap<>(10);
         String userId = param.get("userId").toString();
         String searchType = param.get("searchType").toString();
         String search = param.get("search").toString();

@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebInitParam;
 
 /**
  * Druid的StatFilter
+ * @author Candy
  */
 @WebFilter(filterName="druidWebStatFilter",urlPatterns="/*",
     initParams={

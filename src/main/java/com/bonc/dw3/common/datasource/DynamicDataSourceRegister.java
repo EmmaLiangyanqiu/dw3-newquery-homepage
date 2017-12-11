@@ -25,6 +25,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * 动态数据源注册<br/>
  * 启动动态数据源请在启动类中（如SpringBootSampleApplication）
  * 添加 @Import(DynamicDataSourceRegister.class)
+ * @author
  */
 public class DynamicDataSourceRegister
         implements ImportBeanDefinitionRegistrar, EnvironmentAware {
@@ -34,18 +35,16 @@ public class DynamicDataSourceRegister
     private ConversionService conversionService = new DefaultConversionService(); 
     private PropertyValues dataSourcePropertyValues;
 
-    // 如配置文件中未指定数据源类型，使用该默认值
+    /**
+     * 如配置文件中未指定数据源类型，使用该默认值
+     */
     private static final Object DATASOURCE_TYPE_DEFAULT = "org.apache.tomcat.jdbc.pool.DataSource";
-    // private static final Object DATASOURCE_TYPE_DEFAULT =
-    // "com.zaxxer.hikari.HikariDataSource";
-
-    // 数据源
     private DataSource defaultDataSource;
     private Map<String, DataSource> customDataSources = new HashMap<>();
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        Map<Object, Object> targetDataSources = new HashMap<Object, Object>();
+        Map<Object, Object> targetDataSources = new HashMap<Object, Object>(10);
         // 将主数据源添加到更多数据源中
         targetDataSources.put("dataSource", defaultDataSource);
         DynamicDataSourceContextHolder.dataSourceIds.add("dataSource");
@@ -77,8 +76,10 @@ public class DynamicDataSourceRegister
     public DataSource buildDataSource(Map<String, Object> dsMap) {
         try {
             Object type = dsMap.get("type");
-            if (type == null)
-                type = DATASOURCE_TYPE_DEFAULT;// 默认DataSource
+            if (type == null) {
+                // 默认DataSource
+                type = DATASOURCE_TYPE_DEFAULT;
+            }
 
             Class<? extends DataSource> dataSourceType;
             dataSourceType = (Class<? extends DataSource>) Class.forName((String) type);
@@ -115,7 +116,7 @@ public class DynamicDataSourceRegister
     private void initDefaultDataSource(Environment env) {
         // 读取主数据源
         RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(env, "spring.datasource.");
-        Map<String, Object> dsMap = new HashMap<>();
+        Map<String, Object> dsMap = new HashMap<>(6);
         dsMap.put("type", propertyResolver.getProperty("type"));
         dsMap.put("driver-class-name", propertyResolver.getProperty("driver-class-name"));
         dsMap.put("url", propertyResolver.getProperty("url"));
@@ -138,11 +139,10 @@ public class DynamicDataSourceRegister
      */
     private void dataBinder(DataSource dataSource, Environment env){
         RelaxedDataBinder dataBinder = new RelaxedDataBinder(dataSource);
-        //dataBinder.setValidator(new LocalValidatorFactory().run(this.applicationContext));
         dataBinder.setConversionService(conversionService);
-        dataBinder.setIgnoreNestedProperties(false);//false
-        dataBinder.setIgnoreInvalidFields(false);//false
-        dataBinder.setIgnoreUnknownFields(true);//true
+        dataBinder.setIgnoreNestedProperties(false);
+        dataBinder.setIgnoreInvalidFields(false);
+        dataBinder.setIgnoreUnknownFields(true);
         if(dataSourcePropertyValues == null){
             Map<String, Object> rpr = new RelaxedPropertyResolver(env, "spring.datasource").getSubProperties(".");
             Map<String, Object> values = new HashMap<>(rpr);
@@ -167,8 +167,10 @@ public class DynamicDataSourceRegister
         // 读取配置文件获取更多数据源，也可以通过defaultDataSource读取数据库获取更多数据源
         RelaxedPropertyResolver propertyResolver = new RelaxedPropertyResolver(env, "custom.datasource.");
         String dsPrefixs = propertyResolver.getProperty("names");
+        String comma = ",";
         if(null != dsPrefixs){
-	        for (String dsPrefix : dsPrefixs.split(",")) {// 多个数据源
+            // 多个数据源
+	        for (String dsPrefix : dsPrefixs.split(comma)) {
 	            Map<String, Object> dsMap = propertyResolver.getSubProperties(dsPrefix + ".");
 	            DataSource ds = buildDataSource(dsMap);
 	            customDataSources.put(dsPrefix, ds);

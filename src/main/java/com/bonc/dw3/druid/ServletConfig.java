@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+/**
+ * @author
+ */
 @Configuration
 public class ServletConfig extends SpringBootServletInitializer {
 	

@@ -18,25 +18,26 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.bonc.dw3.mapper.HomepageMapper;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * @author Candy
+ */
 @Service
 @CrossOrigin(origins = "*")
 public class HomepageService {
 
-    //日志对象
+    /**
+     * 日志对象
+     */
     private static Logger log = LoggerFactory.getLogger(HomepageService.class);
-
     //通过zuul向其它服务发送请求的REST对象
     @Autowired
     private RestTemplate restTemplate;
-
     //mapper对象
     @Autowired
     HomepageMapper homepageMapper;
-
     //系统变量对象
     @Autowired
     SystemVariableService systemVariableService;
-
 
     /**
      * 1.头部栏组件接口
@@ -45,14 +46,13 @@ public class HomepageService {
      * @Date 2017/5/27
      */
     public Map<String, Object> headerSelect() {
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(10);
         List<Map<String, String>> resList = homepageMapper.headerSelect();
         //默认是专题
         resMap.put("default", resList.get(1));
         resMap.put("selectList", resList);
         return resMap;
     }
-
 
     /**
      * 3.模块选项卡接口
@@ -65,7 +65,6 @@ public class HomepageService {
         List<Map<String, String>> resList = homepageMapper.moduleTab(markType);
         return resList;
     }
-
 
     /**
      * 6.搜索：全部接口
@@ -82,7 +81,7 @@ public class HomepageService {
                                          String num,
                                          String userId) throws InterruptedException {
         //最后返回给前端的结果 {"nextFlag":"","data":""}
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(5);
         //所有服务返回的数据
         List<Map<String, Object>> dataList = new ArrayList<>();
         //报表服务返回的数据
@@ -141,7 +140,6 @@ public class HomepageService {
         return resMap;
     }
 
-
     /**
      * 6-2.搜索：指标搜索接口
      *
@@ -160,11 +158,11 @@ public class HomepageService {
                                            String date,
                                            String userId) throws InterruptedException {
         //最终的返回结果
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(5);
         //所有指标的同比环比数据
         List<Map<String, Object>> data = new ArrayList<>();
         //第一个指标的所有图表数据
-        Map<String, Object> chartData = new HashMap<>();
+        Map<String, Object> chartData = new HashMap<>(15);
         //第一个指标的日月标识
         String fitstDayOrMonth = "";
         //跳转的url
@@ -210,10 +208,10 @@ public class HomepageService {
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
                     String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
-                    if (dayOrMonth.equals("日报")) {
-                        fitstDayOrMonth = systemVariableService.day;
+                    if ("日报".equals(dayOrMonth)) {
+                        fitstDayOrMonth = SystemVariableService.day;
                     } else {
-                        fitstDayOrMonth = systemVariableService.month;
+                        fitstDayOrMonth = SystemVariableService.month;
                     }
                     //拼接所有图表数据接口的请求参数
                     String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth + "," + userId;
@@ -252,7 +250,6 @@ public class HomepageService {
         //得到第一条指标的所有图表数据
         if (null != chartThread) {
             chartData = (Map<String, Object>) chartThread.result;
-            //log.info("chartData------------------------------>" + chartData);
         } else {
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
         }
@@ -261,10 +258,11 @@ public class HomepageService {
 
         //数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
         //过滤图表数据
-        if ((chartData != null) && (!chartData.containsKey("id"))) {
+        String idStr = "id";
+        if ((chartData != null) && (!chartData.containsKey(idStr))) {
             log.info(chartData + "------chartData没有返回id，舍弃！！！");
             chartData = null;
-        }else if ((chartData != null) && (chartData.containsKey("id"))){
+        }else if ((chartData != null) && (chartData.containsKey(idStr))){
             String id = (String) chartData.get("id");
             if (StringUtils.isBlank(id)){
                 log.info(chartData + "------chartData返回无效的id，舍弃！！！");
@@ -293,7 +291,6 @@ public class HomepageService {
         long filterData = System.currentTimeMillis();
 
         //6.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
-        //List<Map<String, Object>> resList = combineKpiData(esList, dataList, chartData, numStartValue, url, areaStr);
         List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
@@ -303,7 +300,7 @@ public class HomepageService {
                 String id1 = map1.get("id").toString();
                 //第一条数据
                 if (i == 0 && chartData != null && numStartValue == 1) {
-                    Map<String, Object> map = new HashMap<>();
+                    Map<String, Object> map = new HashMap<>(20);
                     map.put("ord", map1.get("ord"));
                     map.put("dayOrMonth", map1.get("dayOrMonth"));
                     map.put("id", map1.get("id"));
@@ -355,15 +352,14 @@ public class HomepageService {
                     map.put("isPercentage", isPercentage);
 
                     resList.add(map);
-                    //log.info("第一条指标数据=================================》" + map);
                 } else {
-                    //除第一条指标以外的指标
                     if (dataList != null && dataList.size() != 0) {
+                        //除第一条指标以外的指标
                         for (int j = 0; j < dataList.size(); j++) {
                             Map<String, Object> map2 = dataList.get(j);
                             String id2 = map2.get("id").toString();
                             if (id1.equals(id2)) {
-                                Map<String, Object> map = new HashMap<>();
+                                Map<String, Object> map = new HashMap<>(20);
                                 map.put("ord", map1.get("ord"));
                                 map.put("dayOrMonth", map1.get("dayOrMonth"));
                                 map.put("id", map1.get("id"));
@@ -371,8 +367,8 @@ public class HomepageService {
                                 map.put("title", map1.get("title"));
                                 map.put("markType", map1.get("typeId"));
                                 map.put("markName", map1.get("type"));
-                                //map.put("unit", map2.get("unit"));
-                                //单位为null的处理：这里不处理的话，下面toString时可能报错
+
+                                //单位为null的处理
                                 String unit = dealUnit(map2.get("unit"));
                                 map.put("unit", unit);
 
@@ -408,7 +404,6 @@ public class HomepageService {
         return resMap;
     }
 
-
     /**
      * 6-3.搜索：专题接口
      *
@@ -420,7 +415,7 @@ public class HomepageService {
      */
     public Map<String, Object> specialSearch(String paramStr, String numStart, String num) throws InterruptedException {
         //返回给前端的结果
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(5);
         //服务返回的所有详细数据
         List<Map<String, Object>> data = new ArrayList<>();
 
@@ -468,7 +463,6 @@ public class HomepageService {
         return resMap;
     }
 
-
     /**
      * 6-4.搜索：报告接口
      *
@@ -480,7 +474,7 @@ public class HomepageService {
      */
     public Map<String, Object> reportPPTSearch(String paramStr, String numStart, String num) throws InterruptedException {
         //返回给前端的结果
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(5);
         //报告服务返回的详细数据
         List<Map<String, Object>> data = new ArrayList<>();
 
@@ -528,7 +522,6 @@ public class HomepageService {
         return resMap;
     }
 
-
     /**
      * 6-5.搜索：报表接口
      *
@@ -542,7 +535,7 @@ public class HomepageService {
                                                String numStart,
                                                String num) {
         //返回前端的结果
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(5);
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         log.info("查询es的参数--------->" + paramStr);
@@ -585,16 +578,13 @@ public class HomepageService {
                     for (Map<String, Object> map2 : data) {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)){
-                            Map<String, Object> dataMap = new HashMap<>();
+                            Map<String, Object> dataMap = new HashMap<>(15);
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("ord", map1.get("ord"));
                             dataMap.put("id", map1.get("id"));
                             dataMap.put("type", map1.get("type"));
                             dataMap.put("tabName", map1.get("dayOrMonth"));
-                            /*dataMap.put("img", map2.get("icon"));
-                            dataMap.put("issue", map2.get("issue"));
-                            dataMap.put("issueTime", map2.get("issueTime"));
-                            dataMap.put("url", map2.get("url"));*/
+
                             dataMap.put("img", "u977.png");
                             dataMap.put("issue", "张三");
                             dataMap.put("issueTime", "2021年10月15日");
@@ -611,7 +601,6 @@ public class HomepageService {
         resMap.put("data", dataList);
         return resMap;
     }
-
 
     @Autowired
     UserInfoMapper userInfoMapper;
@@ -637,7 +626,8 @@ public class HomepageService {
                     //for(String prov :provList){
                     String prov = provList.get(i);
                     if (prov.equals(areaMap.get("PROV_ID"))) {
-                        flag = true;//在provList中找到了一样的prov_id,跳过
+                        //在provList中找到了一样的prov_id,跳过
+                        flag = true;
                         break;
                     }
                 }
@@ -651,7 +641,7 @@ public class HomepageService {
 
         List<Map<String, Object>> resList = new ArrayList<>();
         for (String pro : provList) {
-            Map<String, Object> provMap = new HashMap<>();
+            Map<String, Object> provMap = new HashMap<>(40);
             provMap.put("proId", pro);
 
             List<Map<String, String>> cityList = new ArrayList<>();
@@ -661,7 +651,7 @@ public class HomepageService {
                 if (pro.equals(areaMap.get("PROV_ID"))) {
                     provMap.put("proName", areaMap.get("PRO_NAME"));
 
-                    Map<String, String> cityMap = new HashMap<>();
+                    Map<String, String> cityMap = new HashMap<>(5);
                     cityMap.put("cityId", areaMap.get("AREA_ID"));
                     cityMap.put("cityName", areaMap.get("AREA_DESC"));
                     cityList.add(cityMap);
@@ -674,10 +664,8 @@ public class HomepageService {
             }
             resList.add(provMap);
         }
-        //System.out.println(resList);
         return resList;
     }
-
 
     /**
      * 8.日期组件接口
@@ -702,7 +690,8 @@ public class HomepageService {
         }
 
         //是月标识
-        if ((!StringUtils.isBlank(dateType)) && dateType.equals("2")) {
+        String monthFlag = "2";
+        if ((!StringUtils.isBlank(dateType)) && monthFlag.equals(dateType)) {
             date = homepageMapper.getMonthMaxDate(table);
         } else {
             //日或者全部标识
@@ -710,7 +699,6 @@ public class HomepageService {
         }
         return date;
     }
-
 
     /**
      * 向es搜索引擎发请求
@@ -722,7 +710,7 @@ public class HomepageService {
     public Map<String, Object> requestToES(String paramStr) {
         RestTemplate restTemplateTmp = new RestTemplate();
         //查询参数有可能有中文，需要转码
-        Map<String, Object> resMap = new HashMap<>();
+        Map<String, Object> resMap = new HashMap<>(10);
         HttpHeaders headers = new HttpHeaders();
         MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
         headers.setContentType(mediaType);
@@ -731,7 +719,6 @@ public class HomepageService {
         resMap = restTemplateTmp.postForObject("http://10.249.216.116:8998/es/explore", requestEntity, Map.class);
         return resMap;
     }
-
 
     /**
      * 汇总所有线程返回的数据
@@ -753,7 +740,6 @@ public class HomepageService {
         return dataList;
     }
 
-
     /**
      * join全部线程
      *
@@ -769,7 +755,6 @@ public class HomepageService {
         }
     }
 
-
     /**
      * 判断是否还有下一页
      *
@@ -782,13 +767,12 @@ public class HomepageService {
         String nextFlag = "";
         //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
         if (count < esCount) {
-            nextFlag = systemVariableService.hasNext;
+            nextFlag = SystemVariableService.hasNext;
         } else {
-            nextFlag = systemVariableService.noNext;
+            nextFlag = SystemVariableService.noNext;
         }
         return nextFlag;
     }
-
 
     /**
      * 综合搜索接口：开启所有线程
@@ -817,7 +801,7 @@ public class HomepageService {
                 //数据id
                 String id = map.get("id").toString();
                 //typeId=1指标；2专题；3报告
-                if (typeId.equals(systemVariableService.kpi)) {
+                if (typeId.equals(SystemVariableService.kpi)) {
                     //指标
                     kpiList.add(id);
 
@@ -827,19 +811,19 @@ public class HomepageService {
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
                     myThreads[i].start();
-                } else if (typeId.equals(systemVariableService.subject)) {
+                } else if (typeId.equals(SystemVariableService.subject)) {
                     //专题
                     topicList.add(id);
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
                     myThreads[i].start();
-                } else if (typeId.equals(systemVariableService.report)) {
+                } else if (typeId.equals(SystemVariableService.report)) {
                     //报告
                     reportList.add(id);
                     //开子线程
                     myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
                     myThreads[i].start();
-                } else if (typeId.equals("4")){
+                } else if ("4".equals(typeId)){
                     //报表
                     statementList.add(id);
                 } else {
@@ -854,7 +838,6 @@ public class HomepageService {
         log.info("报告有-------->" + reportList);
         log.info("报表有-------->" + statementList);
     }
-
 
     /**
      * 综合搜索接口：组合esList和所有服务的返回结果
@@ -878,24 +861,22 @@ public class HomepageService {
         for (Map<String, Object> map1 : esList) {
             try {
                 String typeId = map1.get("typeId").toString();
-                //查询数据库得到跳转的url
-                //String url = homepageMapper.getUrlViaTypeId(typeId);
                 String id1 = map1.get("id").toString();
                 //指标数据处理
-                if (typeId.equals(systemVariableService.kpi) && kpiList.size() != 0) {
+                if (typeId.equals(SystemVariableService.kpi) && kpiList.size() != 0) {
                     for (Map<String, Object> map2 : dataList) {
                         //查询数据库得到跳转的url
                         String url = homepageMapper.getUrlViaTypeId(typeId);
                         String id2 = map2.get("id").toString();
                         //es中和指标服务返回的结果id对应上了，组合数据
                         if (id1.equals(id2)) {
-                            Map<String, Object> map = new HashMap<>();
+                            Map<String, Object> map = new HashMap<>(20);
                             map.put("markType", typeId);
                             map.put("ord", map1.get("ord"));
                             map.put("id", id1);
                             map.put("isMinus", map1.get("isMinus"));
                             map.put("url", url);
-                            Map<String, Object> dataMap = new HashMap<>();
+                            Map<String, Object> dataMap = new HashMap<>(20);
                             dataMap.put("markName", map1.get("type"));
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("dayOrMonth", map1.get("dayOrMonth"));
@@ -920,17 +901,17 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else if (typeId.equals(systemVariableService.subject) && topicList.size() != 0) {
+                } else if (typeId.equals(SystemVariableService.subject) && topicList.size() != 0) {
                     //专题数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
-                            Map<String, Object> map = new HashMap<>();
+                            Map<String, Object> map = new HashMap<>(15);
                             map.put("markType", typeId);
                             map.put("ord", map1.get("ord"));
                             map.put("id", id1);
                             map.put("url", map2.get("url"));
-                            Map<String, Object> dataMap = new HashMap<>();
+                            Map<String, Object> dataMap = new HashMap<>(10);
                             dataMap.put("src", map2.get("src"));
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("content", map1.get("content"));
@@ -940,19 +921,19 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else if (typeId.equals(systemVariableService.report) && reportList.size() != 0) {
+                } else if (typeId.equals(SystemVariableService.report) && reportList.size() != 0) {
                     //查询数据库得到跳转的url
                     String url = homepageMapper.getUrlViaTypeId(typeId);
                     //报告数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
-                            Map<String, Object> map = new HashMap<>();
+                            Map<String, Object> map = new HashMap<>(15);
                             map.put("markType", typeId);
                             map.put("ord", map1.get("ord"));
                             map.put("id", id1);
                             map.put("url", url);
-                            Map<String, Object> dataMap = new HashMap<>();
+                            Map<String, Object> dataMap = new HashMap<>(10);
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("img", map2.get("img"));
                             dataMap.put("type", map1.get("type"));
@@ -963,17 +944,17 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else if (typeId.equals("4") && statementList.size() != 0){
+                } else if ("4".equals(typeId) && statementList.size() != 0){
                     //报告数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
-                            Map<String, Object> map = new HashMap<>();
+                            Map<String, Object> map = new HashMap<>(15);
                             map.put("markType", typeId);
                             map.put("ord", map1.get("ord"));
                             map.put("id", id1);
                             map.put("url", map2.get("url"));
-                            Map<String, Object> dataMap = new HashMap<>();
+                            Map<String, Object> dataMap = new HashMap<>(10);
                             dataMap.put("img", "u977.png");
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("type", map1.get("type"));
@@ -995,7 +976,6 @@ public class HomepageService {
         return resList;
     }
 
-
     /**
      * 单位是否为null的判断，为null时处理为空字符串
      * 不为null时，取它本身即可
@@ -1011,7 +991,6 @@ public class HomepageService {
         return unit;
     }
 
-
     /**
      * 判断是否占比指标
      *
@@ -1020,14 +999,14 @@ public class HomepageService {
      */
     private String isPercentageKpi(String unitNow) {
         String isPercentage = "";
-        if ((!StringUtils.isBlank(unitNow)) && ("%".equals(unitNow) || "PP".equals(unitNow) || "pp".equals(unitNow))) {
+        boolean flag = (!StringUtils.isBlank(unitNow)) && ("%".equals(unitNow) || "PP".equals(unitNow) || "pp".equals(unitNow));
+        if (flag) {
             isPercentage = "1";
         } else {
             isPercentage = "0";
         }
         return isPercentage;
     }
-
 
     /**
      * 专题搜索接口：组合esList和专题服务返回的结果
@@ -1059,7 +1038,6 @@ public class HomepageService {
             log.info("es没有查询到专题数据！！！");
         }
     }
-
 
     /**
      * 报告搜索接口：组合esList和报告服务返回的结果

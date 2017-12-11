@@ -26,6 +26,9 @@ import org.springframework.web.client.RestTemplate;
 //@EnableScheduling
 //ysl 修改，很多注解重复，且使用ribbon或feign才能使用断路由功能。
 //extends SpringBootServletInitializer
+/**
+ * @author gp
+ */
 public class HomepageApplication {
     @Bean
     @LoadBalanced
