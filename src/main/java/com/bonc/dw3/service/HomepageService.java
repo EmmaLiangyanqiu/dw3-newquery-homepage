@@ -579,8 +579,12 @@ public class HomepageService {
                             dataMap.put("type", map1.get("type"));
                             dataMap.put("tabName", map1.get("dayOrMonth"));
                             dataMap.put("img", "u977.png");
-                            dataMap.put("issue", map2.get("issue"));
-
+                            //判断发布人字段是否为null
+                            if(map2.get("issue") == null){
+                                dataMap.put("issue", "未知");
+                            }else{
+                                dataMap.put("issue", map2.get("issue"));
+                            }
                             //判断发布时间字段是否为null
                             if (map2.get("issueTime") == null){
                                 dataMap.put("issueTime", "未知");
@@ -589,7 +593,6 @@ public class HomepageService {
                                 String issueTimeStr = subclassService.toChineseDateString(map2.get("issueTime").toString());
                                 dataMap.put("issueTime", issueTimeStr);
                             }
-
                             dataMap.put("url", map2.get("url"));
                             dataList.add(dataMap);
                         }
