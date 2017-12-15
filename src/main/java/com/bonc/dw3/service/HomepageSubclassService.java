@@ -132,7 +132,8 @@ public class HomepageSubclassService {
     public String toChineseDateString(String date) {
         String chartDataDate = date.replace("-", "");
         String dateStr = "";
-        if (chartDataDate.length() == 6){
+        int dayLength = 6;
+        if (chartDataDate.length() == dayLength){
             dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4) + "月";
         }else{
             dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
