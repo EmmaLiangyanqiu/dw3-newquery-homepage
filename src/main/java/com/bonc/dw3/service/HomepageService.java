@@ -31,14 +31,17 @@ public class HomepageService {
     //mapper对象
     @Autowired
     HomepageMapper homepageMapper;
+    @Autowired
+    UserInfoMapper userInfoMapper;
     //系统变量对象
     @Autowired
     SystemVariableService systemVariableService;
+    //子类service
+    @Autowired
+    HomepageSubclassService subclassService;
 
     /**
      * 1.头部栏组件接口
-     * @Author gp
-     * @Date 2017/5/27
      */
     public Map<String, Object> headerSelect() {
         Map<String, Object> resMap = new HashMap<>(10);
@@ -52,8 +55,6 @@ public class HomepageService {
     /**
      * 3.模块选项卡接口
      * @param markType 模块类型
-     * @Author gp
-     * @Date 2017/5/27
      */
     public List<Map<String, String>> moduleTab(String markType) {
         List<Map<String, String>> resList = homepageMapper.moduleTab(markType);
@@ -66,8 +67,6 @@ public class HomepageService {
      * @param numStart  查询es的起始条数
      * @param num       查询es的数据条数
      * @param userId    用户Id
-     * @Author gp
-     * @Date 2017/5/18
      */
     public Map<String, Object> allSearch(String searchStr,
                                          String numStart,
@@ -86,7 +85,7 @@ public class HomepageService {
 
         //1.查询ES，ES中根据权重排序，支持分页，结果中携带排序序号
         log.info("查询es的参数------->" + searchStr);
-        Map<String, Object> esMap = requestToES(searchStr);
+        Map<String, Object> esMap = subclassService.requestToES(searchStr);
         log.info("查询es的结果------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -94,7 +93,7 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-        String nextFlag = isNext(esCount, count);
+        String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
@@ -112,12 +111,12 @@ public class HomepageService {
         startAllThreads(esList, myThreads, kpiList, topicList, reportList,statementList, userId, provId);
 
         //4.join全部线程
-        joinAllThreads(myThreads);
+        subclassService.joinAllThreads(myThreads);
 
         //5.汇总所有服务返回的详细数据
         //所有服务返回的数据
         List<Map<String, Object>> dataList = new ArrayList<>();
-        dataList = getMyThreadsData(myThreads);
+        dataList = subclassService.getMyThreadsData(myThreads);
         //报表详细数据
         List<Map<String, Object>> statementDataList = new ArrayList<>();
         if (statementList.size() != 0){
@@ -154,13 +153,12 @@ public class HomepageService {
 
     /**
      * 6-2.搜索：指标搜索接口
-     * @Parameter searchStr 查询es的参数
-     * @Parameter numStart 查询es的起始条数
-     * @Parameter num 查询es的数据条数
-     * @Parameter area 查询时选定的地域（前端传过来的）
-     * @Parameter date 查询时选定的时间（前端传过来的）
-     * @Author gp
-     * @Date 2017/5/31
+     * @param paramStr 查询es的参数
+     * @param numStart 查询es的起始条数
+     * @param num 查询es的数据条数
+     * @param area 查询时选定的地域（前端传过来的）
+     * @param date 查询时选定的时间（前端传过来的）
+     * @param userId 用户id
      */
     public Map<String, Object> indexSearch(String paramStr,
                                            String numStart,
@@ -187,7 +185,7 @@ public class HomepageService {
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         log.info("查询es的参数-------->" + paramStr);
         long esStart = System.currentTimeMillis();
-        Map<String, Object> esMap = requestToES(paramStr);
+        Map<String, Object> esMap = subclassService.requestToES(paramStr);
         long esTime = System.currentTimeMillis() - esStart;
         log.info("查询es的结果-------->" + esMap);
 
@@ -196,7 +194,7 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-        String nextFlag = isNext(esCount, count);
+        String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
@@ -246,7 +244,7 @@ public class HomepageService {
         }
 
         //4.join全部线程
-        joinAllThreads(myThreads);
+        subclassService.joinAllThreads(myThreads);
         if (null != chartThread) {
             chartThread.join();
         }
@@ -257,7 +255,7 @@ public class HomepageService {
 
         //5.汇总指标服务返回的详细数据
         //得到所有指标的同比环比数据
-        data = getMyThreadsData(myThreads);
+        data = subclassService.getMyThreadsData(myThreads);
         //得到第一条指标的所有图表数据
         if (null != chartThread) {
             chartData = (Map<String, Object>) chartThread.result;
@@ -355,11 +353,11 @@ public class HomepageService {
                         map.put("unit", "");
                     }
                     //单位为null的判断和处理：这里不处理的话，下面toString时可能报错
-                    String unit = dealUnit(map.get("unit"));
+                    String unit = subclassService.dealUnit(map.get("unit"));
                     map.put("unit", unit);
                     //是否占比指标
                     String unitNow = map.get("unit").toString();
-                    String isPercentage = isPercentageKpi(unitNow);
+                    String isPercentage = subclassService.isPercentageKpi(unitNow);
                     map.put("isPercentage", isPercentage);
 
                     resList.add(map);
@@ -380,12 +378,12 @@ public class HomepageService {
                                 map.put("markName", map1.get("type"));
 
                                 //单位为null的处理
-                                String unit = dealUnit(map2.get("unit"));
+                                String unit = subclassService.dealUnit(map2.get("unit"));
                                 map.put("unit", unit);
 
                                 //是否占比指标
                                 String unitNow = map.get("unit").toString();
-                                String isPercentage = isPercentageKpi(unitNow);
+                                String isPercentage = subclassService.isPercentageKpi(unitNow);
                                 map.put("isPercentage", isPercentage);
 
                                 map.put("chartType", map2.get("chartType"));
@@ -420,8 +418,6 @@ public class HomepageService {
      * @param paramStr 查询es的参数
      * @param numStart 查询es请求的起始条数
      * @param num      查询es请求的条数
-     * @Author gp
-     * @Date 2017/5/31
      */
     public Map<String, Object> specialSearch(String paramStr,
                                              String numStart,
@@ -433,7 +429,7 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         log.info("查询es的参数--------->" + paramStr);
-        Map<String, Object> esMap = requestToES(paramStr);
+        Map<String, Object> esMap = subclassService.requestToES(paramStr);
         log.info("查询es的结果--------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -441,7 +437,7 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-        String nextFlag = isNext(esCount, count);
+        String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
@@ -459,11 +455,11 @@ public class HomepageService {
         }
 
         //4.join全部线程
-        joinAllThreads(myThreads);
+        subclassService.joinAllThreads(myThreads);
         log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.汇总专题服务返回的详细数据
-        data = getMyThreadsData(myThreads);
+        data = subclassService.getMyThreadsData(myThreads);
         log.info("专题服务返回的数据为：" + data);
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
@@ -480,8 +476,6 @@ public class HomepageService {
      * @param paramStr 查询es的参数
      * @param numStart 查询es请求的起始条数
      * @param num      查询es请求的条数
-     * @Author gp
-     * @Date 2017/5/31
      */
     public Map<String, Object> reportPPTSearch(String paramStr,
                                                String numStart,
@@ -493,7 +487,7 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         log.info("查询es的参数--------->" + paramStr);
-        Map<String, Object> esMap = requestToES(paramStr);
+        Map<String, Object> esMap = subclassService.requestToES(paramStr);
         log.info("查询es的结果-------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -501,7 +495,7 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-        String nextFlag = isNext(esCount, count);
+        String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
@@ -520,11 +514,11 @@ public class HomepageService {
         }
 
         //4.join全部线程
-        joinAllThreads(myThreads);
+        subclassService.joinAllThreads(myThreads);
         log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
 
         //5.汇总报告服务返回的详细数据
-        data = getMyThreadsData(myThreads);
+        data = subclassService.getMyThreadsData(myThreads);
         log.info("报告服务返回的数据是--------->" + data);
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
@@ -540,8 +534,6 @@ public class HomepageService {
      * @param paramStr 查询es的参数
      * @param numStart 查询es请求的起始条数
      * @param num      查询es的条数
-     * @Author gp
-     * @Date 2017/11/22
      */
     public Map<String, Object> statementSearch(String paramStr,
                                                String numStart,
@@ -551,7 +543,7 @@ public class HomepageService {
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
         log.info("查询es的参数--------->" + paramStr);
-        Map<String, Object> esMap = requestToES(paramStr);
+        Map<String, Object> esMap = subclassService.requestToES(paramStr);
         log.info("查询es的结果--------->" + esMap);
 
         //2.判断是否还有下一页数据
@@ -559,7 +551,7 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
-        String nextFlag = isNext(esCount, count);
+        String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
@@ -613,14 +605,9 @@ public class HomepageService {
         return resMap;
     }
 
-    @Autowired
-    UserInfoMapper userInfoMapper;
-
     /**
      * 7.地域组件接口
      * @param userId 用户Id
-     * @Author gp
-     * @Date 2017/6/9
      */
     public List<Map<String, Object>> area(String userId) {
         String provId = userInfoMapper.queryProvByUserId(userId);
@@ -681,8 +668,6 @@ public class HomepageService {
      * 8.日期组件接口
      * @param userId   用户Id
      * @param dateType 日月类型
-     * @Author gp
-     * @Date 2017/6/9
      */
     public String getMaxDate(String dateType, String userId) {
         String date = "";
@@ -697,7 +682,6 @@ public class HomepageService {
             //该用户不属于预发布用户
             table = SystemVariableService.kpiMaxDateTable;
         }
-
         //是月标识
         String monthFlag = "2";
         if ((!StringUtils.isBlank(dateType)) && monthFlag.equals(dateType)) {
@@ -709,76 +693,6 @@ public class HomepageService {
         return date;
     }
 
-    /**
-     * 向es搜索引擎发请求
-     * @param paramStr "userId,searchType,search,tabId,startNum,num"
-     *                 即"用户Id,搜索类型,搜索内容,日月标识,起始条数,记录条数"
-     * @Author gp
-     * @Date 2017/6/12
-     */
-    public Map<String, Object> requestToES(String paramStr) {
-        RestTemplate restTemplateTmp = new RestTemplate();
-        //查询参数有可能有中文，需要转码
-        Map<String, Object> resMap = new HashMap<>(10);
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType("text/html; charset=UTF-8");
-        headers.setContentType(mediaType);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
-        //es支持维度搜索
-        resMap = restTemplateTmp.postForObject("http://10.249.216.116:8998/es/explore", requestEntity, Map.class);
-        return resMap;
-    }
-
-    /**
-     * 汇总所有线程返回的数据
-     * @param myThreads 线程数组
-     * @Author gp
-     * @Date 2017/7/13
-     */
-    private List<Map<String, Object>> getMyThreadsData(MyThread[] myThreads) {
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        for (int i = 0; i < myThreads.length; i++) {
-            if (null == myThreads[i]) {
-                log.error("thread is null and id is " + i);
-            } else {
-                Map<String, Object> map = (Map<String, Object>) myThreads[i].result;
-                dataList.add(map);
-            }
-        }
-        return dataList;
-    }
-
-    /**
-     * join全部线程
-     * @param myThreads 线程数组
-     * @Author gp
-     * @Date 2017/6/21
-     */
-    private void joinAllThreads(MyThread[] myThreads) throws InterruptedException {
-        for (int i = 0; i < myThreads.length; i++) {
-            if (myThreads[i] != null){
-                myThreads[i].join();
-            }
-        }
-    }
-
-    /**
-     * 判断是否还有下一页
-     * @param esCount es返回结果的条数
-     * @param count   前端已经显示的数据条数
-     * @Author gp
-     * @Date 2017/6/13
-     */
-    private String isNext(int esCount, int count) {
-        String nextFlag = "";
-        //如果现在前端显示的总条数小于es的总数，那么还有下一页，反之没有下一页了
-        if (count < esCount) {
-            nextFlag = SystemVariableService.hasNext;
-        } else {
-            nextFlag = SystemVariableService.noNext;
-        }
-        return nextFlag;
-    }
 
     /**
      * 综合搜索接口：开启所有线程
@@ -787,8 +701,6 @@ public class HomepageService {
      * @param kpiList    es中的指标数据id集合
      * @param topicList  es中的专题数据id集合
      * @param reportList es中的报告数据id集合
-     * @Author gp
-     * @Date 2017/6/13
      */
     private void startAllThreads(List<Map<String, Object>> esList,
                                  MyThread[] myThreads,
@@ -849,8 +761,6 @@ public class HomepageService {
      * @param kpiList    es中的指标数据id集合
      * @param topicList  es中的专题数据id集合
      * @param reportList es中的报告数据id集合
-     * @Author gp
-     * @Date 2017/6/13
      */
     private List<Map<String, Object>> combineAllTypeData(List<Map<String, Object>> esList,
                                                          List<Map<String, Object>> dataList,
@@ -890,12 +800,12 @@ public class HomepageService {
                             dataMap.put("chartType", map2.get("chartType"));
 
                             //单位为null的处理：这里不处理的话，下面toString时可能报错
-                            String unit = dealUnit(map2.get("unit"));
+                            String unit = subclassService.dealUnit(map2.get("unit"));
                             dataMap.put("unit", unit);
 
                             //是否占比指标
                             String unitNow = dataMap.get("unit").toString();
-                            String isPercentage = isPercentageKpi(unitNow);
+                            String isPercentage = subclassService.isPercentageKpi(unitNow);
                             dataMap.put("isPercentage", isPercentage);
 
                             dataMap.put("chart", map2.get("chart"));
@@ -979,41 +889,9 @@ public class HomepageService {
     }
 
     /**
-     * 单位是否为null的判断，为null时处理为空字符串
-     * 不为null时，取它本身即可
-     * @Author gp
-     * @Date 2017/7/31
-     */
-    private String dealUnit(Object o) {
-        String unit = "";
-        if (o != null) {
-            unit = o.toString();
-        }
-        return unit;
-    }
-
-    /**
-     * 判断是否占比指标
-     * @Author gp
-     * @Date 2017/7/31
-     */
-    private String isPercentageKpi(String unitNow) {
-        String isPercentage = "";
-        boolean flag = (!StringUtils.isBlank(unitNow)) && ("%".equals(unitNow) || "PP".equals(unitNow) || "pp".equals(unitNow));
-        if (flag) {
-            isPercentage = "1";
-        } else {
-            isPercentage = "0";
-        }
-        return isPercentage;
-    }
-
-    /**
      * 专题搜索接口：组合esList和专题服务返回的结果
      * @param esList es返回的数据
      * @param data   专题服务返回的数据
-     * @Author gp
-     * @Date 2017/6/14
      */
     private void combineTopicData(List<Map<String, Object>> esList,
                                   List<Map<String, Object>> data) {
@@ -1042,8 +920,6 @@ public class HomepageService {
      * 报告搜索接口：组合esList和报告服务返回的结果
      * @param esList es返回的数据
      * @param data   报告服务返回的数据
-     * @Author gp
-     * @Date 2017/6/14
      */
     private void combineReportData(List<Map<String, Object>> esList,
                                    List<Map<String, Object>> data) {
