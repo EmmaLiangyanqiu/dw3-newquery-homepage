@@ -601,6 +601,7 @@ public class HomepageService {
 
         }
         resMap.put("data", dataList);
+        log.info("报表数据为------>" + dataList);
         return resMap;
     }
 
