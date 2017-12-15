@@ -234,7 +234,9 @@
     <select id="selectStatementData" resultType="java.util.HashMap">
         select report_table_code "id",
                icon "icon",
-               url "url"
+               url "url",
+               publish_username "issue",
+               to_char(to_date(publish_date, 'yyyymmdd'), 'yyyy-mm-dd') "issueTime"
         from V_DW_NEWQUERY_REPORT_TABLE
         where report_table_code in
         <foreach collection="statementIdList" open="(" close=")" item="statementId" separator=",">

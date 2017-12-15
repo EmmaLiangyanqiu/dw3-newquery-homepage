@@ -316,13 +316,7 @@ public class HomepageService {
                     map.put("markName", map1.get("type"));
                     map.put("chartData", chartData.get("chartData"));
                     //返回账期（格式转换）
-                    String chartDataDate = chartData.get("date").toString().replace("-", "");
-                    String dateStr = "";
-                    if (chartDataDate.length() == 6){
-                        dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4) + "月";
-                    }else{
-                        dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
-                    }
+                    String dateStr = subclassService.toChineseDateString(chartData.get("date").toString());
                     map.put("date", dateStr);
                     //返回地域
                     if (!StringUtils.isBlank(areaStr)) {
@@ -584,10 +578,18 @@ public class HomepageService {
                             dataMap.put("id", map1.get("id"));
                             dataMap.put("type", map1.get("type"));
                             dataMap.put("tabName", map1.get("dayOrMonth"));
-
                             dataMap.put("img", "u977.png");
-                            dataMap.put("issue", "张三");
-                            dataMap.put("issueTime", "2021年10月15日");
+                            dataMap.put("issue", map2.get("issue"));
+
+                            //判断发布时间字段是否为null
+                            if (map2.get("issueTime") == null){
+                                dataMap.put("issueTime", "未知");
+                            }else{
+                                //-类型日期转换为年月日类型日期
+                                String issueTimeStr = subclassService.toChineseDateString(map2.get("issueTime").toString());
+                                dataMap.put("issueTime", issueTimeStr);
+                            }
+
                             dataMap.put("url", map2.get("url"));
                             dataList.add(dataMap);
                         }
@@ -854,7 +856,7 @@ public class HomepageService {
                         }
                     }
                 } else if ("4".equals(typeId) && statementList.size() != 0){
-                    //报告数据处理
+                    //报表数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
                         if (id1.equals(id2)) {
@@ -868,8 +870,17 @@ public class HomepageService {
                             dataMap.put("title", map1.get("title"));
                             dataMap.put("type", map1.get("type"));
                             dataMap.put("tabName", map1.get("dayOrMonth"));
-                            dataMap.put("issue", "张三");
-                            dataMap.put("issueTime", "2021年10月15日");
+                            dataMap.put("issue", map2.get("issue"));
+
+                            //判断发布时间字段是否为null
+                            if (map2.get("issueTime") == null){
+                                dataMap.put("issueTime", "未知");
+                            }else{
+                                //-类型日期转换为年月日类型日期
+                                String issueTimeStr = subclassService.toChineseDateString(map2.get("issueTime").toString());
+                                dataMap.put("issueTime", issueTimeStr);
+                            }
+
                             map.put("data", dataMap);
                             resList.add(map);
                         }

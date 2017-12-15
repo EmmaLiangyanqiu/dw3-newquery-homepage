@@ -123,4 +123,20 @@ public class HomepageSubclassService {
         return isPercentage;
     }
 
+    /**
+     * 将-类的日期转换为年月日类型的账期
+     *
+     * @param date 2017-11或2017-11-12
+     * @return 如：2017年11月12日
+     */
+    public String toChineseDateString(String date) {
+        String chartDataDate = date.replace("-", "");
+        String dateStr = "";
+        if (chartDataDate.length() == 6){
+            dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4) + "月";
+        }else{
+            dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
+        }
+        return dateStr;
+    }
 }
