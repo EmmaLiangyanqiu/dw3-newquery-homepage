@@ -1,6 +1,12 @@
 package com.bonc.dw3.service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import com.bonc.dw3.common.thread.MyCallable;
 import com.bonc.dw3.common.thread.MyThread;
 import com.bonc.dw3.mapper.UserInfoMapper;
 import org.apache.commons.lang.StringUtils;
@@ -162,7 +168,7 @@ public class HomepageService {
                                            String num,
                                            String area,
                                            String date,
-                                           String userId) throws InterruptedException {
+                                           String userId) throws InterruptedException, ExecutionException {
         //最终的返回结果
         Map<String, Object> resMap = new HashMap<>(5);
         //所有指标的同比环比数据
@@ -197,9 +203,11 @@ public class HomepageService {
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
-        MyThread[] myThreads = new MyThread[esList.size()];
+        //MyThread[] myThreads = new MyThread[esList.size()];
         //用来给第一条指标数据发请求-请求它的图表数据
-        MyThread chartThread = null;
+        //MyThread chartThread = null;
+
+        ExecutorService threadPool = Executors.newCachedThreadPool();
 
         //用于打印时间
         long start = System.currentTimeMillis();
@@ -222,18 +230,23 @@ public class HomepageService {
                     //拼接所有图表数据接口的请求参数
                     String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth + "," + userId;
                     //请求图表数据
-                    chartThread = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/allChartOfTheKpi", chartParam);
-                    chartThread.start();
+                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/allChartOfTheKpi", chartParam);
+                    Future chartFuture = threadPool.submit(chartCallable);
+                    chartData = (Map<String, Object>) chartFuture.get();
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
-                    myThreads[i].start();
+                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    Future dataFuture = threadPool.submit(dataCallable);
+                    Map<String, Object> map = (Map<String, Object>) dataFuture.get();
+                    data.add(map);
                 } else {
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
-                    myThreads[i].start();
+                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    Future dataFuture = threadPool.submit(dataCallable);
+                    Map<String, Object> map = (Map<String, Object>) dataFuture.get();
+                    data.add(map);
                 }
             }
         } else {
@@ -241,10 +254,10 @@ public class HomepageService {
         }
 
         //4.join全部线程
-        subclassService.joinAllThreads(myThreads);
+        /*subclassService.joinAllThreads(myThreads);
         if (null != chartThread) {
             chartThread.join();
-        }
+        }*/
         long threadTime = System.currentTimeMillis() - start;
         log.info("es查询到返回的时间:" + esTime + "ms");
         log.info("所有线程返回的时间:" + threadTime + "ms");
@@ -252,13 +265,13 @@ public class HomepageService {
 
         //5.汇总指标服务返回的详细数据
         //得到所有指标的同比环比数据
-        data = subclassService.getMyThreadsData(myThreads);
+        //data = subclassService.getMyThreadsData(myThreads);
         //得到第一条指标的所有图表数据
-        if (null != chartThread) {
+        /*if (null != chartThread) {
             chartData = (Map<String, Object>) chartThread.result;
         } else {
             log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
-        }
+        }*/
         log.info("汇总所有服务返回的数据耗时:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
         long getAllData = System.currentTimeMillis();
 
