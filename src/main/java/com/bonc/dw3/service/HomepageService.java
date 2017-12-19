@@ -207,7 +207,7 @@ public class HomepageService {
         //用来给第一条指标数据发请求-请求它的图表数据
         //MyThread chartThread = null;
 
-        ExecutorService threadPool = Executors.newCachedThreadPool();
+        ExecutorService threadPool = Executors.newFixedThreadPool(11);
 
         //用于打印时间
         long start = System.currentTimeMillis();
