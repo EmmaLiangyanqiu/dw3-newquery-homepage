@@ -4,10 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -49,9 +45,9 @@ public class MyCallable implements Callable{
     public Object call() throws Exception {
         long start = System.currentTimeMillis();
         this.result = restTemplate.postForObject(url, paramStr, Object.class);
-        log.info( "\r\n" + "查询参数：" + paramStr + "\r\n"
-                + "返回结果：" + this.result + "\r\n"
-                + "耗时：" + (System.currentTimeMillis() - start) + "ms" + "\r\n");
+        log.info( "\r\n" + "查询参数为：" + paramStr + "\r\n"
+                + "返回结果为：" + this.result + "\r\n"
+                + "耗时为：" + (System.currentTimeMillis() - start) + "ms" + "\r\n");
         return this.result;
     }
 }
