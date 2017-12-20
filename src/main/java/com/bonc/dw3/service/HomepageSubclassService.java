@@ -140,4 +140,30 @@ public class HomepageSubclassService {
         }
         return dateStr;
     }
+
+
+    /**
+     * 过滤无效数据
+     *
+     * @param dataList 需要过滤的数据
+     * @return 过滤后的数据
+     */
+    public List<Map<String,Object>> filterAllData(List<Map<String, Object>> dataList) {
+        List<Map<String, Object>> dataListFinally = new ArrayList<>();
+        if ((dataList.size()) != 0 && (dataList != null)){
+            for (int j = 0; j < dataList.size(); j++) {
+                if (!dataList.get(j).containsKey("id")) {
+                    log.info(dataList.get(j) + "----数据没有返回id，舍弃！！！");
+                } else {
+                    String id = (String) dataList.get(j).get("id");
+                    if (StringUtils.isBlank(id)){
+                        log.info(dataList.get(j) + "----数据返回无效的id，舍弃！！！");
+                    }else{
+                        dataListFinally.add(dataList.get(j));
+                    }
+                }
+            }
+        }
+        return dataListFinally;
+    }
 }

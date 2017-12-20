@@ -24,9 +24,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @CrossOrigin(origins = "*")
 public class HomepageService {
-    /**
-     * 日志对象
-     */
+    /**日志对象*/
     private static Logger log = LoggerFactory.getLogger(HomepageService.class);
     //通过zuul向其它服务发送请求的REST对象
     @Autowired
@@ -75,77 +73,51 @@ public class HomepageService {
                                          String numStart,
                                          String num,
                                          String userId) throws InterruptedException, ExecutionException {
-        //最后返回给前端的结果 {"nextFlag":"","data":""}
+        //最终返回的结果 {"nextFlag":"","data":""}
         Map<String, Object> resMap = new HashMap<>(5);
-        //es返回的所有报表
+        //es返回的所有报表id集合
         List<String> statementList = new ArrayList<>();
-        //所有服务返回的数据以及报表数据（查oracle）
+        //所有服务返回的数据以及报表数据（本服务查询oracle得到）
         List<Map<String, Object>> dataList = new ArrayList<>();
 
-        //1.查询ES，ES中根据权重排序，支持分页，结果中携带排序序号
+        //1.查询ES
         log.info("查询es的参数------->" + searchStr);
         Map<String, Object> esMap = subclassService.requestToES(searchStr);
         log.info("查询es的结果------->" + esMap);
 
-        //2.判断是否还有下一页数据
+        //2.判断是否还有下一页
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
-        //前端显示的总条数
+        //前端显示的数据的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //是否有下一页
         String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        //根据es返回的数据条数控制线程数组的大小
-        //MyThread[] myThreads = new MyThread[esList.size()];
-
+        //--------------------------------->这里后期不再需要，由es返回用户的权限省份信息，带到每一条详细数据上
         //获取用户的省份权限，查询详细数据时就只能查询该省份
         String provId=userInfoMapper.queryProvByUserId(userId);
         String areaStr = homepageMapper.getProvNameViaProvId(provId);
         log.info("该用户的省份权限为：" + provId);
 
-        //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
-        //es支持地域维度搜索，并过滤用户的省份权限，首页服务的全部搜索接口不再过滤省份权限
+        //3.根据typeId将数据分类并开启子线程查询各个服务（报表的只记录报表id）并得到详细的数据
         dataList = startAllThreads(esList, statementList, userId, provId);
-        //startAllThreads(esList, myThreads, kpiList, topicList, reportList,statementList, userId, provId);
-
-        //4.join全部线程
-        //subclassService.joinAllThreads(myThreads);
-
-        //5.汇总所有服务返回的详细数据
-        //dataList = subclassService.getMyThreadsData(myThreads);
         //报表详细数据
         List<Map<String, Object>> statementDataList = new ArrayList<>();
-        log.info("------------------------------------------------------------" + statementList);
         if (statementList.size() != 0){
             //查询数据
             statementDataList = homepageMapper.selectStatementData(statementList);
+            //添加到所有数据中
             dataList.addAll(statementDataList);
         }
 
-        //6.过滤无效数据
-        List<Map<String, Object>> dataListFinally = new ArrayList<>();
-        if ((dataList.size()) != 0 && (dataList != null)){
-            for (int j = 0; j < dataList.size(); j++) {
-                if (!dataList.get(j).containsKey("id")) {
-                    log.info(dataList.get(j) + "----数据没有返回id，舍弃！！！");
-                } else {
-                    String id = (String) dataList.get(j).get("id");
-                    if (StringUtils.isBlank(id)){
-                        log.info(dataList.get(j) + "----数据返回无效的id，舍弃！！！");
-                    }else{
-                        dataListFinally.add(dataList.get(j));
-                    }
-                }
-            }
-        }else{
-            log.info("全部数据为空！！！");
-        }
+        //4.过滤无效数据
+        List<Map<String, Object>> dataListFinally = subclassService.filterAllData(dataList);
 
-        //7.组合es数据和所有服务返回的详细数据
+        //5.组合es数据和详细数据
         List<Map<String, Object>> resList = combineAllTypeData(esList, dataListFinally, areaStr);
-        //List<Map<String, Object>> resList = combineAllTypeData(esList, dataListFinally, kpiList, topicList, reportList, statementList, areaStr);
         resMap.put("data", resList);
 
         return resMap;
@@ -166,7 +138,7 @@ public class HomepageService {
                                            String area,
                                            String date,
                                            String userId) throws InterruptedException, ExecutionException {
-        //最终的返回结果
+        //最终返回的结果 {"nextFlag":"","data":""}
         Map<String, Object> resMap = new HashMap<>(5);
         //所有指标的同比环比数据
         List<Map<String, Object>> data = new ArrayList<>();
@@ -183,37 +155,31 @@ public class HomepageService {
         String areaStr = homepageMapper.getProvNameViaProvId(area);
 
         //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        log.info("查询es的参数-------->" + paramStr);
+        log.info("查询es的参数：" + paramStr);
         long esStart = System.currentTimeMillis();
         Map<String, Object> esMap = subclassService.requestToES(paramStr);
-        long esTime = System.currentTimeMillis() - esStart;
-        log.info("查询es的结果-------->" + esMap);
+        log.info("查询es的结果：" + esMap + "--------耗时：" + (System.currentTimeMillis() - esStart) + "ms");
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        int count = numStartValue + Integer.parseInt(num) - 1;
+        //判断有无下一页
         String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
-        //MyThread[] myThreads = new MyThread[esList.size()];
-        //用来给第一条指标数据发请求-请求它的图表数据
-        //MyThread chartThread = null;
-
+        //创建线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(11);
 
         //用于打印时间
         long start = System.currentTimeMillis();
-
         //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
-        //startKpiThreads(esList, myThreads, chartThread, numStartValue, fitstDayOrMonth, url, area, date);
         if (esList.size() != 0) {
+            //跳转路径
             url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
-            //for循环得到需要查询的kpi字符串
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 if (i == 0 && numStartValue == 1) {
@@ -246,29 +212,11 @@ public class HomepageService {
                     data.add(map);
                 }
             }
-        } else {
-            log.info("es没有返回任何指标数据！！！");
         }
-
-        //4.join全部线程
-        /*subclassService.joinAllThreads(myThreads);
-        if (null != chartThread) {
-            chartThread.join();
-        }*/
-        long threadTime = System.currentTimeMillis() - start;
-        log.info("es查询到返回的时间:" + esTime + "ms");
-        log.info("所有线程返回的时间:" + threadTime + "ms");
+        log.info("所有线程返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         long allThreadsJoin = System.currentTimeMillis();
 
-        //5.汇总指标服务返回的详细数据
-        //得到所有指标的同比环比数据
-        //data = subclassService.getMyThreadsData(myThreads);
-        //得到第一条指标的所有图表数据
-        /*if (null != chartThread) {
-            chartData = (Map<String, Object>) chartThread.result;
-        } else {
-            log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
-        }*/
+
         log.info("汇总所有服务返回的数据耗时:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
         long getAllData = System.currentTimeMillis();
 
@@ -709,13 +657,12 @@ public class HomepageService {
 
     /**
      * 综合搜索接口：开启所有线程
-     * @param esList     es查询结果
+     * @param esList es查询结果
+     * @param statementList 报表id集合
+     * @param userId 用户id
+     * @param provId 省份id
      */
     private List<Map<String, Object>> startAllThreads(List<Map<String, Object>> esList,
-                                 /*MyThread[] myThreads,*/
-                                 /*List<String> kpiList,
-                                 List<String> topicList,
-                                 List<String> reportList,*/
                                  List<String> statementList,
                                  String userId,
                                  String provId) throws InterruptedException, ExecutionException {
@@ -726,7 +673,10 @@ public class HomepageService {
         List<String> topicList = new ArrayList<>();
         //es返回的所有报告
         List<String> reportList = new ArrayList<>();
+        //创建线程池
         ExecutorService pool = Executors.newCachedThreadPool();
+
+        //遍历es返回的数据，去不同的服务请求详细数据
         if (esList.size() != 0) {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map = esList.get(i);
@@ -745,8 +695,6 @@ public class HomepageService {
                     Future kpiFuture = pool.submit(kpiCallable);
                     Map<String, Object> kpiData = (Map<String, Object>) kpiFuture.get();
                     dataList.add(kpiData);
-                    //myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
-                    //myThreads[i].start();
                 } else if (typeId.equals(SystemVariableService.subject)) {
                     //专题
                     topicList.add(id);
@@ -755,8 +703,6 @@ public class HomepageService {
                     Future topicFuture = pool.submit(topicCallable);
                     Map<String, Object> topicData = (Map<String, Object>) topicFuture.get();
                     dataList.add(topicData);
-                    //myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
-                    //myThreads[i].start();
                 } else if (typeId.equals(SystemVariableService.report)) {
                     //报告
                     reportList.add(id);
@@ -765,8 +711,6 @@ public class HomepageService {
                     Future reportFuture = pool.submit(reportCallable);
                     Map<String, Object> reportData = (Map<String, Object>) reportFuture.get();
                     dataList.add(reportData);
-                    //myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
-                    //myThreads[i].start();
                 } else if ("4".equals(typeId)){
                     //报表
                     statementList.add(id);
@@ -774,8 +718,6 @@ public class HomepageService {
                     log.info("es返回了不存在的type！外星type！");
                 }
             }
-        } else {
-            log.info("es没有返回数据！");
         }
         log.info("指标有-------->" + kpiList);
         log.info("专题有-------->" + topicList);
@@ -786,14 +728,12 @@ public class HomepageService {
 
     /**
      * 综合搜索接口：组合esList和所有服务的返回结果
-     * @param esList     es查询结果
+     * @param esList es查询结果
+     * @param dataList 详细数据
+     * @param areaStr 地域名称
      */
     private List<Map<String, Object>> combineAllTypeData(List<Map<String, Object>> esList,
                                                          List<Map<String, Object>> dataList,
-                                                         /*List<String> kpiList,*/
-                                                         /*List<String> topicList,
-                                                         List<String> reportList,
-                                                         List<String> statementList,*/
                                                          String areaStr) {
         List<Map<String, Object>> resList = new ArrayList<>();
         for (Map<String, Object> map1 : esList) {
@@ -912,8 +852,7 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                }
-                else {
+                } else {
                     log.info("es返回了不存在的type！" + "这条非法数据是：" + map1);
                 }
             } catch (NullPointerException e) {
