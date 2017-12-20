@@ -166,4 +166,27 @@ public class HomepageSubclassService {
         }
         return dataListFinally;
     }
+
+    /**
+     * 过滤无效数据
+     *
+     * @param chartData 需要过滤的数据
+     * @return 过滤后的数据
+     */
+    public Map<String,Object> filterAllData(Map<String, Object> chartData) {
+        Map<String, Object> dataMapFinally = new HashMap<>(10);
+        if ((chartData != null) && (!chartData.containsKey("id"))) {
+            log.info(chartData + "------chartData没有返回id，舍弃！！！");
+            dataMapFinally = null;
+        }else if ((chartData != null) && (chartData.containsKey("id"))){
+            String id = (String) chartData.get("id");
+            if (StringUtils.isBlank(id)){
+                log.info(chartData + "------chartData返回无效的id，舍弃！！！");
+                dataMapFinally = null;
+            }
+        }else{
+            dataMapFinally = chartData;
+        }
+        return dataMapFinally;
+    }
 }

@@ -214,43 +214,14 @@ public class HomepageService {
             }
         }
         log.info("所有线程返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
-        long allThreadsJoin = System.currentTimeMillis();
 
-
-        log.info("汇总所有服务返回的数据耗时:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
-        long getAllData = System.currentTimeMillis();
 
         //6.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
         //过滤图表数据
-        String idStr = "id";
-        if ((chartData != null) && (!chartData.containsKey(idStr))) {
-            log.info(chartData + "------chartData没有返回id，舍弃！！！");
-            chartData = null;
-        }else if ((chartData != null) && (chartData.containsKey(idStr))){
-            String id = (String) chartData.get("id");
-            if (StringUtils.isBlank(id)){
-                log.info(chartData + "------chartData返回无效的id，舍弃！！！");
-                chartData = null;
-            }
-        }
+        long getAllData = System.currentTimeMillis();
+        Map<String,Object> chartDataFinally = subclassService.filterAllData(chartData);
         //过滤同比环比数据
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        if ((data.size()) != 0 && (data != null)){
-            for (int j = 0; j < data.size(); j++) {
-                if (!data.get(j).containsKey("id")) {
-                    log.info(data.get(j) + "----同环比数据没有返回id，舍弃！！！");
-                } else {
-                    String id = (String) data.get(j).get("id");
-                    if (StringUtils.isBlank(id)){
-                        log.info(data.get(j) + "----同环比数据返回无效的id，舍弃！！！");
-                    }else{
-                        dataList.add(data.get(j));
-                    }
-                }
-            }
-        }else{
-            log.info("全部指标的同比环比数据为空！！！");
-        }
+        List<Map<String, Object>> dataList = subclassService.filterAllData(data);
         log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
         long filterData = System.currentTimeMillis();
 
@@ -263,7 +234,7 @@ public class HomepageService {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
                 //第一条数据
-                if (i == 0 && chartData != null && numStartValue == 1) {
+                if (i == 0 && chartDataFinally != null && numStartValue == 1) {
                     Map<String, Object> map = new HashMap<>(20);
                     map.put("ord", map1.get("ord"));
                     map.put("dayOrMonth", map1.get("dayOrMonth"));
@@ -272,9 +243,9 @@ public class HomepageService {
                     map.put("title", map1.get("title"));
                     map.put("markType", map1.get("typeId"));
                     map.put("markName", map1.get("type"));
-                    map.put("chartData", chartData.get("chartData"));
+                    map.put("chartData", chartDataFinally.get("chartData"));
                     //返回账期（格式转换）
-                    String dateStr = subclassService.toChineseDateString(chartData.get("date").toString());
+                    String dateStr = subclassService.toChineseDateString(chartDataFinally.get("date").toString());
                     map.put("date", dateStr);
                     //返回地域
                     if (!StringUtils.isBlank(areaStr)) {
