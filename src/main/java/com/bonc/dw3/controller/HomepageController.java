@@ -136,7 +136,7 @@ public class HomepageController {
     @ApiOperation("7.搜索-专题搜索接口")
     @PostMapping("/specialSearch")
     public String specialSearch(@ApiParam("请求参数json串") @RequestBody Map<String, Object> paramMap,
-                                Model model) throws InterruptedException {
+                                Model model) throws InterruptedException, ExecutionException {
         Map<String, Object> resMap = new HashMap<>(10);
 
         String userId = paramMap.get("userId").toString();
