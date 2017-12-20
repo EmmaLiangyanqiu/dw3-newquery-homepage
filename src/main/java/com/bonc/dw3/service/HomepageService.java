@@ -171,12 +171,12 @@ public class HomepageService {
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+
+        //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
         //创建线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(11);
-
         //用于打印时间
         long start = System.currentTimeMillis();
-        //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
         if (esList.size() != 0) {
             //跳转路径
             url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
@@ -216,16 +216,16 @@ public class HomepageService {
         log.info("所有线程返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
 
-        //6.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
-        //过滤图表数据
+        //4.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
         long getAllData = System.currentTimeMillis();
+        //过滤图表数据
         Map<String,Object> chartDataFinally = subclassService.filterAllData(chartData);
         //过滤同比环比数据
         List<Map<String, Object>> dataList = subclassService.filterAllData(data);
         log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
         long filterData = System.currentTimeMillis();
 
-        //7.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
+        //5.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
         List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
@@ -341,7 +341,7 @@ public class HomepageService {
      */
     public Map<String, Object> specialSearch(String paramStr,
                                              String numStart,
-                                             String num) throws InterruptedException {
+                                             String num) throws InterruptedException, ExecutionException {
         //返回给前端的结果
         Map<String, Object> resMap = new HashMap<>(5);
         //服务返回的所有详细数据
@@ -362,29 +362,28 @@ public class HomepageService {
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[esList.size()];
+
         //用于打印时间
         long start = System.currentTimeMillis();
 
         //3.遍历es返回的所有的数据，开启子线程查询专题服务得到详细的数据
+        ExecutorService pool = Executors.newCachedThreadPool();
         for (int i = 0; i < esList.size(); i++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
-            myThreads[i].start();
+            //开启子线程
+            MyCallable topicCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
+            Future topicFuture = pool.submit(topicCallable);
+            Map<String, Object> topicData = (Map<String, Object>) topicFuture.get();
+            data.add(topicData);
         }
-
-        //4.join全部线程
-        subclassService.joinAllThreads(myThreads);
-        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
-
-        //5.汇总专题服务返回的详细数据
-        data = subclassService.getMyThreadsData(myThreads);
-        log.info("专题服务返回的数据为：" + data);
         log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
 
+        //4.过滤
+        List<Map<String, Object>> dataFinally = subclassService.filterAllData(data);
+        log.info("专题服务返回的数据为：" + dataFinally);
+
         //5.组合es数据和专题服务返回的详细数据，组合好的数据直接放在esList中
-        combineTopicData(esList, data);
+        combineTopicData(esList, dataFinally);
 
         resMap.put("data", esList);
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
