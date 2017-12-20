@@ -74,17 +74,13 @@ public class HomepageService {
     public Map<String, Object> allSearch(String searchStr,
                                          String numStart,
                                          String num,
-                                         String userId) throws InterruptedException {
+                                         String userId) throws InterruptedException, ExecutionException {
         //最后返回给前端的结果 {"nextFlag":"","data":""}
         Map<String, Object> resMap = new HashMap<>(5);
-        //es返回的所有指标
-        List<String> kpiList = new ArrayList<>();
-        //es返回的所有专题
-        List<String> topicList = new ArrayList<>();
-        //es返回的所有报告
-        List<String> reportList = new ArrayList<>();
         //es返回的所有报表
         List<String> statementList = new ArrayList<>();
+        //所有服务返回的数据以及报表数据（查oracle）
+        List<Map<String, Object>> dataList = new ArrayList<>();
 
         //1.查询ES，ES中根据权重排序，支持分页，结果中携带排序序号
         log.info("查询es的参数------->" + searchStr);
@@ -102,7 +98,7 @@ public class HomepageService {
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[esList.size()];
+        //MyThread[] myThreads = new MyThread[esList.size()];
 
         //获取用户的省份权限，查询详细数据时就只能查询该省份
         String provId=userInfoMapper.queryProvByUserId(userId);
@@ -111,17 +107,17 @@ public class HomepageService {
 
         //3.查询类型是全部，需要遍历所有的数据，根据typeId将数据分类并开启子线程查询各个服务得到详细的数据
         //es支持地域维度搜索，并过滤用户的省份权限，首页服务的全部搜索接口不再过滤省份权限
-        startAllThreads(esList, myThreads, kpiList, topicList, reportList,statementList, userId, provId);
+        dataList = startAllThreads(esList, statementList, userId, provId);
+        //startAllThreads(esList, myThreads, kpiList, topicList, reportList,statementList, userId, provId);
 
         //4.join全部线程
-        subclassService.joinAllThreads(myThreads);
+        //subclassService.joinAllThreads(myThreads);
 
         //5.汇总所有服务返回的详细数据
-        //所有服务返回的数据
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        dataList = subclassService.getMyThreadsData(myThreads);
+        //dataList = subclassService.getMyThreadsData(myThreads);
         //报表详细数据
         List<Map<String, Object>> statementDataList = new ArrayList<>();
+        log.info("------------------------------------------------------------" + statementList);
         if (statementList.size() != 0){
             //查询数据
             statementDataList = homepageMapper.selectStatementData(statementList);
@@ -148,7 +144,8 @@ public class HomepageService {
         }
 
         //7.组合es数据和所有服务返回的详细数据
-        List<Map<String, Object>> resList = combineAllTypeData(esList, dataListFinally, kpiList, topicList, reportList, statementList, areaStr);
+        List<Map<String, Object>> resList = combineAllTypeData(esList, dataListFinally, areaStr);
+        //List<Map<String, Object>> resList = combineAllTypeData(esList, dataListFinally, kpiList, topicList, reportList, statementList, areaStr);
         resMap.put("data", resList);
 
         return resMap;
@@ -713,19 +710,23 @@ public class HomepageService {
     /**
      * 综合搜索接口：开启所有线程
      * @param esList     es查询结果
-     * @param myThreads  线程数组
-     * @param kpiList    es中的指标数据id集合
-     * @param topicList  es中的专题数据id集合
-     * @param reportList es中的报告数据id集合
      */
-    private void startAllThreads(List<Map<String, Object>> esList,
-                                 MyThread[] myThreads,
-                                 List<String> kpiList,
+    private List<Map<String, Object>> startAllThreads(List<Map<String, Object>> esList,
+                                 /*MyThread[] myThreads,*/
+                                 /*List<String> kpiList,
                                  List<String> topicList,
-                                 List<String> reportList,
+                                 List<String> reportList,*/
                                  List<String> statementList,
                                  String userId,
-                                 String provId) throws InterruptedException {
+                                 String provId) throws InterruptedException, ExecutionException {
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        //es返回的所有指标
+        List<String> kpiList = new ArrayList<>();
+        //es返回的所有专题
+        List<String> topicList = new ArrayList<>();
+        //es返回的所有报告
+        List<String> reportList = new ArrayList<>();
+        ExecutorService pool = Executors.newCachedThreadPool();
         if (esList.size() != 0) {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map = esList.get(i);
@@ -740,20 +741,32 @@ public class HomepageService {
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
                     String paramStr = provId + ",-1," + id + "," + userId;
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
-                    myThreads[i].start();
+                    MyCallable kpiCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
+                    Future kpiFuture = pool.submit(kpiCallable);
+                    Map<String, Object> kpiData = (Map<String, Object>) kpiFuture.get();
+                    dataList.add(kpiData);
+                    //myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
+                    //myThreads[i].start();
                 } else if (typeId.equals(SystemVariableService.subject)) {
                     //专题
                     topicList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
-                    myThreads[i].start();
+                    MyCallable topicCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
+                    Future topicFuture = pool.submit(topicCallable);
+                    Map<String, Object> topicData = (Map<String, Object>) topicFuture.get();
+                    dataList.add(topicData);
+                    //myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/subject/specialForHomepage/icon", id);
+                    //myThreads[i].start();
                 } else if (typeId.equals(SystemVariableService.report)) {
                     //报告
                     reportList.add(id);
                     //开子线程
-                    myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
-                    myThreads[i].start();
+                    MyCallable reportCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
+                    Future reportFuture = pool.submit(reportCallable);
+                    Map<String, Object> reportData = (Map<String, Object>) reportFuture.get();
+                    dataList.add(reportData);
+                    //myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
+                    //myThreads[i].start();
                 } else if ("4".equals(typeId)){
                     //报表
                     statementList.add(id);
@@ -768,22 +781,19 @@ public class HomepageService {
         log.info("专题有-------->" + topicList);
         log.info("报告有-------->" + reportList);
         log.info("报表有-------->" + statementList);
+        return dataList;
     }
 
     /**
      * 综合搜索接口：组合esList和所有服务的返回结果
      * @param esList     es查询结果
-     * @param dataList   所有服务查询结果
-     * @param kpiList    es中的指标数据id集合
-     * @param topicList  es中的专题数据id集合
-     * @param reportList es中的报告数据id集合
      */
     private List<Map<String, Object>> combineAllTypeData(List<Map<String, Object>> esList,
                                                          List<Map<String, Object>> dataList,
-                                                         List<String> kpiList,
-                                                         List<String> topicList,
+                                                         /*List<String> kpiList,*/
+                                                         /*List<String> topicList,
                                                          List<String> reportList,
-                                                         List<String> statementList,
+                                                         List<String> statementList,*/
                                                          String areaStr) {
         List<Map<String, Object>> resList = new ArrayList<>();
         for (Map<String, Object> map1 : esList) {
@@ -791,7 +801,7 @@ public class HomepageService {
                 String typeId = map1.get("typeId").toString();
                 String id1 = map1.get("id").toString();
                 //指标数据处理
-                if (typeId.equals(SystemVariableService.kpi) && kpiList.size() != 0) {
+                if (typeId.equals(SystemVariableService.kpi)) {
                     for (Map<String, Object> map2 : dataList) {
                         //查询数据库得到跳转的url
                         String url = homepageMapper.getUrlViaTypeId(typeId);
@@ -829,7 +839,7 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else if (typeId.equals(SystemVariableService.subject) && topicList.size() != 0) {
+                } else if (typeId.equals(SystemVariableService.subject)) {
                     //专题数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
@@ -849,7 +859,7 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else if (typeId.equals(SystemVariableService.report) && reportList.size() != 0) {
+                } else if (typeId.equals(SystemVariableService.report)) {
                     //查询数据库得到跳转的url
                     String url = homepageMapper.getUrlViaTypeId(typeId);
                     //报告数据处理
@@ -872,7 +882,7 @@ public class HomepageService {
                             resList.add(map);
                         }
                     }
-                } else if ("4".equals(typeId) && statementList.size() != 0){
+                } else if ("4".equals(typeId)){
                     //报表数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
