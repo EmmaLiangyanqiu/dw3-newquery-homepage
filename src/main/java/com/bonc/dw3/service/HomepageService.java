@@ -220,6 +220,8 @@ public class HomepageService {
         long getAllData = System.currentTimeMillis();
         //过滤图表数据
         Map<String,Object> chartDataFinally = subclassService.filterAllData(chartData);
+        log.info("------------------------------------------>" + chartDataFinally);
+        log.info("------------------------------------------>" + chartData);
         //过滤同比环比数据
         List<Map<String, Object>> dataList = subclassService.filterAllData(data);
         log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
