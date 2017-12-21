@@ -140,10 +140,7 @@ public class HomepageService {
                                            String userId) throws InterruptedException, ExecutionException {
         //最终的返回结果
         Map<String, Object> resMap = new HashMap<>(5);
-        //所有指标的同比环比数据
-        List<Map<String, Object>> data = new ArrayList<>();
-        //第一个指标的所有图表数据
-        Map<String, Object> chartData = new HashMap<>(15);
+
         //第一个指标的日月标识
         String firstDayOrMonth = "";
         //跳转的url
@@ -171,9 +168,12 @@ public class HomepageService {
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+
         //创建线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(11);
+        //同环比线程返回结果
         List<Future> dataFutures = new ArrayList<>();
+        //图表数据返回结果
         List<Future> chartFutures = new ArrayList<>();
 
         //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
@@ -199,30 +199,28 @@ public class HomepageService {
                     MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     Future chartFuture = threadPool.submit(chartCallable);
                     chartFutures.add(chartFuture);
-                    //chartData = (Map<String, Object>) chartFuture.get();
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
                     MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
-                    //Map<String, Object> map = (Map<String, Object>) dataFuture.get();
-                    //data.add(map);
                 } else {
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
                     MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
-                    //Map<String, Object> map = (Map<String, Object>) dataFuture.get();
-                    //data.add(map);
                 }
             }
         }
         log.info("所有线程返回详细数据耗时:" + (System.currentTimeMillis() - start) + "ms");
 
-        //获取数据
-        chartData = (Map<String, Object>) chartFutures.get(0).get();
+        //4.获取全部数据
+        //第一个指标的所有图表数据
+        Map<String, Object> chartData = (Map<String, Object>) chartFutures.get(0).get();
+        //所有指标的同比环比数据
+        List<Map<String, Object>> data = new ArrayList<>();
         for (int i = 0; i < dataFutures.size(); i ++){
             Map<String, Object> map = (Map<String, Object>) dataFutures.get(i).get();
             data.add(map);
@@ -232,8 +230,6 @@ public class HomepageService {
         long getAllData = System.currentTimeMillis();
         //过滤图表数据
         Map<String, Object> chartDataFinally = subclassService.filterAllData(chartData);
-        log.info("-------------------------------------------------------------------->" + chartDataFinally);
-        log.info("-------------------------------------------------------------------->" + chartData);
         //过滤同比环比数据
         List<Map<String, Object>> dataList = subclassService.filterAllData(data);
         log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
