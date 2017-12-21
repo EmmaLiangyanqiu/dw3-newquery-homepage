@@ -210,7 +210,6 @@ public class HomepageService {
                 }
             }
         }
-        Thread.sleep(5 * 1000);
         //6.汇总指标服务返回的详细数据
         //第一个指标的所有图表数据
         Map<String, Object> chartData = new HashMap<>(20);
