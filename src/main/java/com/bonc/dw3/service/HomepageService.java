@@ -140,7 +140,6 @@ public class HomepageService {
                                            String userId) throws InterruptedException, ExecutionException {
         //最终的返回结果
         Map<String, Object> resMap = new HashMap<>(5);
-
         //第一个指标的日月标识
         String firstDayOrMonth = "";
         //跳转的url
@@ -218,13 +217,19 @@ public class HomepageService {
 
         //4.获取全部数据
         //第一个指标的所有图表数据
-        Map<String, Object> chartData = (Map<String, Object>) chartFutures.get(0).get();
+        Map<String, Object> chartData = new HashMap<>(20);
+        if (chartFutures.size() != 0){
+            chartData = (Map<String, Object>) chartFutures.get(0).get();
+        }
         //所有指标的同比环比数据
         List<Map<String, Object>> data = new ArrayList<>();
         for (int i = 0; i < dataFutures.size(); i ++){
             Map<String, Object> map = (Map<String, Object>) dataFutures.get(i).get();
             data.add(map);
         }
+
+        //关闭线程池
+        threadPool.shutdown();
 
         //6.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
         long getAllData = System.currentTimeMillis();
