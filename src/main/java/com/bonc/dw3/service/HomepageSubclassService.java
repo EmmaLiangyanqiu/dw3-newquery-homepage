@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @author guopeng
@@ -188,5 +190,20 @@ public class HomepageSubclassService {
             }
         }
         return dataMapFinally;
+    }
+
+    /**
+     * 获得所有详细数据
+     *
+     * @param dataFutures Future对象集合
+     * @return 详细数据集
+     */
+    public List<Map<String,Object>> getAllDataFromFutures(List<Future> dataFutures) throws ExecutionException, InterruptedException {
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (int i = 0; i < dataFutures.size(); i ++){
+            Map<String, Object> map = (Map<String, Object>) dataFutures.get(i).get();
+            data.add(map);
+        }
+        return data;
     }
 }
