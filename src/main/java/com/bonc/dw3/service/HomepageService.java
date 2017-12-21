@@ -102,7 +102,7 @@ public class HomepageService {
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //4.创建线程池
-        ExecutorService pool = Executors.newCachedThreadPool();
+        ExecutorService pool = Executors.newFixedThreadPool(12);
         long start = System.currentTimeMillis();
         //5.根据typeId将数据分类并开启子线程查询各个服务（报表的只记录报表id）
         List<Future> dataFutures = startAllThreads(pool, esList, statementList, userId, provId);
@@ -161,7 +161,7 @@ public class HomepageService {
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //4.创建线程池
-        ExecutorService threadPool = Executors.newCachedThreadPool();
+        ExecutorService threadPool = Executors.newFixedThreadPool(12);
         //同环比线程的返回结果
         List<Future> dataFutures = new ArrayList<>();
         //图表数据的返回结果
@@ -268,7 +268,7 @@ public class HomepageService {
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //4.创建线程池
-        ExecutorService pool = Executors.newCachedThreadPool();
+        ExecutorService pool = Executors.newFixedThreadPool(12);
 
         //5.开启子线程查询专题服务
         List<Future> futureList = new ArrayList<>();
@@ -323,7 +323,7 @@ public class HomepageService {
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         //4.创建线程池
-        ExecutorService pool = Executors.newCachedThreadPool();
+        ExecutorService pool = Executors.newFixedThreadPool(12);
 
         //5.开启子线程查询报告服务
         List<Future> futureList = new ArrayList<>();
