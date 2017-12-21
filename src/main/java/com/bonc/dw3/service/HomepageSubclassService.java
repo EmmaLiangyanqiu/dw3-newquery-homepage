@@ -183,9 +183,9 @@ public class HomepageSubclassService {
             if (StringUtils.isBlank(id)){
                 log.info(chartData + "------chartData返回无效的id，舍弃！！！");
                 dataMapFinally = null;
+            }else{
+                dataMapFinally = chartData;
             }
-        }else{
-            dataMapFinally = chartData;
         }
         return dataMapFinally;
     }

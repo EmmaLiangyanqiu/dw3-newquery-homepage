@@ -145,7 +145,7 @@ public class HomepageService {
         //第一个指标的所有图表数据
         Map<String, Object> chartData = new HashMap<>(15);
         //第一个指标的日月标识
-        String fitstDayOrMonth = "";
+        String firstDayOrMonth = "";
         //跳转的url
         String url = "";
         //前端请求的起始条数
@@ -154,50 +154,46 @@ public class HomepageService {
         //根据地域id得到地域的名称
         String areaStr = homepageMapper.getProvNameViaProvId(area);
 
-        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
-        log.info("查询es的参数-------->" + paramStr);
+        //1.查询ES
+        log.info("查询es的参数：" + paramStr);
         long esStart = System.currentTimeMillis();
         Map<String, Object> esMap = subclassService.requestToES(paramStr);
-        long esTime = System.currentTimeMillis() - esStart;
-        log.info("查询es的结果-------->" + esMap);
+        log.info("查询es的结果：" + esMap + "-------->耗时：" + (System.currentTimeMillis() - esStart));
 
         //2.判断是否还有下一页数据
         //es查询到的记录的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
-        int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        int count = numStartValue + Integer.parseInt(num) - 1;
+        //判断有无下一页
         String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        //根据es返回的数据条数控制线程数组的大小，请求全部指标的同比环比数据
-        //MyThread[] myThreads = new MyThread[esList.size()];
-        //用来给第一条指标数据发请求-请求它的图表数据
-        //MyThread chartThread = null;
 
+        //创建线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(11);
 
+        //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
         //用于打印时间
         long start = System.currentTimeMillis();
-
-        //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
-        //startKpiThreads(esList, myThreads, chartThread, numStartValue, fitstDayOrMonth, url, area, date);
         if (esList.size() != 0) {
+            //跳转的url
             url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
-            //for循环得到需要查询的kpi字符串
+            //遍历
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
                     String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
                     if ("日报".equals(dayOrMonth)) {
-                        fitstDayOrMonth = SystemVariableService.day;
+                        firstDayOrMonth = SystemVariableService.day;
                     } else {
-                        fitstDayOrMonth = SystemVariableService.month;
+                        firstDayOrMonth = SystemVariableService.month;
                     }
                     //拼接所有图表数据接口的请求参数
-                    String chartParam = area + "," + date + "," + id + "," + fitstDayOrMonth + "," + userId;
+                    String chartParam = area + "," + date + "," + id + "," + firstDayOrMonth + "," + userId;
                     //请求图表数据
                     MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     Future chartFuture = threadPool.submit(chartCallable);
@@ -218,67 +214,23 @@ public class HomepageService {
                     data.add(map);
                 }
             }
-        } else {
-            log.info("es没有返回任何指标数据！！！");
         }
+        log.info("所有线程返回详细数据耗时:" + (System.currentTimeMillis() - start) + "ms");
 
-        //4.join全部线程
-        /*subclassService.joinAllThreads(myThreads);
-        if (null != chartThread) {
-            chartThread.join();
-        }*/
-        long threadTime = System.currentTimeMillis() - start;
-        log.info("es查询到返回的时间:" + esTime + "ms");
-        log.info("所有线程返回的时间:" + threadTime + "ms");
-        long allThreadsJoin = System.currentTimeMillis();
 
-        //5.汇总指标服务返回的详细数据
-        //得到所有指标的同比环比数据
-        //data = subclassService.getMyThreadsData(myThreads);
-        //得到第一条指标的所有图表数据
-        /*if (null != chartThread) {
-            chartData = (Map<String, Object>) chartThread.result;
-        } else {
-            log.info("没有开启查询第一条指标的所有图表数据的子线程！！！");
-        }*/
-        log.info("汇总所有服务返回的数据耗时:" + (System.currentTimeMillis() - allThreadsJoin) + "ms");
-        long getAllData = System.currentTimeMillis();
 
         //6.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
+        long getAllData = System.currentTimeMillis();
         //过滤图表数据
-        String idStr = "id";
-        if ((chartData != null) && (!chartData.containsKey(idStr))) {
-            log.info(chartData + "------chartData没有返回id，舍弃！！！");
-            chartData = null;
-        }else if ((chartData != null) && (chartData.containsKey(idStr))){
-            String id = (String) chartData.get("id");
-            if (StringUtils.isBlank(id)){
-                log.info(chartData + "------chartData返回无效的id，舍弃！！！");
-                chartData = null;
-            }
-        }
+        Map<String, Object> chartDataFinally = subclassService.filterAllData(chartData);
+        log.info("-------------------------------------------------------------------->" + chartDataFinally);
+        log.info("-------------------------------------------------------------------->" + chartData);
         //过滤同比环比数据
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        if ((data.size()) != 0 && (data != null)){
-            for (int j = 0; j < data.size(); j++) {
-                if (!data.get(j).containsKey("id")) {
-                    log.info(data.get(j) + "----同环比数据没有返回id，舍弃！！！");
-                } else {
-                    String id = (String) data.get(j).get("id");
-                    if (StringUtils.isBlank(id)){
-                        log.info(data.get(j) + "----同环比数据返回无效的id，舍弃！！！");
-                    }else{
-                        dataList.add(data.get(j));
-                    }
-                }
-            }
-        }else{
-            log.info("全部指标的同比环比数据为空！！！");
-        }
+        List<Map<String, Object>> dataList = subclassService.filterAllData(data);
         log.info("过滤不合格数据耗时:" + (System.currentTimeMillis() - getAllData) + "ms");
-        long filterData = System.currentTimeMillis();
 
         //7.组合es数据和指标服务返回的详细数据，组合好的数据直接放在esList中
+        long filterData = System.currentTimeMillis();
         List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
@@ -287,7 +239,7 @@ public class HomepageService {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
                 //第一条数据
-                if (i == 0 && chartData != null && numStartValue == 1) {
+                if (i == 0 && chartDataFinally != null && numStartValue == 1) {
                     Map<String, Object> map = new HashMap<>(20);
                     map.put("ord", map1.get("ord"));
                     map.put("dayOrMonth", map1.get("dayOrMonth"));
@@ -296,9 +248,9 @@ public class HomepageService {
                     map.put("title", map1.get("title"));
                     map.put("markType", map1.get("typeId"));
                     map.put("markName", map1.get("type"));
-                    map.put("chartData", chartData.get("chartData"));
+                    map.put("chartData", chartDataFinally.get("chartData"));
                     //返回账期（格式转换）
-                    String dateStr = subclassService.toChineseDateString(chartData.get("date").toString());
+                    String dateStr = subclassService.toChineseDateString(chartDataFinally.get("date").toString());
                     map.put("date", dateStr);
                     //返回地域
                     if (!StringUtils.isBlank(areaStr)) {
@@ -410,17 +362,18 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //是否有下一页
         String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-
-        //用于打印时间
-        long start = System.currentTimeMillis();
+        //创建线程池
+        ExecutorService pool = Executors.newCachedThreadPool();
 
         //3.遍历es返回的所有的数据，开启子线程查询专题服务得到详细的数据
-        ExecutorService pool = Executors.newCachedThreadPool();
+        //用于打印时间
+        long start = System.currentTimeMillis();
         for (int i = 0; i < esList.size(); i++) {
             String id = esList.get(i).get("id").toString();
             //开启子线程
