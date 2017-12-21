@@ -171,9 +171,10 @@ public class HomepageService {
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-
         //创建线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(11);
+        List<Future> dataFutures = new ArrayList<>();
+        List<Future> chartFutures = new ArrayList<>();
 
         //3.遍历es返回的所有的数据，开启子线程查询指标服务得到详细的数据
         //用于打印时间
@@ -197,27 +198,35 @@ public class HomepageService {
                     //请求图表数据
                     MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/allChartOfTheKpi", chartParam);
                     Future chartFuture = threadPool.submit(chartCallable);
-                    chartData = (Map<String, Object>) chartFuture.get();
+                    chartFutures.add(chartFuture);
+                    //chartData = (Map<String, Object>) chartFuture.get();
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
                     MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
-                    Map<String, Object> map = (Map<String, Object>) dataFuture.get();
-                    data.add(map);
+                    dataFutures.add(dataFuture);
+                    //Map<String, Object> map = (Map<String, Object>) dataFuture.get();
+                    //data.add(map);
                 } else {
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
                     MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
-                    Map<String, Object> map = (Map<String, Object>) dataFuture.get();
-                    data.add(map);
+                    dataFutures.add(dataFuture);
+                    //Map<String, Object> map = (Map<String, Object>) dataFuture.get();
+                    //data.add(map);
                 }
             }
         }
         log.info("所有线程返回详细数据耗时:" + (System.currentTimeMillis() - start) + "ms");
 
-
+        //获取数据
+        chartData = (Map<String, Object>) chartFutures.get(0).get();
+        for (int i = 0; i < dataFutures.size(); i ++){
+            Map<String, Object> map = (Map<String, Object>) dataFutures.get(i).get();
+            data.add(map);
+        }
 
         //6.数据过滤：清理从指标服务返回的不合格数据(没有id的数据)
         long getAllData = System.currentTimeMillis();
@@ -404,13 +413,13 @@ public class HomepageService {
      */
     public Map<String, Object> reportPPTSearch(String paramStr,
                                                String numStart,
-                                               String num) throws InterruptedException {
+                                               String num) throws InterruptedException, ExecutionException {
         //返回给前端的结果
         Map<String, Object> resMap = new HashMap<>(5);
         //报告服务返回的详细数据
         List<Map<String, Object>> data = new ArrayList<>();
 
-        //1.根据搜索关键字查询ES，ES中根据权重排序，支持分页，结果中携带排序序号ES返回结果
+        //1.查询ES
         log.info("查询es的参数--------->" + paramStr);
         Map<String, Object> esMap = subclassService.requestToES(paramStr);
         log.info("查询es的结果-------->" + esMap);
@@ -420,35 +429,32 @@ public class HomepageService {
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
         int count = Integer.parseInt(numStart) + Integer.parseInt(num) - 1;
+        //是否有下一页
         String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
         //es查询到的数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        //根据es返回的数据条数控制线程数组的大小
-        MyThread[] myThreads = new MyThread[esList.size()];
-
-        //用于打印时间
-        long start = System.currentTimeMillis();
 
         //3.遍历es返回的所有的数据，开启子线程查询报告服务得到详细的数据
+        ExecutorService pool = Executors.newCachedThreadPool();
+        //用于打印时间
+        long start = System.currentTimeMillis();
         for (int i = 0; i < esList.size(); i++) {
             String id = esList.get(i).get("id").toString();
-            myThreads[i] = new MyThread(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
-            myThreads[i].start();
+            MyCallable reportCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/reportPPT/pptReportForHomepage/info", id);
+            Future reportFuture = pool.submit(reportCallable);
+            Map<String, Object> reportData = (Map<String, Object>) reportFuture.get();
+            data.add(reportData);
         }
-
-        //4.join全部线程
-        subclassService.joinAllThreads(myThreads);
-        log.info("所有线程返回的时间:" + (System.currentTimeMillis() - start) + "ms");
-
-        //5.汇总报告服务返回的详细数据
-        data = subclassService.getMyThreadsData(myThreads);
         log.info("报告服务返回的数据是--------->" + data);
-        log.info("汇总所有服务返回数据的时间:" + (System.currentTimeMillis() - start) + "ms");
+        log.info("汇总所有服务返回数据耗时:" + (System.currentTimeMillis() - start) + "ms");
 
-        //6.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
-        combineReportData(esList, data);
+        //4.过滤数据
+        List<Map<String, Object>> dataFinally = subclassService.filterAllData(data);
+
+        //5.组合es数据和报告服务返回的详细数据，组合好的数据直接放在esList中
+        combineReportData(esList, dataFinally);
         resMap.put("data", esList);
         log.info("拼接好数据的时间:" + (System.currentTimeMillis() - start) + "ms");
         return resMap;
