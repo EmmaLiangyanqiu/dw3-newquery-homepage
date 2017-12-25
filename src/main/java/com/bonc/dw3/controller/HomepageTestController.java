@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 /**
- * @author Candy
+ * @author gp
  */
 @Api(value = "首页查询-2", description ="示例数据")
 @CrossOrigin(origins ="*")
@@ -35,17 +35,16 @@ public class HomepageTestController {
                                Model model){
         String[] a = {"999,综合", "1,指标", "2,专题", "3,报告"};
         List<Map<String, Object>> selectList = new ArrayList<>();
-        Map<String, Object> resMap = new HashMap<>(5);
+        Map<String, Object> resMap = new HashMap<>(10);
         for (int i = 0; i < a.length; i ++){
             String[] b = a[i].split(",");
-            Map<String, Object> map = new HashMap<>(5);
+            Map<String, Object> map = new HashMap<>(10);
             map.put("id", b[0]);
             map.put("name", b[1]);
             selectList.add(map);
         }
         resMap.put("default", selectList.get(0));
         resMap.put("selectList", selectList);
-
         model.addAttribute("resMap", resMap);
         return "headerSelect";
     }
@@ -67,7 +66,7 @@ public class HomepageTestController {
         String[] title2 = {"20011101,运营总览,/special,-1", "20011102,三大战役,/special,-1"};
         String[] b001 = {"01,运营概况,/special,-1", "02,移动业务,/special,-1"};
         String[] b002 = {"01,212C业务专题,/special,-1", "02,冰淇淋业务专题,/special,-1"};
-        Map<String, Object> resMap = new HashMap<>(5);
+        Map<String, Object> resMap = new HashMap<>(10);
         List<Map<String, Object>> svgList = new ArrayList<>();
         List<Map<String, Object>> titleList1 = titleList(title1);
         List<Map<String, Object>> nodeList1 = nodeList(a001);
@@ -80,7 +79,7 @@ public class HomepageTestController {
         map1.put("name", "指标");
         map1.put("url", "/index");
         map1.put("imgName", "index");
-        Map<String, Object> titleMap1 = new HashMap<>(10);
+        Map<String, Object> titleMap1 = new HashMap<>(20);
         titleMap1.put("titleClassId", "1001");
         titleMap1.put("titleClassName", "基础指标");
         titleMap1.put("list", titleList1);
@@ -89,7 +88,7 @@ public class HomepageTestController {
         nodeMap1.put("classId", "1001");
         nodeMap1.put("className", "基础指标");
         nodeMap1.put("nodes", nodeList1);
-        Map<String, Object> nodeMap2 = new HashMap<>(5);
+        Map<String, Object> nodeMap2 = new HashMap<>(20);
         nodeMap2.put("classId", "1002");
         nodeMap2.put("className", "分析指标");
         nodeMap2.put("nodes", nodeList2);
@@ -98,21 +97,21 @@ public class HomepageTestController {
         treeList1.add(nodeMap2);
         map1.put("treeList", treeList1);
 
-        Map<String, Object> map2 = new HashMap<>(10);
+        Map<String, Object> map2 = new HashMap<>(20);
         map2.put("id", "2");
         map2.put("name", "专题");
         map2.put("url", "/special");
         map2.put("imgName", "special");
-        Map<String, Object> titleMap2 = new HashMap<>(10);
+        Map<String, Object> titleMap2 = new HashMap<>(20);
         titleMap2.put("titleClassId", "2001");
         titleMap2.put("titleClassName", "基础业务");
         titleMap2.put("list", titleList2);
         map2.put("titleList", titleMap2);
-        Map<String, Object> nodeMap21 = new HashMap<>(10);
+        Map<String, Object> nodeMap21 = new HashMap<>(20);
         nodeMap21.put("classId", "2001");
         nodeMap21.put("className", "基础业务");
         nodeMap21.put("nodes", nodeList21);
-        Map<String, Object> nodeMap22 = new HashMap<>(5);
+        Map<String, Object> nodeMap22 = new HashMap<>(10);
         nodeMap22.put("classId", "2002");
         nodeMap22.put("className", "创新业务");
         nodeMap22.put("nodes", nodeList22);
@@ -171,7 +170,7 @@ public class HomepageTestController {
         List<Map<String, Object>> selectList = new ArrayList<>();
         for (int i = 0; i < a.length; i ++){
             String[] b = a[i].split(",");
-            Map<String, Object> map = new HashMap<>(5);
+            Map<String, Object> map = new HashMap<>(10);
             map.put("id", b[0]);
             map.put("name", b[1]);
             map.put("url", b[2]);
@@ -230,13 +229,13 @@ public class HomepageTestController {
                             Model model){
         Map<String, Object> resMap = new HashMap<>(5);
         List<Map<String, Object>> resList = new ArrayList<>();
-        Map<String, Object> map1 = new HashMap<>(10);
+        Map<String, Object> map1 = new HashMap<>(20);
 
         map1.put("markType", "1");
         map1.put("ord", "1");
         map1.put("id", "2001");
         map1.put("url", "http://ip:port/indexDetails/1001");
-        Map<String, Object> dataMap = new HashMap<>(5);
+        Map<String, Object> dataMap = new HashMap<>(20);
         dataMap.put("markName", "指标");
         dataMap.put("title ", "移动业务计费收入");
         dataMap.put("dayOrMonth", "日");
@@ -257,7 +256,7 @@ public class HomepageTestController {
         dataMap.put("chartType", "line");
         dataMap.put("unit", "万");
         List<Map<String, Object>> chartList = new ArrayList<>();
-        Map<String, Object> chartMap = new HashMap<>(10);
+        Map<String, Object> chartMap = new HashMap<>(20);
         List<Integer> chartDataList = new ArrayList<>();
         int num = 7;
         for (int i = 1; i <= num; i ++){
@@ -280,7 +279,7 @@ public class HomepageTestController {
         map2.put("ord", "2");
         map2.put("id", "3001");
         map2.put("url", "http://ip:port/indexDetails/2001");
-        Map<String, Object> dataMap2 = new HashMap<>(20);
+        Map<String, Object> dataMap2 = new HashMap<>(10);
         dataMap2.put("src", "u97.png");
         dataMap2.put("title", "4G用户专题");
         dataMap2.put("content", "包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要月指标展示");
@@ -294,7 +293,7 @@ public class HomepageTestController {
         map3.put("ord", "3");
         map3.put("id", "4001");
         map3.put("url", "http://ip:port/indexDetails/4001");
-        Map<String, Object> dataMap3 = new HashMap<>(20);
+        Map<String, Object> dataMap3 = new HashMap<>(15);
         dataMap3.put("title", "2G终端入网质态分析");
         dataMap3.put("type", "报告");
         dataMap3.put("tabName", "月");
@@ -329,12 +328,19 @@ public class HomepageTestController {
                               Model model){
         List<Map<String, Object>> resList = new ArrayList<>();
         Map<String, Object> resMap = new HashMap<>(20);
-        Map<String, Object> map1 = new HashMap<>(20);
-        map1.put("indexName", "移动业务计费收入");
-        map1.put("id", "2005");
-        map1.put("url", "http://ip:port/indexDetails/2005");
-        map1.put("markType", "02");
+        Map<String, Object> map1 = new HashMap<>(10);
+        map1.put("area", "全国");
+        map1.put("date", "2017年12月23日");
+        map1.put("dayOrMonth", "日报");
+        map1.put("id", "CKP_23323");
+        map1.put("isMinus", "0");
+        map1.put("isPercentage", "0");
+        map1.put("markName", "指标");
+        map1.put("markType", "1");
         map1.put("ord", "1");
+        map1.put("title", "移动业务计费收入");
+        map1.put("unit", "万元");
+        map1.put("url", "/indexDetails");
         List<String> dataName = new ArrayList<>();
         dataName.add("当日值");
         dataName.add("本月累计");
@@ -348,20 +354,19 @@ public class HomepageTestController {
         map1.put("dataName", dataName);
         map1.put("dataValue", dataValue);
         List<Map<String, Object>> chartDataList = new ArrayList<>();
-
-        Map<String, Object> chartDataMap1 = new HashMap<>(3);
+        Map<String, Object> chartDataMap1 = new HashMap<>(5);
         chartDataMap1.put("chartType", "line");
         chartDataMap1.put("unit", "万");
 
         List<Map<String, Object>> chartList = new ArrayList<>();
-        Map<String, Object> chartMap = new HashMap<>(10);
+        Map<String, Object> chartMap = new HashMap<>(15);
         List<Integer> dataList = new ArrayList<>();
         int num = 8;
         for (int i = 1; i < num; i ++){
             dataList.add(i);
         }
         chartMap.put("data", dataList);
-        String[] a = {"4月30日","5月1日","5月2日","5月3日","5月4日","5月5日","5月6日"};
+        String[] a = {"20171217", "20171218", "20171219", "20171220", "20171221", "20171222", "20171223"};
         List<String> chartXList = new ArrayList<>();
         for (String b : a){
             chartXList.add(b);
@@ -371,31 +376,41 @@ public class HomepageTestController {
         chartDataMap1.put("chart", chartList);
         chartDataList.add(chartDataMap1);
 
-        Map<String, Object> chartDataMap2 = new HashMap<>(5);
+        Map<String, Object> chartDataMap2 = new HashMap<>(15);
         chartDataMap2.put("chartType", "monthBar");
         chartDataMap2.put("unit", "万");
         List<Map<String, Object>> chartList2 = new ArrayList<>();
-        Map<String, Object> chartMap2 = new HashMap<>(5);
+        Map<String, Object> chartMap2 = new HashMap<>(15);
 
-        List<Integer> sequentialDataList = new ArrayList<>();
-        int numS = 13;
-        for (int i = 1; i < numS; i ++){
-            sequentialDataList.add(i);
+        List<String> yoyData = new ArrayList<>();
+        String[] bb = {"-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"};
+        for (String b : bb){
+            yoyData.add(b);
         }
-        chartMap2.put("sequentialData", sequentialDataList);
-        chartMap2.put("totalData", sequentialDataList);
+        chartMap2.put("yoyData", yoyData);
         List<String> chartXList1 = new ArrayList<>();
-        String[] a2 = {"6月","7月","8月","9月","10月","11月","12月","1月","2月","3月","4月","5月","6月"};
+        String[] a2 = {"201701", "201702", "201703", "201704", "201705", "201706", "201707", "201708", "201709", "201710","201711","201712"};
         for (String b : a2){
             chartXList1.add(b);
         }
         chartMap2.put("chartX", chartXList1);
-
+        List<String> example = new ArrayList<>();
+        example.add("本月累计");
+        example.add("累计环比");
+        example.add("累计同比");
+        chartMap2.put("example", example);
+        List<Integer> sequentialDataList = new ArrayList<>();
+        int numFor = 13;
+        for (int i = 1; i < numFor; i ++){
+            sequentialDataList.add(i);
+        }
+        chartMap2.put("sequentialData", sequentialDataList);
+        chartMap2.put("totalData", sequentialDataList);
         chartList2.add(chartMap2);
         chartDataMap2.put("chart", chartList2);
         chartDataList.add(chartDataMap2);
 
-        Map<String, Object> chartDataMap3 = new HashMap<>(10);
+        Map<String, Object> chartDataMap3 = new HashMap<>(15);
         chartDataMap3.put("chartType", "cityBar");
         chartDataMap3.put("unit", "万");
         List<Map<String, Object>> chartList3 = new ArrayList<>();
@@ -403,12 +418,13 @@ public class HomepageTestController {
         chartMap3.put("sequentialData", sequentialDataList);
         chartMap3.put("totalData", sequentialDataList);
         chartMap3.put("chartX", chartXList1);
+        chartMap3.put("example", example);
         chartList3.add(chartMap3);
         chartDataMap3.put("chart", chartList3);
         chartDataList.add(chartDataMap3);
 
-        Map<String, Object> chartDataMap4 = new HashMap<>(5);
-        chartDataMap4.put("chartType", "pie");
+        Map<String, Object> chartDataMap4 = new HashMap<>(10);
+        chartDataMap4.put("chartType", "product");
         chartDataMap4.put("unit", "万");
 
         List<Map<String, Object>> dataList1 = new ArrayList<>();
@@ -424,11 +440,11 @@ public class HomepageTestController {
         chartDataMap4.put("chart", dataList1);
         chartDataList.add(chartDataMap4);
 
-        Map<String, Object> chartDataMap5 = new HashMap<>(5);
+        Map<String, Object> chartDataMap5 = new HashMap<>(15);
         chartDataMap5.put("chartType", "cityRank");
         chartDataMap5.put("unit", "万");
         List<Map<String, Object>> chartList5 = new ArrayList<>();
-        Map<String, Object> chartMap5 = new HashMap<>(5);
+        Map<String, Object> chartMap5 = new HashMap<>(15);
         List<String> tableTitleList = new ArrayList<>();
         String[] a4 = {"排名","城市","月累","环比"};
         for (String b : a4){
@@ -453,17 +469,50 @@ public class HomepageTestController {
         chartDataMap5.put("chart", chartList5);
         chartDataList.add(chartDataMap5);
         map1.put("chartData", chartDataList);
+        List<Map<String, Object>> selectTypeDisplayList = new ArrayList<>();
+        Map<String, Object> selectTypeDisplayMap1 = new HashMap<>(10);
+        selectTypeDisplayMap1.put("1", "电子渠道&社会渠道");
+        selectTypeDisplayMap1.put("2", "");
+        selectTypeDisplayList.add(selectTypeDisplayMap1);
+        map1.put("selectTypeDisplay", selectTypeDisplayList);
+        List<Map<String, Object>> deleteDisplayList = new ArrayList<>();
+        Map<String, Object> deleteDisplayMap = new HashMap<>(10);
+        deleteDisplayMap.put("3", "4G业务&3G业务&2G业务");
+        deleteDisplayList.add(deleteDisplayMap);
+        map1.put("deleteDisplay", deleteDisplayList);
+        List<Map<String, Object>> dimensionList = new ArrayList<>();
+        Map<String, Object> dimensionMap = new HashMap<>(10);
+        List<Map<String, Object>> selectTypeList = new ArrayList<>();
+        Map<String, Object> selectTypeMap1 = new HashMap<>(10);
+        selectTypeMap1.put("1", new ArrayList<>());
+        Map<String, Object> selectTypeMap2 = new HashMap<>(10);
+        selectTypeMap2.put("2", new ArrayList<>());
+        Map<String, Object> selectTypeMap3 = new HashMap<>(10);
+        selectTypeMap3.put("3", new ArrayList<>());
+        selectTypeList.add(selectTypeMap1);
+        selectTypeList.add(selectTypeMap2);
+        selectTypeList.add(selectTypeMap3);
+        dimensionMap.put("selectType", selectTypeList);
+        dimensionMap.put("date", "2017-09");
+        dimensionMap.put("cityId", "-1");
+        dimensionMap.put("provId", "018");
+        dimensionList.add(dimensionMap);
+        map1.put("dimension", dimensionList);
 
-        Map<String, Object> map2 = new HashMap<>(15);
-        map2.put("indexName", "移动业务计费收入");
-        map2.put("id", "2006");
-        map2.put("url", "http://ip:port/indexDetails/2006");
-        map2.put("markType", "02");
-        map2.put("ord", "2");
-        map2.put("markName", "指标");
-        map2.put("dayOrMonth", "日");
+        Map<String, Object> map2 = new HashMap<>(20);
         map2.put("area", "全国");
-        map2.put("date", "2017年5月10日");
+        map2.put("chartType", "cityRank");
+        map2.put("date", "2017年5月");
+        map2.put("dayOrMonth", "月报");
+        map2.put("id", "M_CKP_01");
+        map2.put("isMinus", "0");
+        map2.put("isPercentage", "0");
+        map2.put("markName", "指标");
+        map2.put("markType", "1");
+        map2.put("ord", "2");
+        map2.put("title", "主营业务收入");
+        map2.put("unit", "万元");
+        map2.put("url", "/indexDetails");
         String[] a6 = {"当日值","本月累计","同比","环比"};
         List<String> dataNameList = new ArrayList<>();
         for (String b : a6){
@@ -476,35 +525,31 @@ public class HomepageTestController {
             dataValueList.add(b);
         }
         map2.put("dataValue", dataValueList);
-        map2.put("chartType", "line");
-        map2.put("unit", "万");
-        List<Map<String, Object>> chartList555 = new ArrayList<>();
-        Map<String, Object> chartMap555 = new HashMap<>(5);
-        chartMap555.put("data", dataList);
-        chartMap555.put("chartX", chartXList);
-        chartList555.add(chartMap555);
-        map2.put("chart", chartList555);
+        map2.put("chart", chartList5);
+        map2.put("selectTypeDisplay", selectTypeDisplayList);
+        map2.put("deleteDisplay", deleteDisplayList);
+        map2.put("dimension", dimensionList);
 
         Map<String, Object> map3 = new HashMap<>(15);
-        map3.put("indexName", "4g业务计费收入");
-        map3.put("id", "2007");
-        map3.put("url", "http://ip:port/indexDetails/2007");
-        map3.put("markType", "02");
-        map3.put("ord", "3");
-        map3.put("markName", "指标");
-        map3.put("dayOrMonth", "月");
         map3.put("area", "全国");
-        map3.put("date", "2017年5月");
+        map3.put("chartType", "line");
+        map3.put("date", "2017年5月12日");
+        map3.put("dayOrMonth", "日报");
+        map3.put("id", "CKP_23333");
+        map3.put("isMinus", "0");
+        map3.put("isPercentage", "0");
+        map3.put("markName", "指标");
+        map3.put("markType", "1");
+        map3.put("ord", "3");
+        map3.put("title", "4g业务计费收入");
+        map3.put("unit", "万元");
+        map3.put("url", "/indexDetails");
         map3.put("dataName", dataNameList);
         map3.put("dataValue", dataValueList);
-        map3.put("chartType", "line");
-        List<Map<String, Object>> chartList666 = new ArrayList<>();
-        Map<String, Object> chartMap666 = new HashMap<>(5);
-        map3.put("unit", "千万");
-        chartMap666.put("data", dataList);
-        chartMap666.put("chartX", chartXList);
-        chartList666.add(chartMap666);
-        map3.put("chart", chartList666);
+        map3.put("chart", chartList);
+        map3.put("selectTypeDisplay", selectTypeDisplayList);
+        map3.put("deleteDisplay", deleteDisplayList);
+        map3.put("dimension", dimensionList);
 
         resList.add(map1);
         resList.add(map2);
@@ -513,6 +558,33 @@ public class HomepageTestController {
         resMap.put("nextFlag", "0");
         resMap.put("data", resList);
 
+        List<Map<String, Object>> keywordList = new ArrayList<>();
+        Map<String, Object> keywordMap = new HashMap<>(10);
+        keywordMap.put("flag", "true");
+        List<Map<String, Object>> keyDataList = new ArrayList<>();
+        Map<String, Object> keyDataMap = new HashMap<>(10);
+        keyDataMap.put("kpiName", "移动业务计费收入");
+        keyDataMap.put("date", "2017年10月25日");
+        keyDataMap.put("prov", "山西");
+        keyDataMap.put("city", "");
+        keyDataMap.put("1", "实体渠道&电子渠道");
+        keyDataMap.put("2", "存费送机");
+        keyDataMap.put("3", "3G业务&4G业务");
+        keyDataList.add(keyDataMap);
+        keywordMap.put("keyData", keyDataMap);
+        List<Map<String, Object>> recommendDataList = new ArrayList<>();
+        Map<String, Object> recommendDataMap = new HashMap<>(10);
+        recommendDataMap.put("kpiName", "移动业务计费收入");
+        recommendDataMap.put("date", "2017年10月25日");
+        recommendDataMap.put("prov", "山西");
+        recommendDataMap.put("city", "");
+        recommendDataMap.put("1", "实体渠道&电子渠道");
+        recommendDataMap.put("2", "存费送机");
+        recommendDataMap.put("3", "3G业务&4G业务");
+        recommendDataList.add(recommendDataMap);
+        keywordMap.put("recommendData", recommendDataMap);
+        keywordList.add(keywordMap);
+        resMap.put("keyword", keywordList);
         //return resList;
         System.out.println(resMap);
         model.addAttribute("resMap", resMap);
@@ -539,7 +611,7 @@ public class HomepageTestController {
                       "u9778.png|重点产品攻坚行动日报表|5|3005|http://ip:port/specialReport/3005|包括全国整体业务发展状况、用户获取、用户迁转、流量价值释放业务的发展情况及宽带业务运营的主要日指标展示。|专题|全部"};
         for (int i = 0; i < a.length; i ++){
             String[] s = a[i].split("\\|");
-            Map<String, Object> map = new HashMap<>(10);
+            Map<String, Object> map = new HashMap<>(15);
             map.put("src", s[0]);
             map.put("title", s[1]);
             map.put("ord", s[2]);
@@ -575,14 +647,13 @@ public class HomepageTestController {
                       "渠道成本效益分析|2|4002|http://ip:port/Report/4002|报告|月|李四|2017年5月10日",
                       "移动用户离网分析|3|4003|http://ip:port/Report/4003|报告|月|王五|2017年5月10日",
                       "融合业务发展因素分析|4|4004|http://ip:port/Report/4004|报告|月|赵六|2017年5月10日"};
-
         String paramStr = "R_004";
         RestTemplate restTemplateTmp = new RestTemplate();
         List<Map<String, Object>> data = restTemplateTmp.postForObject("http://10.249.216.52:8033/pptReportForHomepage/info", paramStr, List.class);
         List<String> imgList = (List<String>) data.get(0).get("img");
         for (String b : a){
             String[] s = b.split("\\|");
-            Map<String, Object> map = new HashMap<>(10);
+            Map<String, Object> map = new HashMap<>(15);
             map.put("title", s[0]);
             map.put("ord", s[1]);
             map.put("id", s[2]);
