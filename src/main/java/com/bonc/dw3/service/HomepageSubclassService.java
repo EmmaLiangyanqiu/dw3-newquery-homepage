@@ -126,7 +126,7 @@ public class HomepageSubclassService {
      * @param dataFutures Future对象集合
      * @return 详细数据集
      */
-    public List<Map<String,Object>> getAllDataFromFutures(List<Future> dataFutures) throws ExecutionException, InterruptedException {
+    public List<Map<String,Object>> getAllDataFromFutures(List<Future> dataFutures) throws ExecutionException, InterruptedException,Exception {
         List<Map<String, Object>> data = new ArrayList<>();
         for (int i = 0; i < dataFutures.size(); i ++){
             log.info("!!!!!!!!!!!!!!!!!!!!,{}",i);
