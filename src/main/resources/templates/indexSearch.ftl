@@ -11,7 +11,7 @@
         {
             <#list keywordMap?keys as key>
             <#if key = "flag">
-            "${key}":"${keywordMap[key]}"
+            "${key}":${keywordMap[key]}
             </#if>
             <#if key = "keyData" || key = "recommendData">
             "${key}":{
