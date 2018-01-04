@@ -44,6 +44,7 @@ public class MyCallable implements Callable{
     @Override
     public Object call() throws Exception {
         long start = System.currentTimeMillis();
+        log.info("!!!!!!!!!!!查询参数为：" + paramStr);
         this.result = restTemplate.postForObject(url, paramStr, Object.class);
         log.info( "\r\n" + "查询参数为：" + paramStr + "\r\n"
                 + "返回结果为：" + this.result + "\r\n"

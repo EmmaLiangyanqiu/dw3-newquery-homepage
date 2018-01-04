@@ -237,10 +237,13 @@ public class HomepageService {
         try {
             data = subclassService.getAllDataFromFutures(dataFutures);
         } catch (ExecutionException e) {
+            log.info("1111111111111111111111111");
             e.printStackTrace();
         } catch (InterruptedException e) {
+            log.info("22222222222222222222222");
             e.printStackTrace();
         }catch (Exception e){
+            log.info("3333333333333333333333333333333");
             e.printStackTrace();
         }
         log.info("获取全部数据耗时：" + (System.currentTimeMillis() - getDataStart) + "ms");
