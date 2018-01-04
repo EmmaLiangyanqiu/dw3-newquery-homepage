@@ -4,6 +4,28 @@
     <#if key = "nextFlag">
     "${key}":"${resMap[key]}"
     </#if>
+    <#if key = "keyword">
+    "${key}":[
+        <#assign keywordList = resMap[key]>
+        <#list keywordList as keywordMap>
+        {
+            <#list keywordMap?keys as key>
+                <#if key = "flag">
+                "${key}":"${keywordMap[key]}"
+                </#if>
+                <#if key = "keyData" || key = "recommendData">
+                "${key}":{
+                    <#assign keydataMap = keywordMap[key]>
+                    <#list keydataMap?keys as key>
+                    "${key}":"${keydataMap[key]}"<#if key_has_next>,</#if>
+                    </#list>
+                }
+                </#if><#if key_has_next>,</#if>
+            </#list>
+        }<#if keywordMap_has_next>,</#if>
+        </#list>
+    ]
+    </#if>
     <#if key = "data">
     "${key}":[
         <#assign dataList = resMap[key]>
@@ -21,9 +43,55 @@
                 <#list allDataMap?keys as key>
                 <#assign chartTypeStr = "chartType">
                 <#assign chartType = allDataMap[chartTypeStr]!''>
-                <#if key != "dataName" && key != "dataValue" && key != "chart">
+                <#if key != "dataName" && key != "dataValue" && key != "chart" && key != "dimension" && key != "selectTypeDisplay" && key != "deleteDisplay">
                 "${key}":"${allDataMap[key]!''}"
                 </#if>
+
+                    <#if key = "selectTypeDisplay" || key = "deleteDisplay">
+                    "${key}":[
+                        <#assign displayList = allDataMap[key]>
+                        <#list displayList as displayMap>
+                        {
+                            <#list displayMap?keys as key>
+                            "${key}":"${displayMap[key]}"
+                            </#list>
+                        }<#if displayMap_has_next>,</#if>
+                        </#list>
+                    ]
+                    </#if>
+                    <#if key = "dimension">
+                    "${key}":[
+                        <#assign dimensionList = allDataMap[key]>
+                        <#list dimensionList as dimensionMap>
+                        {
+                            <#list dimensionMap?keys as key>
+                                <#if key != "selectType">
+                                "${key}":"${dimensionMap[key]}"
+                                </#if>
+                                <#if key = "selectType">
+                                "${key}":[
+                                    <#assign selectTypeList = dimensionMap[key]>
+                                    <#list selectTypeList as selectTypeMap>
+                                    {
+                                        <#list selectTypeMap?keys as key>
+                                        "${key}":[
+                                            <#assign selectList = selectTypeMap[key]>
+                                            <#list selectList as selects>
+                                            "${selects}"<#if selects_has_next>,</#if>
+                                            </#list>
+                                        ]
+                                        </#list>
+                                    }<#if selectTypeMap_has_next>,</#if>
+                                    </#list>
+                                ]
+                                </#if>
+                                <#if key_has_next>,</#if>
+                            </#list>
+                        }
+                        </#list>
+                    ]
+                    </#if>
+
                 <#if key = "dataName" || key = "dataValue">
                 "${key}":[
                     <#assign allList = allDataMap[key]>
@@ -160,6 +228,7 @@
 </#list>
 <#else>
     "nextFlag":"",
+    "keyword":[],
     "data":[]
 </#if>
 }

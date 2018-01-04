@@ -163,9 +163,7 @@ public class HomepageService {
         Map<String, Object> keywordsMap = (Map<String, Object>) esMap.get("keyword");
         List<Map<String, Object>> keywordsList = new ArrayList<>();
         keywordsList.add(keywordsMap);
-        log.info("@@@@@@@@@@@@@@@:{}",keywordsList);
         resMap.put("keyword", keywordsList);
-        log.info("!!!!!!!!!!!!:{}",resMap);
         //3.判断是否还有下一页数据
         //es查询到的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());

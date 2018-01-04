@@ -4,6 +4,28 @@
         <#if key = "nextFlag">
         "${key}":"${resMap[key]}"
         </#if>
+        <#if key = "keyword">
+        "${key}":[
+        <#assign keywordList = resMap[key]>
+        <#list keywordList as keywordMap>
+        {
+            <#list keywordMap?keys as key>
+            <#if key = "flag">
+            "${key}":"${keywordMap[key]}"
+            </#if>
+            <#if key = "keyData" || key = "recommendData">
+            "${key}":{
+                <#assign keydataMap = keywordMap[key]>
+                <#list keydataMap?keys as key>
+                    "${key}":"${keydataMap[key]}"<#if key_has_next>,</#if>
+                </#list>
+            }
+            </#if><#if key_has_next>,</#if>
+            </#list>
+        }<#if keywordMap_has_next>,</#if>
+        </#list>
+        ]
+        </#if>
         <#if key = "data">
         "${key}":[
             <#assign dataList = resMap[key]>
@@ -13,8 +35,52 @@
                 <#if ord = "1">
                 {
                     <#list dataMap?keys as key>
-                        <#if key != "chartData" && key != "dataName" && key != "dataValue">
+                        <#if key != "chartData" && key != "dataName" && key != "dataValue" && key != "selectTypeDisplay" && key != "dimension" && key!="deleteDisplay">
                         "${key}":"${dataMap[key]!''}"
+                        </#if>
+                        <#if key = "selectTypeDisplay" || key = "deleteDisplay">
+                        "${key}":[
+                            <#assign displayList = dataMap[key]>
+                            <#list displayList as displayMap>
+                            {
+                            <#list displayMap?keys as key>
+                            "${key}":"${displayMap[key]}"<#if key_has_next>,</#if>
+                            </#list>
+                            }<#if displayMap_has_next>,</#if>
+                            </#list>
+                        ]
+                        </#if>
+                        <#if key = "dimension">
+                        "${key}":[
+                        <#assign dimensionList = dataMap[key]>
+                        <#list dimensionList as dimensionMap>
+                            {
+                            <#list dimensionMap?keys as key>
+                            <#if key != "selectType">
+                            "${key}":"${dimensionMap[key]}"
+                            </#if>
+                            <#if key = "selectType">
+                            "${key}":[
+                            <#assign selectTypeList = dimensionMap[key]>
+                            <#list selectTypeList as selectTypeMap>
+                            {
+                            <#list selectTypeMap?keys as key>
+                            "${key}":[
+                            <#assign selectList = selectTypeMap[key]>
+                            <#list selectList as selects>
+                            "${selects}"<#if selects_has_next>,</#if>
+                            </#list>
+                            ]
+                            </#list>
+                            }<#if selectTypeMap_has_next>,</#if>
+                            </#list>
+                            ]
+                            </#if>
+                            <#if key_has_next>,</#if>
+                            </#list>
+                        }
+                        </#list>
+                        ]
                         </#if>
                         <#if key = "dataName" || key = "dataValue">
                         "${key}":[
@@ -125,8 +191,52 @@
                     <#list dataMap?keys as key>
                         <#assign chartStr21 = "chartType">
                         <#assign chartType21 = dataMap[chartStr21]!''>
-                        <#if key != "chart" && key != "dataValue" && key != "dataName">
+                        <#if key != "chart" && key != "dataValue" && key != "dataName" && key != "selectTypeDisplay" && key != "dimension" && key != "deleteDisplay">
                         "${key}":"${dataMap[key]!''}"
+                        </#if>
+                        <#if key = "selectTypeDisplay" || key = "deleteDisplay">
+                        "${key}":[
+                            <#assign displayList = dataMap[key]>
+                            <#list displayList as displayMap>
+                            {
+                                <#list displayMap?keys as key>
+                                "${key}":"${displayMap[key]}"<#if key_has_next>,</#if>
+                                </#list>
+                            }<#if displayMap_has_next>,</#if>
+                            </#list>
+                        ]
+                        </#if>
+                        <#if key = "dimension">
+                        "${key}":[
+                            <#assign dimensionList = dataMap[key]>
+                            <#list dimensionList as dimensionMap>
+                            {
+                                <#list dimensionMap?keys as key>
+                                    <#if key != "selectType">
+                                    "${key}":"${dimensionMap[key]}"
+                                    </#if>
+                                    <#if key = "selectType">
+                                    "${key}":[
+                                        <#assign selectTypeList = dimensionMap[key]>
+                                        <#list selectTypeList as selectTypeMap>
+                                        {
+                                            <#list selectTypeMap?keys as key>
+                                            "${key}":[
+                                                <#assign selectList = selectTypeMap[key]>
+                                                <#list selectList as selects>
+                                                "${selects}"<#if selects_has_next>,</#if>
+                                                </#list>
+                                            ]
+                                            </#list>
+                                        }<#if selectTypeMap_has_next>,</#if>
+                                        </#list>
+                                    ]
+                                    </#if>
+                                    <#if key_has_next>,</#if>
+                                </#list>
+                            }
+                            </#list>
+                        ]
                         </#if>
                         <#if key = "dataName" || key = "dataValue">
                         "${key}":[
@@ -223,6 +333,7 @@
     </#list>
 <#else>
 "nextFlag":"",
+"keyword":[],
 "data":[]
 </#if>
 }
