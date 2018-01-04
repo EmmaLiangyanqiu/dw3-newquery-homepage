@@ -108,6 +108,7 @@ public class HomepageService {
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
         Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(0).get("dimension");
+        log.info("!!!!!!!!!!!!!!dimensionMap:,{}",dimensionMap);
         String provId = dimensionMap.get("provId").toString();
         String areaStr = dimensionMap.get("cityId").toString();
         log.info("该用户的省份权限为：" + provId);
