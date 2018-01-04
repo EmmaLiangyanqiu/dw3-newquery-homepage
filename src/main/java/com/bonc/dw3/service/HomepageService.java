@@ -107,8 +107,9 @@ public class HomepageService {
 
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        String provId = esList.get(0).get("provId").toString();
-        String areaStr = esList.get(0).get("cityId").toString();
+        Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(0).get("dimension");
+        String provId = dimensionMap.get("provId").toString();
+        String areaStr = dimensionMap.get("cityId").toString();
         log.info("该用户的省份权限为：" + provId);
 
         //4.创建线程池
@@ -194,8 +195,7 @@ public class HomepageService {
             //跳转的url
             url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
             //遍历基础数据
-//            for (int i = 0; i < esList.size(); i++) {
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
