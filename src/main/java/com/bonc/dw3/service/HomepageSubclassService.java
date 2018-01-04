@@ -42,6 +42,7 @@ public class HomepageSubclassService {
 
     /**
      * 向es搜索引擎发请求
+     *
      * @param paramStr "userId,searchType,search,tabId,startNum,num"即"用户Id,搜索类型,搜索内容,日月标识,起始条数,记录条数"
      */
     public Map<String, Object> requestToES(String paramStr) {
@@ -59,6 +60,7 @@ public class HomepageSubclassService {
 
     /**
      * 判断是否还有下一页
+     *
      * @param esCount es返回结果的条数
      * @param count   前端已经显示的数据条数
      */
@@ -75,20 +77,21 @@ public class HomepageSubclassService {
 
     /**
      * 过滤无效数据
+     *
      * @param dataList 需要过滤的数据
      * @return 过滤后的数据
      */
-    public List<Map<String,Object>> filterAllData(List<Map<String, Object>> dataList) {
+    public List<Map<String, Object>> filterAllData(List<Map<String, Object>> dataList) {
         List<Map<String, Object>> dataListFinally = new ArrayList<>();
-        if ((dataList.size()) != 0 && (dataList != null)){
+        if ((dataList.size()) != 0 && (dataList != null)) {
             for (int j = 0; j < dataList.size(); j++) {
                 if (!dataList.get(j).containsKey("id")) {
                     log.info(dataList.get(j) + "----数据没有返回id，舍弃！！！");
                 } else {
                     String id = (String) dataList.get(j).get("id");
-                    if (StringUtils.isBlank(id)){
+                    if (StringUtils.isBlank(id)) {
                         log.info(dataList.get(j) + "----数据返回无效的id，舍弃！！！");
-                    }else{
+                    } else {
                         dataListFinally.add(dataList.get(j));
                     }
                 }
@@ -99,21 +102,22 @@ public class HomepageSubclassService {
 
     /**
      * 过滤无效数据
+     *
      * @param chartData 需要过滤的数据
      * @return 过滤后的数据
      */
-    public Map<String,Object> filterAllData(Map<String, Object> chartData) {
+    public Map<String, Object> filterAllData(Map<String, Object> chartData) {
         Map<String, Object> dataMapFinally = new HashMap<>(10);
         String idStr = "id";
         if ((chartData != null) && (!chartData.containsKey(idStr))) {
             log.info(chartData + "------chartData没有返回id，舍弃！！！");
             dataMapFinally = null;
-        }else if ((chartData != null) && (chartData.containsKey(idStr))){
+        } else if ((chartData != null) && (chartData.containsKey(idStr))) {
             String id = (String) chartData.get("id");
-            if (StringUtils.isBlank(id)){
+            if (StringUtils.isBlank(id)) {
                 log.info(chartData + "------chartData返回无效的id，舍弃！！！");
                 dataMapFinally = null;
-            }else{
+            } else {
                 dataMapFinally = chartData;
             }
         }
@@ -126,19 +130,12 @@ public class HomepageSubclassService {
      * @param dataFutures Future对象集合
      * @return 详细数据集
      */
-    public List<Map<String,Object>> getAllDataFromFutures(List<Future> dataFutures) throws ExecutionException, InterruptedException  {
+    public List<Map<String, Object>> getAllDataFromFutures(List<Future> dataFutures) throws ExecutionException, InterruptedException {
         List<Map<String, Object>> data = new ArrayList<>();
-        for (int i = 0; i < dataFutures.size(); i ++){
-            log.info("!!!!!!!!!!!!!!!!!!!!,{}",i);
+        for (int i = 0; i < dataFutures.size(); i++) {
             Map<String, Object> map = null;
-            try {
-                map = (Map<String, Object>) dataFutures.get(i).get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            log.info("详细数据为：{}",map);
+            map = (Map<String, Object>) dataFutures.get(i).get();
+            log.info("详细数据为：{}", map);
             data.add(map);
         }
         return data;
@@ -146,12 +143,13 @@ public class HomepageSubclassService {
 
     /**
      * 根据报表id集合获取报表的详细数据
+     *
      * @param statementList 报表id集合
      * @return 报表的详细数据
      */
-    public List<Map<String,Object>> getStatementData(List<String> statementList) {
+    public List<Map<String, Object>> getStatementData(List<String> statementList) {
         List<Map<String, Object>> statementDataList = new ArrayList<>();
-        if (statementList.size() != 0){
+        if (statementList.size() != 0) {
             //查询数据
             statementDataList = homepageMapper.selectStatementData(statementList);
         }
@@ -160,9 +158,10 @@ public class HomepageSubclassService {
 
     /**
      * 综合搜索接口：组合esList和所有服务的返回结果
-     * @param esList es查询结果
+     *
+     * @param esList   es查询结果
      * @param dataList 详细数据
-     * @param areaStr 地域名称
+     * @param areaStr  地域名称
      */
     public List<Map<String, Object>> combineAllTypeData(List<Map<String, Object>> esList,
                                                         List<Map<String, Object>> dataList,
@@ -254,7 +253,7 @@ public class HomepageSubclassService {
                             resList.add(map);
                         }
                     }
-                } else if ("4".equals(typeId)){
+                } else if ("4".equals(typeId)) {
                     //报表数据处理
                     for (Map<String, Object> map2 : dataList) {
                         String id2 = map2.get("id").toString();
@@ -272,9 +271,9 @@ public class HomepageSubclassService {
                             dataMap.put("issue", map2.get("issue"));
 
                             //判断发布时间字段是否为null
-                            if (map2.get("issueTime") == null){
+                            if (map2.get("issueTime") == null) {
                                 dataMap.put("issueTime", "未知");
-                            }else{
+                            } else {
                                 //-类型日期转换为年月日类型日期
                                 String issueTimeStr = toChineseDateString(map2.get("issueTime").toString());
                                 dataMap.put("issueTime", issueTimeStr);
@@ -296,18 +295,19 @@ public class HomepageSubclassService {
 
     /**
      * 指标搜索接口：组合es和指标服务返回的详细数据
+     *
      * @param esList
      * @param chartDataFinally
      * @param dataList
      * @param areaStr
      * @return
      */
-    public List<Map<String,Object>> combineKpiData(List<Map<String, Object>> esList,
-                                                   Map<String, Object> chartDataFinally,
-                                                   List<Map<String, Object>> dataList,
-                                                   String url,
-                                                   String areaStr,
-                                                   int numStartValue) {
+    public List<Map<String, Object>> combineKpiData(List<Map<String, Object>> esList,
+                                                    Map<String, Object> chartDataFinally,
+                                                    List<Map<String, Object>> dataList,
+                                                    String url,
+                                                    String areaStr,
+                                                    int numStartValue) {
         List<Map<String, Object>> resList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("没有需要查询的指标id！！！");
@@ -480,11 +480,12 @@ public class HomepageSubclassService {
 
     /**
      * 报表搜索接口：组合报表数据
+     *
      * @param esList es数据
-     * @param data 详细数据
+     * @param data   详细数据
      * @return
      */
-    public List<Map<String,Object>> combineStatementData(List<Map<String, Object>> esList, List<Map<String, Object>> data) {
+    public List<Map<String, Object>> combineStatementData(List<Map<String, Object>> esList, List<Map<String, Object>> data) {
         List<Map<String, Object>> dataList = new ArrayList<>();
         if (esList.size() == 0) {
             log.info("es没有返回报表数据！");
@@ -555,6 +556,7 @@ public class HomepageSubclassService {
 
     /**
      * 将-类的日期转换为年月日类型的账期
+     *
      * @param date 2017-11或2017-11-12
      * @return 如：2017年11月12日
      */
@@ -562,9 +564,9 @@ public class HomepageSubclassService {
         String chartDataDate = date.replace("-", "");
         String dateStr = "";
         int dayLength = 6;
-        if (chartDataDate.length() == dayLength){
+        if (chartDataDate.length() == dayLength) {
             dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4) + "月";
-        }else{
+        } else {
             dateStr = chartDataDate.substring(0, 4) + "年" + chartDataDate.substring(4, 6) + "月" + chartDataDate.substring(6) + "日";
         }
         return dateStr;

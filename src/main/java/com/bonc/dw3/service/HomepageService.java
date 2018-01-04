@@ -163,7 +163,10 @@ public class HomepageService {
         Map<String, Object> keywordsMap = (Map<String, Object>) esMap.get("keyword");
         List<Map<String, Object>> keywordsList = new ArrayList<>();
         keywordsList.add(keywordsMap);
+        log.info("###########",keywordsMap);
+        log.info("@@@@@@@@@@@@@@@:{}",keywordsList);
         resMap.put("keyword", keywordsList);
+        log.info("!!!!!!!!!!!!:{}",resMap);
         //3.判断是否还有下一页数据
         //es查询到的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
@@ -194,7 +197,7 @@ public class HomepageService {
             //跳转的url
             url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
             //遍历基础数据
-            for (int i = 0; i < esList.size(); i++) {
+            for (int i = 1000; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
