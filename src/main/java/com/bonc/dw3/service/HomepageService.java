@@ -192,19 +192,19 @@ public class HomepageService {
                     //拼接所有图表数据接口的请求参数
                     String chartParam = area + "," + date + "," + id + "," + firstDayOrMonth + "," + userId;
                     //请求图表数据
-                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/allChartOfTheKpi", chartParam);
+                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/allChartOfTheKpi", chartParam);
                     Future chartFuture = threadPool.submit(chartCallable);
                     chartFutures.add(chartFuture);
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
-                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
                 } else {
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
-                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", dataParam);
+                    MyCallable dataCallable = new MyCallable(restTemplate, "DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
                 }

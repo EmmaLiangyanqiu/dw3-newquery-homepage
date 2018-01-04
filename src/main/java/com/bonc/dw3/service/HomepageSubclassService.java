@@ -53,7 +53,7 @@ public class HomepageSubclassService {
         headers.setContentType(mediaType);
         HttpEntity<String> requestEntity = new HttpEntity<String>(paramStr, headers);
         //es支持维度搜索
-        resMap = restTemplateTmp.postForObject("http://10.249.216.116:8998/es/explore", requestEntity, Map.class);
+        resMap = restTemplateTmp.postForObject("http://10.249.216.117:8998/es/explore", requestEntity, Map.class);
         return resMap;
     }
 
