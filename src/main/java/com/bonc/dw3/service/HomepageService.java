@@ -85,6 +85,11 @@ public class HomepageService {
         Map<String, Object> esMap = subclassService.requestToES(searchStr);
         log.info("\r\n" + "查询es的参数：" + searchStr + "\r\n" + "查询es的结果：" + esMap);
 
+        //es返回的keyword
+        Map<String, Object> keywordsMap = (Map<String, Object>) esMap.get("keyword");
+        List<Map<String, Object>> keywordsList = new ArrayList<>();
+        keywordsList.add(keywordsMap);
+        resMap.put("keyword", keywordsList);
         //2.判断是否还有下一页
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
@@ -95,12 +100,17 @@ public class HomepageService {
         resMap.put("nextFlag", nextFlag);
 
         //--------------------------------->这里后期不再需要，由es返回用户的权限省份信息，带到每一条详细数据上//获取用户的省份权限，查询详细数据时就只能查询该省份
-        String provId = userInfoMapper.queryProvByUserId(userId);
-        String areaStr = homepageMapper.getProvNameViaProvId(provId);
-        log.info("该用户的省份权限为：" + provId);
+        //暂且注释，es稳定测试后可删除
+//        String provId = userInfoMapper.queryProvByUserId(userId);
+//        String areaStr = homepageMapper.getProvNameViaProvId(provId);
+//        log.info("该用户的省份权限为：" + provId);
 
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
+        String provId =esList.get(0).get("provId").toString();
+        String areaStr =esList.get(0).get("cityId").toString();
+        log.info("该用户的省份权限为：" + provId);
+
         //4.创建线程池
         ExecutorService pool = Executors.newFixedThreadPool(12);
         long start = System.currentTimeMillis();
@@ -149,7 +159,12 @@ public class HomepageService {
         Map<String, Object> esMap = subclassService.requestToES(paramStr);
         log.info("\r\n" + "查询es的参数：" + paramStr + "\r\n" + "查询es的结果：" + esMap + "\r\n" + "查询es耗时：" + (System.currentTimeMillis() - esStart) + "ms");
 
-        //2.判断是否还有下一页数据
+        //2.es返回的关键词
+        Map<String, Object> keywordsMap = (Map<String, Object>) esMap.get("keyword");
+        List<Map<String, Object>> keywordsList = new ArrayList<>();
+        keywordsList.add(keywordsMap);
+        resMap.put("keyword", keywordsList);
+        //3.判断是否还有下一页数据
         //es查询到的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
         //前端显示的总条数
@@ -158,16 +173,16 @@ public class HomepageService {
         String nextFlag = subclassService.isNext(esCount, count);
         resMap.put("nextFlag", nextFlag);
 
-        //3.获取es查询到的基础数据
+        //4.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        //4.创建线程池
+        //5.创建线程池
         ExecutorService threadPool = Executors.newFixedThreadPool(12);
         //同环比线程的返回结果
         List<Future> dataFutures = new ArrayList<>();
         //图表数据的返回结果
         List<Future> chartFutures = new ArrayList<>();
 
-        //5.开启子线程查询指标服务
+        //6.开启子线程查询指标服务
         //第一个指标的日月标识
         String firstDayOrMonth = "";
         //跳转的url
