@@ -129,7 +129,9 @@ public class HomepageSubclassService {
     public List<Map<String,Object>> getAllDataFromFutures(List<Future> dataFutures) throws ExecutionException, InterruptedException {
         List<Map<String, Object>> data = new ArrayList<>();
         for (int i = 0; i < dataFutures.size(); i ++){
+            log.info("!!!!!!!!!!!!!!!!!!!!,{}",i);
             Map<String, Object> map = (Map<String, Object>) dataFutures.get(i).get();
+            log.info("详细数据为：{}",map);
             data.add(map);
         }
         return data;

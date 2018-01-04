@@ -231,8 +231,18 @@ public class HomepageService {
         if (chartFutures.size() != 0) {
             chartData = (Map<String, Object>) chartFutures.get(0).get();
         }
+        log.info("返回的图标数据为:，{}",chartData);
         //所有指标的同比环比数据
-        List<Map<String, Object>> data = subclassService.getAllDataFromFutures(dataFutures);
+        List<Map<String, Object>> data = null;
+        try {
+            data = subclassService.getAllDataFromFutures(dataFutures);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         log.info("获取全部数据耗时：" + (System.currentTimeMillis() - getDataStart) + "ms");
 
         //7.关闭线程池
