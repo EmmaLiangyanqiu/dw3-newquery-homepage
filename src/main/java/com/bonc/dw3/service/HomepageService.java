@@ -101,17 +101,17 @@ public class HomepageService {
 
         //--------------------------------->这里后期不再需要，由es返回用户的权限省份信息，带到每一条详细数据上//获取用户的省份权限，查询详细数据时就只能查询该省份
         //暂且注释，es稳定测试后可删除
-//        String provId = userInfoMapper.queryProvByUserId(userId);
-//        String areaStr = homepageMapper.getProvNameViaProvId(provId);
-//        log.info("该用户的省份权限为：" + provId);
+        String provId = userInfoMapper.queryProvByUserId(userId);
+        String areaStr = homepageMapper.getProvNameViaProvId(provId);
+        log.info("该用户的省份权限为：" + provId);
 
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(0).get("dimension");
-        log.info("!!!!!!!!!!!!!!dimensionMap:,{}",dimensionMap);
-        String provId = dimensionMap.get("provId").toString();
-        String areaStr = dimensionMap.get("cityId").toString();
-        log.info("该用户的省份权限为：" + provId);
+
+//        Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(0).get("dimension");
+//        String provId = dimensionMap.get("provId").toString();
+//        String areaStr = dimensionMap.get("cityId").toString();
+//        log.info("该用户的省份权限为：" + provId);
 
         //4.创建线程池
         ExecutorService pool = Executors.newFixedThreadPool(12);
