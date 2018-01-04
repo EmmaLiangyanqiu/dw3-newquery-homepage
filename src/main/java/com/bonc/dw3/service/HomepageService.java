@@ -107,8 +107,8 @@ public class HomepageService {
 
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
-        String provId =esList.get(0).get("provId").toString();
-        String areaStr =esList.get(0).get("cityId").toString();
+        String provId = esList.get(0).get("provId").toString();
+        String areaStr = esList.get(0).get("cityId").toString();
         log.info("该用户的省份权限为：" + provId);
 
         //4.创建线程池
@@ -219,7 +219,7 @@ public class HomepageService {
                 } else {
                     //拼接同比环比接口的请求参数
                     String dataParam = area + "," + date + "," + id + "," + userId;
-                    MyCallable dataCallable = new MyCallable(restTemplate, "DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", dataParam);
+                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
                 }
@@ -231,21 +231,10 @@ public class HomepageService {
         if (chartFutures.size() != 0) {
             chartData = (Map<String, Object>) chartFutures.get(0).get();
         }
-        log.info("返回的图标数据为:，{}",chartData);
+        log.info("返回的图标数据为:，{}", chartData);
         //所有指标的同比环比数据
         List<Map<String, Object>> data = null;
-        try {
-            data = subclassService.getAllDataFromFutures(dataFutures);
-        } catch (ExecutionException e) {
-            log.info("1111111111111111111111111");
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            log.info("22222222222222222222222");
-            e.printStackTrace();
-        }catch (Exception e){
-            log.info("3333333333333333333333333333333");
-            e.printStackTrace();
-        }
+        data = subclassService.getAllDataFromFutures(dataFutures);
         log.info("获取全部数据耗时：" + (System.currentTimeMillis() - getDataStart) + "ms");
 
         //7.关闭线程池
