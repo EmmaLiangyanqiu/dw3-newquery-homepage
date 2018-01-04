@@ -33,7 +33,7 @@ public class MyCallable implements Callable{
     /**
      * 请求返回的结果
      */
-    public Object result = null;
+    public Object result = false;
 
     public MyCallable(RestTemplate restTemplate, String url, String paramStr){
         this.restTemplate = restTemplate;
