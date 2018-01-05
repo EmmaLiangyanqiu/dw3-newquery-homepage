@@ -105,7 +105,7 @@
                             </#if>
                             <#if key = "chart">
                             "${key}":[
-                                <#if chartType = "line" || chartType = "monthBar" || chartType = "cityBar" || chartType = "cityRank">
+                                <#if chartType = "line" || chartType = "monthBar" || chartType = "cityBar" || chartType = "cityRank"|| chartType21 = "yearBar">
                                     <#assign chartList = allDataMap[key]>
                                     <#list chartList as chartMap>
                                     {
