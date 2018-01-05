@@ -17,9 +17,7 @@
                     "${key}":{
                         <#assign keydataMap = keywordMap[key]>
                         <#list keydataMap?keys as key>
-                            <#if key != "garbage">
                             "${key}":"${keydataMap[key]}"<#if key_has_next>,</#if>
-                            </#if>
                         </#list>
                     }
                     </#if><#if key_has_next>,</#if>
