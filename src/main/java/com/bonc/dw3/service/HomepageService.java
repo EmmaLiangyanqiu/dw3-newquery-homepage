@@ -538,6 +538,7 @@ public class HomepageService {
                 //省份id
                 String provId = "";
                 Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
+                log.info("!!!!!!!!!!!!!!!,{}",dimensionMap);
                 provId = dimensionMap.get("provId").toString();
                 log.info("!!!!!!!!!!!!!!!,{}!!!!!!!!{}!!!!!!!!!!!!!!!",provId,dimensionMap);
                 //typeId=1指标；2专题；3报告；4报表
