@@ -539,7 +539,7 @@ public class HomepageService {
                 //省份id
                 String provId = "";
 
-                if (!"4".equals(typeId)){
+                if ("1".equals(typeId)){
                     Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
                     log.info("!!!!!!!!!!!!!!!,{}",dimensionMap);
                     provId = dimensionMap.get("provId").toString();
