@@ -202,7 +202,8 @@ public class HomepageService {
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(i).get("dimension");
-                provId = (String)dimensionMap.get("provId");
+                provId = dimensionMap.get("provId").toString();
+                log.info("!!!!!!!!!!!provId{},!!!!!!!!!!!dimensionMap{},!!!!!!!!!!!",provId,dimensionMap);
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
                     String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
