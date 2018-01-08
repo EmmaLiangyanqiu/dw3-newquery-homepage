@@ -535,12 +535,12 @@ public class HomepageService {
                 String typeId = map.get("typeId").toString();
                 //数据id
                 String id = map.get("id").toString();
+                log.info("!!!!!!!!!!!!!!!map,{}",map);
                 //省份id
                 String provId = "";
                 Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
                 log.info("!!!!!!!!!!!!!!!,{}",dimensionMap);
                 provId = dimensionMap.get("provId").toString();
-                log.info("!!!!!!!!!!!!!!!,{}!!!!!!!!{}!!!!!!!!!!!!!!!",provId,dimensionMap);
                 //typeId=1指标；2专题；3报告；4报表
                 if (typeId.equals(SystemVariableService.kpi)) {
                     //指标
