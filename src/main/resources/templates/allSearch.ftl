@@ -184,7 +184,11 @@
                     "${key}":{
                         <#assign allDataMap2 = dataMap[key]>
                         <#list allDataMap2?keys as key>
+                        <#if allDataMap2[key]!=null>
                         "${key}":"${allDataMap2[key]}"
+                        <#else>
+                        "${key}":""
+                        </#if>
                             <#if key_has_next>,</#if>
                         </#list>
                     }
