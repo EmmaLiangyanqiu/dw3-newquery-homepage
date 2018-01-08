@@ -101,9 +101,9 @@ public class HomepageService {
 
         //--------------------------------->这里后期不再需要，由es返回用户的权限省份信息，带到每一条详细数据上//获取用户的省份权限，查询详细数据时就只能查询该省份
         //暂且注释，es稳定测试后可删除
-        String provId = userInfoMapper.queryProvByUserId(userId);
-        String areaStr = homepageMapper.getProvNameViaProvId(provId);
-        log.info("该用户的省份权限为：" + provId);
+//        String provId = userInfoMapper.queryProvByUserId(userId);
+//        String areaStr = homepageMapper.getProvNameViaProvId(provId);
+//        log.info("该用户的省份权限为：" + provId);
 
         //3.获取es查询到的基础数据
         List<Map<String, Object>> esList = (List<Map<String, Object>>) esMap.get("data");
@@ -117,7 +117,7 @@ public class HomepageService {
         ExecutorService pool = Executors.newFixedThreadPool(12);
         long start = System.currentTimeMillis();
         //5.根据typeId将数据分类并开启子线程查询各个服务（报表的只记录报表id）
-        List<Future> dataFutures = startAllThreads(pool, esList, statementList, userId, provId);
+        List<Future> dataFutures = startAllThreads(pool, esList, statementList, userId);
 
         //6.汇总所有服务返回的详细数据(除报表数据外)
         List<Map<String, Object>> dataList = subclassService.getAllDataFromFutures(dataFutures);
@@ -132,7 +132,7 @@ public class HomepageService {
         //8.过滤无效数据
         List<Map<String, Object>> dataListFinally = subclassService.filterAllData(dataList);
         //9.组合es数据和详细数据
-        List<Map<String, Object>> resList = subclassService.combineAllTypeData(esList, dataListFinally, areaStr);
+        List<Map<String, Object>> resList = subclassService.combineAllTypeData(esList, dataListFinally);
         resMap.put("data", resList);
         return resMap;
     }
@@ -143,14 +143,12 @@ public class HomepageService {
      * @param paramStr 查询es的参数
      * @param numStart 查询es的起始条数
      * @param num      查询es的数据条数
-     * @param area     查询时选定的地域（前端传过来的）
      * @param date     查询时选定的时间（前端传过来的）
      * @param userId   用户id
      */
     public Map<String, Object> indexSearch(String paramStr,
                                            String numStart,
                                            String num,
-                                           String area,
                                            String date,
                                            String userId) throws InterruptedException, ExecutionException {
         //最终的返回结果
@@ -203,7 +201,6 @@ public class HomepageService {
                 String id = esList.get(i).get("id").toString();
                 Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(i).get("dimension");
                 provId = dimensionMap.get("provId").toString();
-                log.info("!!!!!!!!!!!provId{},!!!!!!!!!!!dimensionMap{},!!!!!!!!!!!",provId,dimensionMap);
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
                     String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
@@ -219,14 +216,14 @@ public class HomepageService {
                     Future chartFuture = threadPool.submit(chartCallable);
                     chartFutures.add(chartFuture);
                     //拼接同比环比接口的请求参数
-                    String dataParam = area + "," + date + "," + id + "," + userId;
+                    String dataParam = provId + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
                     MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
                 } else {
                     //拼接同比环比接口的请求参数
-                    String dataParam = area + "," + date + "," + id + "," + userId;
+                    String dataParam = provId + "," + date + "," + id + "," + userId;
                     MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", dataParam);
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
@@ -256,7 +253,7 @@ public class HomepageService {
 
         //9.组合es数据和详细数据
         //根据地域id得到地域的名称
-        String areaStr = homepageMapper.getProvNameViaProvId(area);
+        String areaStr = homepageMapper.getProvNameViaProvId(provId);
         //组合数据
         List<Map<String, Object>> resList = subclassService.combineKpiData(esList, chartDataFinally, dataList, url, areaStr, numStartValue);
         resMap.put("data", resList);
@@ -517,13 +514,11 @@ public class HomepageService {
      * @param esList        es查询结果
      * @param statementList 报表id集合
      * @param userId        用户id
-     * @param provId        省份id
      */
     private List<Future> startAllThreads(ExecutorService pool,
                                          List<Map<String, Object>> esList,
                                          List<String> statementList,
-                                         String userId,
-                                         String provId) throws InterruptedException, ExecutionException {
+                                         String userId) throws InterruptedException, ExecutionException {
         List<Future> futureList = new ArrayList<>();
         //es返回的所有指标
         List<String> kpiList = new ArrayList<>();
@@ -540,6 +535,10 @@ public class HomepageService {
                 String typeId = map.get("typeId").toString();
                 //数据id
                 String id = map.get("id").toString();
+                //省份id
+                String provId = "";
+                Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
+                provId = dimensionMap.get("provId").toString();
                 //typeId=1指标；2专题；3报告；4报表
                 if (typeId.equals(SystemVariableService.kpi)) {
                     //指标

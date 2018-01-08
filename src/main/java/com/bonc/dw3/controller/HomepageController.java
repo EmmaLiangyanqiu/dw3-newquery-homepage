@@ -113,7 +113,7 @@ public class HomepageController {
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + dayOrmonth + "," + numStart + "," + num;
         //查询es并拼接结果
-        Map<String, Object> resMap = homepageService.indexSearch(paramStr, numStart, num, area, date, userId);
+        Map<String, Object> resMap = homepageService.indexSearch(paramStr, numStart, num, date, userId);
         //数据为空
         List<Map<String, Object>> resList = (List<Map<String, Object>>) resMap.get("data");
         if (resList.size() == 0) {

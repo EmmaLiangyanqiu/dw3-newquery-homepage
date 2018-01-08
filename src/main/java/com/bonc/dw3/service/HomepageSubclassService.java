@@ -161,16 +161,22 @@ public class HomepageSubclassService {
      *
      * @param esList   es查询结果
      * @param dataList 详细数据
-     * @param areaStr  地域名称
      */
     public List<Map<String, Object>> combineAllTypeData(List<Map<String, Object>> esList,
-                                                        List<Map<String, Object>> dataList,
-                                                        String areaStr) {
+                                                        List<Map<String, Object>> dataList) {
         List<Map<String, Object>> resList = new ArrayList<>();
         for (Map<String, Object> map1 : esList) {
             try {
                 String typeId = map1.get("typeId").toString();
                 String id1 = map1.get("id").toString();
+                //省份名称
+                String areaStr ="";
+                //省份id
+                String provId = "";
+                Map<String, Object> dimensionMap = (Map<String, Object>)map1.get("dimension");
+                provId = dimensionMap.get("provId").toString();
+                areaStr = homepageMapper.getProvNameViaProvId(provId);
+                log.info("该用户的省份名称为：" + areaStr);
                 //指标数据处理
                 if (typeId.equals(SystemVariableService.kpi)) {
                     for (Map<String, Object> map2 : dataList) {
