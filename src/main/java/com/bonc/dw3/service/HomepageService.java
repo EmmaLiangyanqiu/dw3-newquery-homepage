@@ -189,15 +189,20 @@ public class HomepageService {
         String firstDayOrMonth = "";
         //跳转的url
         String url = "";
+        //es搜索得到的provId
+        String provId = "";
         //前端请求的起始条数
         int numStartValue = Integer.parseInt(numStart);
         long getDataStart = System.currentTimeMillis();
+
         if (esList.size() != 0) {
             //跳转的url
             url = homepageMapper.getUrlViaTypeId(esList.get(0).get("typeId").toString());
             //遍历基础数据
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
+                Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(i).get("dimension");
+                provId = (String)dimensionMap.get("provId");
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
                     String dayOrMonth = esList.get(i).get("dayOrMonth").toString();
@@ -207,7 +212,7 @@ public class HomepageService {
                         firstDayOrMonth = SystemVariableService.month;
                     }
                     //拼接所有图表数据接口的请求参数
-                    String chartParam = area + "," + date + "," + id + "," + firstDayOrMonth + "," + userId;
+                    String chartParam = provId + "," + date + "," + id + "," + firstDayOrMonth + "," + userId;
                     //请求图表数据
                     MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/allChartOfTheKpi", chartParam);
                     Future chartFuture = threadPool.submit(chartCallable);
