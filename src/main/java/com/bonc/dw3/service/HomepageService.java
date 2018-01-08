@@ -539,6 +539,7 @@ public class HomepageService {
                 String provId = "";
                 Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
                 provId = dimensionMap.get("provId").toString();
+                log.info("!!!!!!!!!!!!!!!,{}!!!!!!!!{}!!!!!!!!!!!!!!!",provId,dimensionMap);
                 //typeId=1指标；2专题；3报告；4报表
                 if (typeId.equals(SystemVariableService.kpi)) {
                     //指标
