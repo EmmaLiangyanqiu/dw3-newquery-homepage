@@ -17,7 +17,7 @@
                     "${key}":{
                         <#assign keydataMap = keywordMap[key]>
                         <#list keydataMap?keys as key>
-                            "${key}":"${keydataMap[key]}"<#if key_has_next>,</#if>
+                        "${key}":"${keydataMap[key]}"<#if key_has_next>,</#if>
                         </#list>
                     }
                     </#if><#if key_has_next>,</#if>
@@ -184,11 +184,7 @@
                     "${key}":{
                         <#assign allDataMap2 = dataMap[key]>
                         <#list allDataMap2?keys as key>
-                        <#if allDataMap2[key]!=null>
                         "${key}":"${allDataMap2[key]}"
-                        <#else>
-                        "${key}":""
-                        </#if>
                             <#if key_has_next>,</#if>
                         </#list>
                     }
@@ -197,7 +193,11 @@
                     "${key}":{
                         <#assign allDataMap2 = dataMap[key]>
                         <#list allDataMap2?keys as key>
-                        "${key}":"${allDataMap2[key]}"
+                            <#if (allDataMap2[key])??>
+                            "${key}":"${allDataMap2[key]}"
+                            <#else>
+                            "${key}":""
+                            </#if>
                             <#if key_has_next>,</#if>
                         </#list>
                     }
