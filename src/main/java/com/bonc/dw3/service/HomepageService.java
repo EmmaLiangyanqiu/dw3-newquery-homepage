@@ -538,9 +538,13 @@ public class HomepageService {
                 log.info("!!!!!!!!!!!!!!!map,{}",map);
                 //省份id
                 String provId = "";
-                Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
-                log.info("!!!!!!!!!!!!!!!,{}",dimensionMap);
-                provId = dimensionMap.get("provId").toString();
+
+                if (!"4".equals(typeId)){
+                    Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
+                    log.info("!!!!!!!!!!!!!!!,{}",dimensionMap);
+                    provId = dimensionMap.get("provId").toString();
+                }
+
                 //typeId=1指标；2专题；3报告；4报表
                 if (typeId.equals(SystemVariableService.kpi)) {
                     //指标
