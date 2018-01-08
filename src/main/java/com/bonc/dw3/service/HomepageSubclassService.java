@@ -170,13 +170,15 @@ public class HomepageSubclassService {
                 String typeId = map1.get("typeId").toString();
                 String id1 = map1.get("id").toString();
                 //省份名称
-                String areaStr ="";
+                String areaStr = "";
                 //省份id
                 String provId = "";
-                Map<String, Object> dimensionMap = (Map<String, Object>)map1.get("dimension");
-                provId = dimensionMap.get("provId").toString();
-                areaStr = homepageMapper.getProvNameViaProvId(provId);
-                log.info("该用户的省份名称为：" + areaStr);
+                Map<String, Object> dimensionMap = (Map<String, Object>) map1.get("dimension");
+                if (dimensionMap != null) {
+                    provId = dimensionMap.get("provId").toString();
+                    areaStr = homepageMapper.getProvNameViaProvId(provId);
+                    log.info("该用户的省份名称为：" + areaStr);
+                }
                 //指标数据处理
                 if (typeId.equals(SystemVariableService.kpi)) {
                     for (Map<String, Object> map2 : dataList) {
