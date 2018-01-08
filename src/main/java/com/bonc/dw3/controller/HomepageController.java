@@ -84,7 +84,7 @@ public class HomepageController {
         String paramStr = userId + "," + searchType + "," + search + "," + tabId + "," + numStart + "," + num;
         //查询es并拼接结果
         Map<String, Object> resMap = homepageService.allSearch(paramStr, numStart, num, userId);
-
+        System.out.println("$$$$$$$$$$$$$$$"+resMap);
         model.addAttribute("resMap", resMap);
         return "allSearch";
     }
