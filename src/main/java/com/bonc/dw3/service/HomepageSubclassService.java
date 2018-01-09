@@ -324,11 +324,8 @@ public class HomepageSubclassService {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
                 Map<String, Object> dimensionMap = (Map<String, Object>) map1.get("dimension");
-                String provId = dimensionMap.get("provId").toString();
-                String cityId = dimensionMap.get("cityId").toString();
-                String selectType = dimensionMap.get("selectType").toString();
-                String date = dimensionMap.get("date").toString();
-
+                List<Map<String, Object>> dimensionList = new ArrayList<>();
+                dimensionList.add(dimensionMap);
                 //第一条数据
                 if (i == 0 && chartDataFinally != null && numStartValue == 1) {
                     Map<String, Object> map = new HashMap<>(20);
@@ -376,11 +373,7 @@ public class HomepageSubclassService {
                     String isPercentage = isPercentageKpi(unitNow);
                     map.put("isPercentage", isPercentage);
                     //结合ES数据
-                    map.put("dimension", dimensionMap);
-                    map.put("provId", map1.get("provId"));
-                    map.put("cityId", map1.get("cityId"));
-                    map.put("selectType", map1.get("selectType"));
-                    map.put("date", map1.get("date"));
+                    map.put("dimension", dimensionList);
 
                     resList.add(map);
                 } else {
@@ -416,10 +409,7 @@ public class HomepageSubclassService {
                                     map.put("area", "全国");
                                 }
                                 map.put("date", map2.get("date"));
-                                map.put("dimension", dimensionMap);
-                                map.put("provId", map2.get("provId"));
-                                map.put("cityId", map2.get("cityId"));
-                                map.put("selectType", map2.get("selectType"));
+                                map.put("dimension", dimensionList);
 
                                 resList.add(map);
                             }
