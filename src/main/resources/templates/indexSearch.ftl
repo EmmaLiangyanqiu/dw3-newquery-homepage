@@ -53,15 +53,15 @@
                         <#if key = "dimension">
                         "${key}":[
                             <#assign dimensionList = dataMap[key]>
-                            <#list dimensionList as dimensionMap>
+                            <#list dimensionList as dimensionHashMap>
                             {
-                                <#list dimensionMap?keys as key>
+                                <#list dimensionHashMap?keys as key>
                                     <#if key != "selectType">
-                                    "${key}":"${dimensionMap[key]}"
+                                    "${key}":"${dimensionHashMap[key]}"
                                     </#if>
                                     <#if key = "selectType">
                                     "${key}":[
-                                        <#assign selectTypeList = dimensionMap[key]>
+                                        <#assign selectTypeList = dimensionHashMap[key]>
                                         <#list selectTypeList as selectTypeMap>
                                         {
                                             <#list selectTypeMap?keys as key>
@@ -209,15 +209,15 @@
                         <#if key = "dimension">
                         "${key}":[
                             <#assign dimensionList = dataMap[key]>
-                            <#list dimensionList as dimensionMap>
+                            <#list dimensionList as dimensionHashMap>
                             {
-                                <#list dimensionMap?keys as key>
+                                <#list dimensionHashMap?keys as key>
                                     <#if key != "selectType">
-                                    "${key}":"${dimensionMap[key]}"
+                                    "${key}":"${dimensionHashMap[key]}"
                                     </#if>
                                     <#if key = "selectType">
                                     "${key}":[
-                                        <#assign selectTypeList = dimensionMap[key]>
+                                        <#assign selectTypeList = dimensionHashMap[key]>
                                         <#list selectTypeList as selectTypeMap>
                                         {
                                             <#list selectTypeMap?keys as key>
