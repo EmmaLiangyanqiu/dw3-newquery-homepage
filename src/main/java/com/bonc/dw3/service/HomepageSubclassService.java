@@ -323,6 +323,12 @@ public class HomepageSubclassService {
             for (int i = 0; i < esList.size(); i++) {
                 Map<String, Object> map1 = esList.get(i);
                 String id1 = map1.get("id").toString();
+                Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(i).get("dimension");
+                String provId = dimensionMap.get("provId").toString();
+                String cityId = dimensionMap.get("cityId").toString();
+                String selectType = dimensionMap.get("selectType").toString();
+                String date = dimensionMap.get("date").toString();
+
                 //第一条数据
                 if (i == 0 && chartDataFinally != null && numStartValue == 1) {
                     Map<String, Object> map = new HashMap<>(20);
@@ -369,6 +375,8 @@ public class HomepageSubclassService {
                     String unitNow = map.get("unit").toString();
                     String isPercentage = isPercentageKpi(unitNow);
                     map.put("isPercentage", isPercentage);
+                    //结合ES数据
+                    map.put("provId", map1.get("dimension"));
                     resList.add(map);
                 } else {
                     if (dataList != null && dataList.size() != 0) {

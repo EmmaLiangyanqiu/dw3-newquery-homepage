@@ -84,7 +84,6 @@ public class HomepageController {
         String paramStr = userId + "," + searchType + "," + search + "," + tabId + "," + numStart + "," + num;
         //查询es并拼接结果
         Map<String, Object> resMap = homepageService.allSearch(paramStr, numStart, num, userId);
-        System.out.println("$$$$$$$$$$$$$$$"+resMap);
         model.addAttribute("resMap", resMap);
         return "allSearch";
     }
@@ -108,12 +107,12 @@ public class HomepageController {
         String numStart = paramMap.get("numStart").toString();
         String num = paramMap.get("num").toString();
         String area = paramMap.get("area").toString();
-        String date = paramMap.get("date").toString();
+//        String date = paramMap.get("date").toString();
 
         //es查询参数处理
         String paramStr = userId + "," + searchType + "," + search + "," + dayOrmonth + "," + numStart + "," + num;
         //查询es并拼接结果
-        Map<String, Object> resMap = homepageService.indexSearch(paramStr, numStart, num, date, userId);
+        Map<String, Object> resMap = homepageService.indexSearch(paramStr, numStart, num, userId);
         //数据为空
         List<Map<String, Object>> resList = (List<Map<String, Object>>) resMap.get("data");
         if (resList.size() == 0) {

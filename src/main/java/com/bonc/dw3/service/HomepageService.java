@@ -90,6 +90,7 @@ public class HomepageService {
         List<Map<String, Object>> keywordsList = new ArrayList<>();
         keywordsList.add(keywordsMap);
         resMap.put("keyword", keywordsList);
+
         //2.判断是否还有下一页
         //es查询到的数据的总条数
         int esCount = Integer.parseInt(esMap.get("count").toString());
@@ -143,13 +144,11 @@ public class HomepageService {
      * @param paramStr 查询es的参数
      * @param numStart 查询es的起始条数
      * @param num      查询es的数据条数
-     * @param date     查询时选定的时间（前端传过来的）
      * @param userId   用户id
      */
     public Map<String, Object> indexSearch(String paramStr,
                                            String numStart,
                                            String num,
-                                           String date,
                                            String userId) throws InterruptedException, ExecutionException {
         //最终的返回结果
         Map<String, Object> resMap = new HashMap<>(5);
@@ -189,6 +188,9 @@ public class HomepageService {
         String url = "";
         //es搜索得到的provId
         String provId = "";
+        //es搜索得到的查询日期
+        String date="";
+
         //前端请求的起始条数
         int numStartValue = Integer.parseInt(numStart);
         long getDataStart = System.currentTimeMillis();
@@ -200,6 +202,7 @@ public class HomepageService {
             for (int i = 0; i < esList.size(); i++) {
                 String id = esList.get(i).get("id").toString();
                 Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(i).get("dimension");
+                date=dimensionMap.get("date").toString();
                 provId = dimensionMap.get("provId").toString();
                 if (i == 0 && numStartValue == 1) {
                     //es返回的日月标识
@@ -535,13 +538,12 @@ public class HomepageService {
                 String typeId = map.get("typeId").toString();
                 //数据id
                 String id = map.get("id").toString();
-                log.info("!!!!!!!!!!!!!!!map,{}",map);
                 //省份id
                 String provId = "";
-
+                //es返回日期
+                String date = "";
                 if ("1".equals(typeId)){
                     Map<String, Object> dimensionMap = (Map<String, Object>)map.get("dimension");
-                    log.info("!!!!!!!!!!!!!!!,{}",dimensionMap);
                     provId = dimensionMap.get("provId").toString();
                 }
 
@@ -549,10 +551,13 @@ public class HomepageService {
                 if (typeId.equals(SystemVariableService.kpi)) {
                     //指标
                     kpiList.add(id);
+                    //得到日期关键词供指标搜索使用
+                    Map<String, Object> dimensionMap = (Map<String, Object>)esList.get(i).get("dimension");
+                    date=dimensionMap.get("date").toString();
                     //查询指标服务的参数处理："-1,-1,"查询的是全国，最大账期条件下的数据
-                    String paramStr = provId + ",-1," + id + "," + userId;
+                    String paramStr =provId + "," + date + "," + id + "," + userId;
                     //开子线程
-                    MyCallable kpiCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-HOMEPAGE-ZUUL-HBASE-V1/index/indexForHomepage/dataOfAllKpi", paramStr);
+                    MyCallable kpiCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", paramStr);
                     Future kpiFuture = pool.submit(kpiCallable);
                     futureList.add(kpiFuture);
                 } else if (typeId.equals(SystemVariableService.subject)) {
