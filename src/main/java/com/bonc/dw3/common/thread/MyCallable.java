@@ -65,7 +65,8 @@ public class MyCallable implements Callable {
         } else {
             this.result = restTemplate.postForObject(url, paramStr, Object.class);
         }
-        log.info("\r\n" + "查询参数为：" + paramStr + "\r\n"
+        log.info("\r\n" + "查询参数paramStr为：" + paramStr + "\r\n"
+                + "查询参数paramMap为：" + paramMap.toString() + "\r\n"
                 + "返回结果为：" + this.result + "\r\n"
                 + "耗时为：" + (System.currentTimeMillis() - start) + "ms" + "\r\n");
 

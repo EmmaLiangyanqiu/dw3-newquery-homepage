@@ -212,7 +212,7 @@ public class HomepageService {
                 selectType = (List<HashMap<String,Object>>)dimensionMap.get("selectType");
 
                 //拼接请求参数
-                Map<String,Object> paramMap = new HashMap<String,Object>(16);
+                HashMap<String,Object> paramMap = new HashMap<String,Object>(16);
                 paramMap.put("userId",userId);
                 paramMap.put("kpiCode",id);
                 paramMap.put("date",date);
@@ -228,26 +228,28 @@ public class HomepageService {
                         firstDayOrMonth = SystemVariableService.month;
                     }
                     //拼接所有图表数据接口的请求参数
-//                    String chartParam = provId + "," + date + "," + id + "," + firstDayOrMonth + "," + userId;
+                    String chartParam = provId + "," + date + "," + id + "," + firstDayOrMonth + "," + userId;
                     //所有图表接口需多传dayOrMonth参数
                     paramMap.put("dayOrMonth",firstDayOrMonth);
 
 
                     //请求图表数据
-//                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/allChartOfTheKpi", chartParam);
-                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/allChartOfTheKpi", (HashMap<String, Object>) paramMap,"map");
+                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HBASE-V1/indexForHomepage/allChartOfTheKpi", chartParam);
+//                    MyCallable chartCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/allChartOfTheKpi", (HashMap<String, Object>) paramMap,"map");
                     Future chartFuture = threadPool.submit(chartCallable);
                     chartFutures.add(chartFuture);
                     //拼接同比环比接口的请求参数
-//                    String dataParam = provId + "," + date + "," + id + "," + userId;
+                    String dataParam = provId + "," + date + "," + id + "," + userId;
                     //请求同比环比数据
-                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", (HashMap<String, Object>) paramMap,"map");
+                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HBASE-V1/indexForHomepage/dataOfAllKpi",  dataParam);
+//                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HBASE-V1/indexForHomepage/dataOfAllKpi",  paramMap,"map");
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
                 } else {
                     //拼接同比环比接口的请求参数
-//                    String dataParam = provId + "," + date + "," + id + "," + userId;
-                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HOMEPAGE-TEST/indexForHomepage/dataOfAllKpi", (HashMap<String, Object>) paramMap,"map");
+                    String dataParam = provId + "," + date + "," + id + "," + userId;
+                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HBASE-V1/indexForHomepage/dataOfAllKpi",  dataParam);
+//                    MyCallable dataCallable = new MyCallable(restTemplate, "http://DW3-NEWQUERY-KPI-HBASE-V1/indexForHomepage/dataOfAllKpi",  paramMap,"map");
                     Future dataFuture = threadPool.submit(dataCallable);
                     dataFutures.add(dataFuture);
                 }
